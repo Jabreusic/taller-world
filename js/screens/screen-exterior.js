@@ -316,8 +316,9 @@ window.SCREEN_HTML.exterior = `
         <div class="ext-card">
             <div class="ext-card-icon">&#x1F6EC;</div>
             <div class="ext-card-name">Centro de Mejoras</div>
-            <div class="ext-card-desc">Expande el taller, mejora herramientas y consigue publicidad.</div>
+            <div class="ext-card-desc">Expande el taller, mejora herramientas, publicidad y servicios como el autolavado.</div>
             <button class="btn ext-card-btn" onclick="abrirModal('tienda')">Ver catalogo</button>
+            <button class="btn ext-card-btn" onclick="abrirModal('tienda-autolavado')">Servicios: autolavado</button>
         </div>
     </div>
 </div>

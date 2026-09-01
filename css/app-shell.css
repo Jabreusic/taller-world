@@ -744,3 +744,14 @@ body.is-offline .app-connection-status {
 .case-patience-head { display:flex; justify-content:space-between; font-size:.72rem; }
 .case-patience-track { height:6px; margin-top:5px; overflow:hidden; border-radius:99px; background:#263b42; }
 .case-patience-track span { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,#ef5350,#fbc02d,#66bb6a); transition:width .25s ease; }
+
+/* Tarjetas de equipo: compactas, pero sin ocultar estados ni habilidades. */
+.mecanico-habilidad-especial { display:grid; gap:2px; max-width:100%; overflow:hidden; }
+.mecanico-habilidad-especial span { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.shop-item-hint { margin:4px 0 8px; color:#b9c9c5; font-size:.78rem; line-height:1.35; }
+@media (max-width: 700px) {
+  #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-btn { height:auto !important; min-height:184px !important; max-height:none !important; overflow:hidden !important; flex-basis:190px !important; width:190px !important; min-width:190px !important; padding:8px !important; }
+  #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-meter:nth-of-type(n) { display:grid !important; }
+  #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-habilidad-especial { font-size:.58rem !important; line-height:1.25 !important; }
+  #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-card-head { min-width:0 !important; }
+}

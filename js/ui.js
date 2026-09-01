@@ -1461,6 +1461,7 @@ function actualizarUI() {
   mejoras.publicidad = Math.max(0, Math.round(Number(mejoras.publicidad) || 0));
   mejoras.capacitacion = Math.max(0, Math.round(Number(mejoras.capacitacion) || 0));
   mejoras.maquinaDiagnosis = !!mejoras.maquinaDiagnosis;
+  mejoras.autolavado = !!mejoras.autolavado;
   mejorasTacticas.bateria = Number.isFinite(Number(mejorasTacticas.bateria))
     ? Math.max(0, Math.round(Number(mejorasTacticas.bateria)))
     : 0;
@@ -1779,18 +1780,21 @@ function actualizarUI() {
 
   let grid = document.getElementById("grid-mecanicos") || document.getElementById("mecanicos-grid");
   if (!grid) grid = document.createElement("div"); // fallback seguro
-  const trabajosActivosPorMecanico = new Map(
-    (reparacionesActivas || [])
+  const trabajosActivosPorMecanico = new Map();
+  (reparacionesActivas || [])
       .filter(function (r) {
         return r && typeof r === "object" && !r.listoParaCobro;
       })
       .map(function (r) {
-        return [r && r.mecanicoNombre ? r.mecanicoNombre : "", r];
+        return r;
       })
-      .filter(function (entry) {
-        return !!entry[0];
-      }),
-  );
+      .forEach(function (r) {
+        var key = r && r.mecanicoNombre ? r.mecanicoNombre : "";
+        if (!key) return;
+        var lista = trabajosActivosPorMecanico.get(key) || [];
+        lista.push(r);
+        trabajosActivosPorMecanico.set(key, lista);
+      });
   let mecanicosVisibles = 0;
   let recursosVisibles = 0;
   const interaccionMovil = esInteraccionMovil();
@@ -1805,8 +1809,11 @@ function actualizarUI() {
   mecanicos.forEach((m, idx) => {
     mecanicosVisibles += 1;
     recursosVisibles += 1;
-    const trabajoActivoMecanico = trabajosActivosPorMecanico.get(m.nombre) || null;
-    const ocupadoEnCasoActivo = !!trabajoActivoMecanico;
+    const trabajosMecanico = trabajosActivosPorMecanico.get(m.nombre) || [];
+    const trabajoActivoMecanico = trabajosMecanico[0] || null;
+    const capacidadMecanico = Math.max(1, Number(m.capacidadCasosSimultaneos) || 1);
+    const trabajosMecanicoCount = trabajosMecanico.length;
+    const ocupadoEnCasoActivo = trabajosMecanicoCount >= capacidadMecanico;
     const enfriamientoTurnos = normalizarStatMecanico(
       m.enfriamientoTurnos,
       0,
@@ -1873,7 +1880,11 @@ function actualizarUI() {
     let estadoClase = "ok";
     let estadoIcono = "&#x25CF;";
 
-    if (ocupadoEnCasoActivo) {
+    if (trabajosMecanicoCount > 0 && !ocupadoEnCasoActivo) {
+      estadoLinea = `En trabajo · ${trabajosMecanicoCount}/${capacidadMecanico}`;
+      estadoClase = "warn";
+      estadoIcono = "&#x1F527;";
+    } else if (ocupadoEnCasoActivo) {
       if (trabajoActivoMecanico.tipoTrabajo === "diagnostico") {
         estadoLinea = "Diagnosticando caso";
         estadoClase = "cooldown";
@@ -1988,7 +1999,8 @@ function actualizarUI() {
             <div class="mecanico-meter-track"><div class="mecanico-meter-fill anger" style="width:${enojoFill}%;"></div></div>
             <span class="mecanico-meter-value">${enojoValor}</span>
         </div>`;
-    btn.insertAdjacentHTML("beforeend", '<div class="mecanico-habilidad-especial" title="Habilidad especial"><strong>Especial:</strong> ' + limpiarHtmlBasico(habilidadEspecialTxt) + '</div>');
+    const penalidadEspecialTxt = rasgoMecanico && rasgoMecanico.desventaja ? rasgoMecanico.desventaja : "Sin penalidad especial.";
+    btn.insertAdjacentHTML("beforeend", '<div class="mecanico-habilidad-especial" title="Habilidad: ' + limpiarHtmlBasico(habilidadEspecialTxt) + ' | Penalidad: ' + limpiarHtmlBasico(penalidadEspecialTxt) + '"><span><strong>Habilidad:</strong> ' + limpiarHtmlBasico(habilidadEspecialTxt) + '</span><span><strong>Penalidad:</strong> ' + limpiarHtmlBasico(penalidadEspecialTxt) + '</span></div>');
     if (ocupadoEnCasoActivo || enfriamientoTurnos > 0) {
       btn.classList.add("mecanico-enfriamiento");
     }
@@ -3942,7 +3954,7 @@ function enviarCasoAutolavado(idCaso, nivel) {
   var rep = Array.isArray(reparacionesActivas) ? reparacionesActivas.find(function (r) { return r && String(r.idCaso || "").trim() === clave; }) : null;
   var casos = typeof obtenerCasosCompletadosNarrativa === "function" ? obtenerCasosCompletadosNarrativa() : 0;
   if (!rep || !rep.listoParaCobro) { mostrarFeedbackGameplay("El caso debe estar listo para cobrar antes de enviarlo al autolavado.", "warn"); return false; }
-  if (casos < 8 && Math.max(1, Math.round(tallerNivel || 1)) < 2) { mostrarFeedbackGameplay("Autolavado bloqueado: requiere nivel 2 o 8 casos completados.", "warn"); return false; }
+  if (!(mejoras && mejoras.autolavado)) { mostrarFeedbackGameplay("Autolavado bloqueado: compra primero la mejora en Oficina > Mejoras > Servicios.", "warn"); return false; }
   var costo = nivel === "premium" ? 250 : nivel === "detalle" ? 450 : 120;
   if (Math.max(0, Math.round(saldo || 0)) < costo) { mostrarFeedbackGameplay("No hay caja suficiente para enviar este vehículo al autolavado. Costo: RD$" + costo + ".", "warn"); return false; }
   saldo -= costo;
@@ -3963,6 +3975,25 @@ function enviarCasoAutolavado(idCaso, nivel) {
   cerrarModal();
   mostrarFeedbackGameplay("Caso " + clave + " enviado al autolavado. Bono +" + Math.round(bono * 100) + "% al cobro en " + formatearDuracionSegundos(segundos) + ".", "ok");
   if (typeof actualizarUI === "function") actualizarUI();
+  return true;
+}
+
+function comprarMejoraAutolavado() {
+  var costo = 2800;
+  if (mejoras && mejoras.autolavado) { mostrarFeedbackGameplay("El autolavado ya esta desbloqueado.", "info"); return false; }
+  var casosParaDesbloqueo = typeof casosCompletados !== "undefined" ? casosCompletados : (Array.isArray(casosAtendidos) ? casosAtendidos.length : 0);
+  if (Math.max(1, Math.round(tallerNivel || 1)) < 2 && Math.max(0, Math.round(casosParaDesbloqueo || 0)) < 8) {
+    mostrarFeedbackGameplay("Requiere Taller nivel 2 o 8 casos completados.", "warn"); return false;
+  }
+  if (Math.max(0, Math.round(saldo || 0)) < costo) { mostrarFeedbackGameplay("Necesitas RD$" + costo + " para instalar el autolavado.", "warn"); return false; }
+  mejoras = mejoras || {};
+  mejoras.autolavado = true;
+  saldo -= costo;
+  if (typeof window !== "undefined" && window.TallerApp && window.TallerApp.helpers && window.TallerApp.helpers.registrarGastoDia) window.TallerApp.helpers.registrarGastoDia(costo, "mejoras");
+  if (typeof autoGuardarPartidaSilenciosa === "function") autoGuardarPartidaSilenciosa("mejora-autolavado");
+  mostrarFeedbackGameplay("Autolavado desbloqueado: ya puedes enviarlo desde el resultado de cada reparacion.", "ok");
+  if (typeof actualizarUI === "function") actualizarUI();
+  if (typeof cerrarModal === "function") cerrarModal();
   return true;
 }
 

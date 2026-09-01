@@ -885,7 +885,7 @@ window.TallerApp.state = {
     tallerNivel: ECONOMY_DATA.tallerNivelInicial || 1,
     espaciosReparacionMax: ECONOMY_DATA.espaciosReparacionInicial || 2,
     espaciosReparacionOcupados: 0,
-    mejoras: { ...(ECONOMY_DATA.mejorasIniciales || { herramientas: 0, publicidad: 0, capacitacion: 0, maquinaDiagnosis: false }) },
+    mejoras: { ...(ECONOMY_DATA.mejorasIniciales || { herramientas: 0, publicidad: 0, capacitacion: 0, maquinaDiagnosis: false, autolavado: false }) },
     mejorasTacticas: { ...(ECONOMY_DATA.mejorasTacticasIniciales || { bateria: 0, manualHablar: false, scannerDx: false, flujoReparacion: false }) },
     
     // ===== CLIENTES =====

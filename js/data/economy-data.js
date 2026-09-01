@@ -42,7 +42,8 @@ window.TallerData.economy = {
         herramientas: 0,
         publicidad: 0,
         capacitacion: 0,
-        maquinaDiagnosis: false
+        maquinaDiagnosis: false,
+        autolavado: false
     },
     mejorasTacticasIniciales: {
         bateria: 0,

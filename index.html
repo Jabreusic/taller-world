@@ -305,9 +305,23 @@
             <button id="btn-tienda-capacitacion" class="btn" onclick="comprarMejora('capacitacion')">Capacitación</button>
         </details><details class="upgrade-shop-section"><summary><h4>Diagnóstico avanzado <span>▾</span></h4></summary>
             <button id="btn-tienda-maquina" class="btn" onclick="comprarMejora('maquina')">Máquina Diagnosis</button>
+        </details><details class="upgrade-shop-section"><summary><h4>Servicios al cliente</h4></summary>
+            <p class="shop-item-hint">Autolavado: bono al cobro · requiere Taller nivel 2 o 8 casos · RD$2800.</p>
+            <button id="btn-tienda-autolavado" class="btn" onclick="comprarMejoraAutolavado()">Desbloquear Autolavado</button>
         </details><div class="upgrade-shop-close">
             <button class="btn btn-danger" onclick="cerrarModal()">Cerrar</button>
         </div>
+    </div>
+</div>
+
+<div id="modal-tienda-autolavado" class="modal-overlay hidden">
+    <div class="modal-content">
+        <span class="close-btn" onclick="cerrarModal()">&times;</span>
+        <h3>SERVICIOS DEL TALLER</h3>
+        <div class="shopkeeper-header"><img src="img/personajes/vendedor-comida.png" alt="Encargado de servicios"><div><strong>Autolavado</strong><small>Mejora el acabado y agrega un bono al cobro.</small></div></div>
+        <p class="shop-item-hint">Se compra en Centro de Mejoras. Requiere Taller nivel 2 o 8 casos completados · RD$2800.</p>
+        <button class="btn" onclick="abrirModal('tienda')">Ir al Centro de Mejoras</button>
+        <button class="btn btn-danger" onclick="cerrarModal()">Cerrar</button>
     </div>
 </div>
 
