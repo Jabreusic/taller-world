@@ -1,0 +1,741 @@
+??<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0c1318">
+    <meta name="mobile-web-app-capable" content="yes">
+    <!-- <meta name="apple-mobile-web-app-capable" content="yes"> -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Taller World">
+    <title>TALLER WORLD: CR�NICAS DEL TALLER</title>
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="apple-touch-icon" href="img/icon/icon-180.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Teko:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/layout-shell.css">
+        <!-- XP HUD Cyberpunk -->
+        <link rel="stylesheet" href="css/modules/xp-hud.css">
+        <!-- Oficina Cards -->
+        <link rel="stylesheet" href="css/modules/oficina-cards.css">
+        <!-- Barras de estado animadas y sem�nticas -->
+        <link rel="stylesheet" href="css/modules/barra-estado.css">
+</head>
+<body>
+
+
+
+
+<div id="editor-personajes" class="menu-inicio hidden">
+    <h2>ESTUDIO DE PERSONAJES</h2>
+    <p>Crea al jugador principal, mec�nicos, clientes y el fondo del taller. Se guarda localmente en este navegador.</p>
+
+    <div class="creator-grid">
+        <section class="creator-card">
+            <h3>Jugador Principal</h3>
+            <label>Nombre</label>
+            <input id="cp-jugador-nombre" type="text" maxlength="30" placeholder="Ej: Ram�n" />
+            <label>Nombre del taller</label>
+            <input id="cp-taller-nombre" type="text" maxlength="40" placeholder="Ej: Taller La Esquina" />
+            <label>Historia</label>
+            <textarea id="cp-jugador-historia" maxlength="320" rows="4" placeholder="Historia corta del protagonista..."></textarea>
+            <label>Foto (URL)</label>
+            <input id="cp-jugador-foto" type="text" placeholder="https://..." />
+            <label>o subir foto</label>
+            <input id="cp-jugador-foto-file" type="file" accept="image/*" onchange="cargarImagenEnCampo('cp-jugador-foto-file','cp-jugador-foto','cp-jugador-preview')" />
+            <img id="cp-jugador-preview" class="creator-preview" alt="Vista jugador" />
+        </section>
+
+        <section class="creator-card">
+            <h3>Mec�nicos</h3>
+            <p class="creator-help">Edita nombre, historia y apariencia de cada mec�nico base.</p>
+            <div id="cp-mecanicos-wrap" class="creator-list"></div>
+        </section>
+
+        <section class="creator-card">
+            <h3>Clientes</h3>
+            <p class="creator-help">Estos nombres e historias se mezclan en los casos diarios.</p>
+            <div id="cp-clientes-wrap" class="creator-list"></div>
+        </section>
+
+        <section class="creator-card">
+            <h3>Fondo Del Taller</h3>
+            <label>URL de imagen de fondo</label>
+            <input id="cp-fondo-url" type="text" placeholder="https://..." />
+            <label>o subir imagen</label>
+            <input id="cp-fondo-file" type="file" accept="image/*" onchange="cargarImagenEnCampo('cp-fondo-file','cp-fondo-url','cp-fondo-preview')" />
+            <img id="cp-fondo-preview" class="creator-preview creator-preview-wide" alt="Vista fondo" />
+            <label>Descripci�n de ambiente</label>
+            <textarea id="cp-fondo-desc" maxlength="180" rows="3" placeholder="Ej: Taller antiguo con letrero de ne�n y aceite en el piso"></textarea>
+        </section>
+    </div>
+
+    <div class="creator-actions">
+        <button class="btn" onclick="guardarPerfilPersonajes()">Guardar Perfil</button>
+        <button class="btn" onclick="restablecerPerfilPersonajes()">Restablecer</button>
+        <button class="btn btn-danger" onclick="cerrarEditorPersonajes()">Volver Al Men�</button>
+    </div>
+    <p class="creator-help">Tip: tras guardar, inicia una partida nueva para aplicar todos los cambios narrativos.</p>
+</div>
+
+<div class="game-container" id="game">
+    <header id="hud-header-fixed" class="header header-live" aria-label="HUD del due�o">
+        <div class="hud-owner-pill">
+            <img id="hud-dueno-avatar" class="hud-owner-avatar" src="img/boss/boss.png" alt="Avatar del due�o" onerror="this.src='img/boss/boss.png'">
+            <div class="hud-owner-meta">
+                <span class="hud-owner-label">Due�o</span>
+                <strong id="hud-dueno-nombre">Due�o</strong>
+                <div id="hud-taller-nombre" class="hud-taller-nombre" style="font-size:0.95em;color:#ffe082;font-weight:500;line-height:1.1;">Taller World</div>
+            </div>
+            <div class="hud-top-chips">
+                <div class="hud-top-chip">
+                    <span class="hud-top-label">Caja</span>
+                    <strong id="hud-dinero">RD$0</strong>
+                </div>
+                <div class="hud-top-chip hud-top-chip-exp">
+                    <span class="hud-top-label">Casos</span>
+                    <strong id="hud-casos">0</strong>
+                </div>
+                <div class="hud-top-chip hud-top-chip-exp">
+                    <span class="hud-top-label">Racha</span>
+                    <strong id="hud-racha">0</strong>
+                </div>
+                <div class="hud-top-chip hud-top-chip-exp">
+                    <span class="hud-top-label">Nivel</span>
+                    <strong id="hud-nivel">1</strong>
+                    <div class="hud-exp-track" aria-hidden="true">
+                        <div id="hud-exp-fill" class="hud-exp-fill" style="width:0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <nav id="game-nav" class="game-nav" aria-label="Navegaci�n principal">
+        <button class="game-nav-btn active" data-screen="taller" onclick="navegarPantalla('taller')" title="Taller">
+            <span class="gnav-icon">??</span>
+            <span class="gnav-label">Taller</span>
+            <span id="taller-notif-nav" class="gnav-badge hidden">0</span>
+        </button>
+        <button class="game-nav-btn" data-screen="oficina" onclick="navegarPantalla('oficina')" title="Oficina">
+            <span class="gnav-icon">??</span>
+            <span class="gnav-label">Oficina</span>
+        </button>
+        <button class="game-nav-btn" data-screen="exterior" onclick="navegarPantalla('exterior')" title="Exterior">
+            <span class="gnav-icon">??</span>
+            <span class="gnav-label">Exterior</span>
+        </button>
+        <button class="game-nav-btn" data-screen="mapa" onclick="navegarPantalla('mapa')" title="Mapa">
+            <span class="gnav-icon">???</span>
+            <span class="gnav-label">Mapa</span>
+        </button>
+        <button class="game-nav-btn" data-screen="telefono" onclick="navegarPantalla('telefono')" title="Tel�fono">
+            <span class="gnav-icon">??</span>
+            <span class="gnav-label">Tel�fono</span>
+            <span id="tel-notif-nav" class="gnav-badge hidden">0</span>
+        </button>
+        <button class="game-nav-btn" data-screen="configuracion" onclick="navegarPantalla('configuracion')" title="Ajustes">
+            <span class="gnav-icon">??</span>
+            <span class="gnav-label">Ajustes</span>
+        </button>
+    </nav>
+    
+    <div id="pantalla-taller" class="fixed-workbench-layout">
+                                <!-- ================== PANTALLA PRINCIPAL: TALLER ================== -->
+<main id="screen-taller" class="screen-taller game-screen active" aria-label="Gesti�n de Taller">
+    <!-- ======= BARRA DE HERRAMIENTAS SUPERIOR ======= -->
+    <header class="toolbar-taller" aria-label="Barra de herramientas del taller">
+        <div class="toolbar-grid">
+            <!-- Mec�nicos disponibles -->
+            <section class="toolbar-mecanicos" aria-label="Mec�nicos disponibles">
+                <h2 class="toolbar-title">Mec�nicos</h2>
+                <div class="mecanicos-grid" id="mecanicos-grid"></div>
+            </section>
+            <!-- Estado r�pido del taller -->
+            <section class="toolbar-status" aria-label="Estado del taller">
+                <div class="status-badges">
+                    <div class="status-badge" title="Nivel del taller">
+                        <span class="badge-label">Nivel</span>
+                        <span class="badge-value gold" id="status-nivel">1</span>
+                    </div>
+                    <div class="status-badge" title="XP actual">
+                        <span class="badge-label">XP</span>
+                        <span class="badge-value neon" id="status-xp">0</span>
+                    </div>
+                    <div class="status-badge" title="Dinero disponible">
+                        <span class="badge-label">Caja</span>
+                        <span class="badge-value gold" id="status-caja">RD$0</span>
+                    </div>
+                </div>
+                <!-- Barra de progreso de casos -->
+                <div class="cases-progress" aria-label="Progreso de casos">
+                    <span class="cases-progress-label">Casos</span>
+                    <div class="cases-progress-bar" role="progressbar" aria-valuenow="0" aria-valuemax="10" id="cases-progress-bar">
+                        <div class="cases-progress-fill" id="cases-progress-fill" style="width:0%"></div>
+                    </div>
+                    <span class="cases-progress-count"><span id="cases-completed">0</span>/<span id="cases-goal">10</span></span>
+                </div>
+                <!-- Indicador de racha -->
+                <div class="streak-indicator" title="Racha de casos exitosos">
+                    <span class="streak-icon">??</span>
+                    <span class="streak-count" id="streak-count">0</span>
+                </div>
+            </section>
+            <!-- Acciones r�pidas -->
+            <nav class="toolbar-actions" aria-label="Acciones r�pidas">
+                <button class="toolbar-btn" id="btn-accion-1" title="Asignar mec�nico" aria-label="Asignar mec�nico">
+                    <span class="icon">?????</span>
+                </button>
+                <button class="toolbar-btn" id="btn-accion-2" title="Abrir tienda" aria-label="Abrir tienda">
+                    <span class="icon">??</span>
+                </button>
+                <button class="toolbar-btn" id="btn-accion-3" title="Ver historial" aria-label="Ver historial">
+                    <span class="icon">??</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- ======= GRID PRINCIPAL DEL TALLER ======= -->
+    <section class="taller-main-grid" style="display:grid;grid-template-areas:
+        'queue active repairs';
+        /* Eliminado nav del grid para evitar que la barra quede oculta */
+        " aria-label="Gesti�n de casos y reparaciones">
+        <!-- Columna izquierda: Cola de clientes -->
+        <aside class="taller-queue" style="grid-area:queue" aria-label="Cola de clientes">
+            <h3 class="section-title">Cola de Clientes</h3>
+            <div class="queue-list" id="queue-list"></div>
+        </aside>
+
+        <!-- Columna central: Caso activo -->
+        <section class="taller-active-case" style="grid-area:active" aria-label="Caso activo">
+            <h3 class="section-title">Caso Activo</h3>
+            <article class="active-case-card" id="active-case-card">
+                <header class="active-case-header">
+                    <span class="case-id" id="active-case-id">CASO-0000</span>
+                    <span class="case-client" id="active-case-client">Sin cliente</span>
+                    <span class="case-urgency" id="active-case-urgency"></span>
+                </header>
+                <div class="active-case-details">
+                    <div class="case-vehicle" id="active-case-vehicle">Veh�culo: -</div>
+                    <div class="case-status" id="active-case-status">Estado: -</div>
+                    <div class="case-reward">
+                        <span class="gold">?? <span id="active-case-reward">RD$0</span></span>
+                        <span>? <span id="active-case-difficulty">Sin riesgo</span></span>
+                    </div>
+                </div>
+                <div class="active-case-actions">
+                    <button class="btn expand-case-btn" id="expand-case-btn" title="Ver detalles del caso" aria-label="Ver detalles del caso">
+                        Expandir
+                    </button>
+                </div>
+            </article>
+        </section>
+
+        <!-- Columna derecha: Reparaciones en progreso -->
+        <aside class="taller-repairs" style="grid-area:repairs" aria-label="Reparaciones en progreso">
+            <h3 class="section-title">Reparaciones en Progreso</h3>
+            <div class="repairs-list" id="repairs-list"></div>
+        </aside>
+
+        <!-- Navegaci�n inferior fuera del grid para que siempre est� visible -->
+
+    </section>
+</main>
+        <main id="screen-oficina" class="screen-oficina game-screen" aria-label="Oficina"></main>
+        <main id="screen-exterior" class="screen-exterior game-screen" aria-label="Exterior"></main>
+        <main id="screen-mapa" class="screen-mapa game-screen" aria-label="Mapa"></main>
+        <main id="screen-telefono" class="screen-telefono game-screen" aria-label="Tel�fono"></main>
+        <main id="screen-configuracion" class="screen-configuracion game-screen" aria-label="Ajustes"></main>
+    </div><!-- /pantalla-taller -->
+</div>
+
+<!-- MODALES -->
+<div id="modal-tienda" class="modal-overlay hidden">
+    <div class="modal-content">
+        <span class="close-btn" onclick="cerrarModal()">&times;</span>
+        <h3>TIENDA DE MEJORAS</h3>
+        <p id="tienda-mejoras-estado" style="font-size:0.84rem; color:#d8cfb9; margin-top:0;">Invierte en tu taller.</p>
+        <div style="display:grid; gap:10px;">
+            <button id="btn-tienda-taller" class="btn" onclick="mejorarTaller()">Mejorar Taller (Nivel <span id="taller-nivel-actual">1</span> ? <span id="taller-nivel-siguiente">2</span>)</button>
+            <button id="btn-tienda-herramientas" class="btn" onclick="comprarMejora('herramientas')">Herramientas Pro</button>
+            <button id="btn-tienda-publicidad" class="btn" onclick="comprarMejora('publicidad')">Publicidad</button>
+            <button id="btn-tienda-capacitacion" class="btn" onclick="comprarMejora('capacitacion')">Capacitaci�n</button>
+            <button id="btn-tienda-maquina" class="btn" onclick="comprarMejora('maquina')">M�quina Diagnosis</button>
+            <button class="btn btn-danger" onclick="cerrarModal()">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<div id="modal-tienda-tactica" class="modal-overlay hidden">
+    <div class="modal-content">
+        <span class="close-btn" onclick="cerrarModal()">&times;</span>
+        <h3>TIENDA T�CTICA</h3>
+        <p id="tienda-tactica-estado" style="font-size:0.86rem; color:#d8cfb9; margin-top:0;">Mejoras para eficiencia en casos.</p>
+        <div style="display:grid; gap:10px;">
+            <button id="btn-tactica-bateria" class="btn" onclick="comprarMejoraTactica('bateria')">Bater�a de Energ�a</button>
+            <button id="btn-tactica-manual" class="btn" onclick="comprarMejoraTactica('manual_hablar')">Manual de Entrevista</button>
+            <button id="btn-tactica-scanner" class="btn" onclick="comprarMejoraTactica('scanner_dx')">Scanner OBD</button>
+            <button id="btn-tactica-flujo" class="btn" onclick="comprarMejoraTactica('flujo_reparacion')">Flujo de Reparaci�n</button>
+            <button id="btn-tactica-kit" class="btn" onclick="comprarMejoraTactica('kit_herramientas_pro')">Kit Profesional</button>
+            <button class="btn btn-danger" onclick="cerrarModal()">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<div id="modal-tirada" class="modal-overlay hidden">
+    <div class="modal-content">
+        <div class="tirada-wrap">
+            <div class="tirada-head">
+                <strong id="tirada-titulo">Tirada de Diagn�stico</strong><br>
+                <span id="tirada-subtitulo">Evaluando caso...</span>
+                <div id="tirada-objetivo" style="margin-top:4px; font-size:0.76rem; color:#d8c6a3;">Objetivo: resolver trabajo t�cnico.</div>
+            </div>
+            <div id="tirada-lane" class="tirada-lane">
+                <div id="tirada-ball" class="tirada-ball"></div>
+            </div>
+            <div id="tirada-atributos" class="tirada-stats">
+                <div class="tirada-stat">Velocidad: <span id="tirada-stat-velocidad">0%</span></div>
+                <div class="tirada-stat">Eficiencia: <span id="tirada-stat-eficiencia">0%</span></div>
+                <div class="tirada-stat">Humor: <span id="tirada-stat-humor">0/10</span></div>
+                <div class="tirada-stat">Factor Suerte: <span id="tirada-stat-suerte">0%</span></div>
+            </div>
+            <div id="tirada-resultado" class="tirada-footer">Preparando...</div>
+            <div class="tirada-controls">
+                <button id="tirada-btn-impulso" class="btn" type="button">Dar Impulso</button>
+                <button id="tirada-btn-continuar" class="btn" type="button" disabled>Continuar</button>
+            </div>
+            <div class="tirada-hint">Pulsa <strong>Espacio</strong> o <strong>Dar Impulso</strong> para ajustar trayectoria.</div>
+        </div>
+    </div>
+</div>
+
+<div id="modal-repuestos" class="modal-overlay hidden">
+    <div class="modal-content">
+        <span class="close-btn" onclick="cerrarModal()">&times;</span>
+        <h3>REPUESTOS "LA GR�A"</h3>
+        <p class="creator-help">Compra piezas para reforzar tus reparaciones. Una pieza instalada reduce riesgo y tiempo.</p>
+        <div id="repuestos-tabs" class="repuestos-tabs">
+            <button class="btn repuesto-tab active" onclick="filtrarRepuestos('todos')">Todos</button>
+            <button class="btn repuesto-tab" onclick="filtrarRepuestos('motor')">Motor</button>
+            <button class="btn repuesto-tab" onclick="filtrarRepuestos('transmision')">Trans.</button>
+            <button class="btn repuesto-tab" onclick="filtrarRepuestos('electricidad')">El�ctrico</button>
+            <button class="btn repuesto-tab" onclick="filtrarRepuestos('frenos')">Frenos</button>
+            <button class="btn repuesto-tab" onclick="filtrarRepuestos('suspension')">Susp.</button>
+            <button class="btn repuesto-tab" onclick="filtrarRepuestos('escape')">Escape</button>
+        </div>
+        <div id="repuestos-catalogo" class="repuestos-catalogo">Cargando cat�logo...</div>
+        <div class="repuestos-inventario-label"><strong>Tu inventario</strong></div>
+        <div id="repuestos-inventario" class="repuestos-inventario">Sin piezas en inventario.</div>
+        <button class="btn btn-danger" style="margin-top:10px;" onclick="cerrarModal()">Cerrar</button>
+    </div>
+</div>
+
+<div id="modal-comida" class="modal-overlay hidden">
+    <div class="modal-content">
+        <span class="close-btn" onclick="cerrarModal()">&times;</span>
+        <h3>CAFET�N DE LA ESQUINA</h3>
+        <p class="creator-help">Pide algo r�pido para mejorar el humor del equipo.</p>
+        <div style="display:grid; gap:10px;">
+            <button class="btn" onclick="comprarCafe()">Caf� para todos | RD$150 | +1 humor equipo</button>
+            <button class="btn" onclick="comprarPizza()">Pizza | RD$320 | +2 humor, recupera energ�a</button>
+            <button class="btn" onclick="comprarLicuado()">Licuado | RD$180 | +1 humor, reduce enojo</button>
+            <button class="btn btn-danger" onclick="cerrarModal()">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<div id="modal-inversiones" class="modal-overlay hidden">
+    <div class="modal-content">
+        <span class="close-btn" onclick="cerrarModal()">&times;</span>
+        <h3>INVERSIONES</h3>
+        <p class="creator-help">Invierte tu dinero en propiedades y negocios. El retorno se entrega cada 12 casos.</p>
+        <div id="inversiones-lista" style="display:grid; gap:10px;">
+            <!-- Opciones de inversi�n se llenan por JS -->
+        </div>
+        <button class="btn btn-danger" onclick="cerrarModal()">Cerrar</button>
+    </div>
+</div>
+
+<div id="modal-mecanicos" class="modal-overlay hidden">
+    <div class="modal-content">
+        <span class="close-btn" onclick="cerrarModal()">&times;</span>
+        <h3>�REA DE MEC�NICOS</h3>
+        <p>El trabajo se pausa mientras revisas al equipo.</p>
+        <div id="mecanicos-lore"></div>
+        <button class="btn btn-danger" onclick="cerrarModal()">Cerrar</button>
+    </div>
+</div>
+
+<div id="modal-equipo-of" class="modal-overlay hidden">
+    <div class="modal-content modal-equipo-of-content">
+        <span class="close-btn" onclick="cerrarModal()">&times;</span>
+        <h3>GESTI�N DE EQUIPO</h3>
+        <div id="equipo-of-resumen" class="equipo-of-resumen"></div>
+        <div id="equipo-of-lista" class="equipo-of-lista"></div>
+        <button class="btn btn-danger" style="margin-top:12px;" onclick="cerrarModal()">Cerrar</button>
+    </div>
+</div>
+
+<div id="modal-contratar" class="modal-overlay hidden">
+    <div class="modal-content">
+        <span class="close-btn" onclick="cerrarModal()">&times;</span>
+        <h3>CONTRATAR MEC�NICOS</h3>
+        <p>Ampl�a tu equipo seg�n tu flujo de casos y presupuesto.</p>
+        <div id="lista-contrataciones"></div>
+        <button class="btn btn-danger" onclick="cerrarModal()">Cerrar</button>
+    </div>
+</div>
+
+<div id="modal-decision" class="modal-overlay hidden">
+    <div class="modal-content">
+        <h3 id="decision-titulo">Decisi�n</h3>
+        <p id="decision-texto"></p>
+        <div style="display:grid; gap:10px;">
+            <button class="btn" id="decision-opcion-a">Opci�n A</button>
+            <button class="btn btn-danger" id="decision-opcion-b">Opci�n B</button>
+        </div>
+    </div>
+</div>
+
+<div id="modal-ayuda" class="modal-overlay hidden">
+    <div class="modal-content">
+        <span class="close-btn" onclick="cerrarModal()">&times;</span>
+        <h3>GU�A R�PIDA</h3>
+        <p>1) Los clientes llegan autom�ticamente a la cola. Ati�ndelos antes de que se impacienten.</p>
+        <p>2) Usa "Hablar Cliente" para escuchar su versi�n (algunos explican mal).</p>
+        <p>3) Asigna el caso a un mec�nico disponible para iniciar diagn�stico y reparaci�n.</p>
+        <p>4) Cada caso completado suma experiencia, dinero y reputaci�n.</p>
+        <p>5) La racha de casos exitosos mejora la moral del equipo.</p>
+        <p>6) Invierte en mejoras para desbloquear m�s espacios y mec�nicos.</p>
+        <p>7) Cada 12 casos, recibe retorno de tus inversiones.</p>
+        <p>8) El objetivo: pagar la deuda de RD$100,000 antes de que llegue el juicio.</p>
+        <button class="btn btn-danger" onclick="cerrarModal()">Cerrar</button>
+    </div>
+</div>
+
+<div id="modal-historia-dia" class="modal-overlay hidden">
+    <div class="modal-content">
+        <span class="close-btn" onclick="cerrarModal()">&times;</span>
+        <h3 id="historia-dia-titulo">Narrativa del Taller</h3>
+        <p id="historia-dia-meta" class="tel-sidebar-stats">Sin progreso narrativo.</p>
+        <div id="historia-dia-texto">Sin historia cargada.</div>
+        <button class="btn" onclick="cerrarModal()">Entendido</button>
+    </div>
+</div>
+
+<div id="modal-resultado-reparacion" class="modal-overlay hidden">
+    <div class="modal-content modal-resultado-reparacion-content">
+        <span class="close-btn" onclick="cerrarModal()">&times;</span>
+        <div class="resultado-rep-layout">
+            <section class="resultado-rep-zone resultado-rep-zone-caso">
+                <div class="resultado-rep-zone-label">Resultado del caso</div>
+                <div id="resultado-rep-estado" class="resultado-rep-estado">PENDIENTE</div>
+                <h3 id="resultado-rep-titulo">Resultado reparaci�n</h3>
+                <p id="resultado-rep-meta">Sin caso cargado.</p>
+                <div class="resultado-rep-mecanico">
+                    <img id="resultado-rep-mec-avatar" class="resultado-rep-mec-avatar hidden" src="" alt="Avatar mec�nico" onerror="this.classList.add('hidden'); var fb=document.getElementById('resultado-rep-mec-avatar-fallback'); if(fb){fb.classList.remove('hidden');}">
+                    <div id="resultado-rep-mec-avatar-fallback" class="resultado-rep-mec-avatar-fallback">M</div>
+                    <div class="resultado-rep-mec-copy">
+                        <small>Mec�nico responsable</small>
+                        <strong id="resultado-rep-mec-nombre">-</strong>
+                    </div>
+                </div>
+            </section>
+
+            <section class="resultado-rep-zone resultado-rep-zone-mecanica">
+                <div class="resultado-rep-zone-label">Qu� pas� mec�nicamente</div>
+                <p id="resultado-rep-detalle">Sin detalle t�cnico.</p>
+                <p id="resultado-rep-mecanica-extra" class="resultado-rep-muted">Sin m�tricas adicionales.</p>
+            </section>
+
+            <section class="resultado-rep-zone resultado-rep-zone-dinero">
+                <div class="resultado-rep-zone-label">Dinero ganado</div>
+                <div id="resultado-rep-money" class="resultado-rep-money">Cobro: RD$0</div>
+                <p id="resultado-rep-breakdown" class="resultado-rep-muted">Costo pieza + ganancia: RD$0 + RD$0 = RD$0</p>
+                <p id="resultado-rep-money-extra" class="resultado-rep-muted">Balance econ�mico pendiente.</p>
+            </section>
+
+            <section class="resultado-rep-zone resultado-rep-zone-accion">
+                <div class="resultado-rep-zone-label">Acci�n final</div>
+                <p id="resultado-rep-accion" class="resultado-rep-muted">Confirma para cerrar el caso y registrar el resultado.</p>
+                <div class="resultado-rep-actions">
+                    <button id="resultado-rep-wa" class="btn">Cobrar y cerrar caso</button>
+                    <button class="btn btn-danger" onclick="cerrarModal()">Cerrar</button>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+<div id="modal-dx-fallo" class="modal-overlay hidden">
+    <div class="modal-content modal-dx-fallo-content">
+        <span class="close-btn" onclick="cerrarModal()">&times;</span>
+        <h3 id="dx-fallo-titulo">Diagn�stico rechazado</h3>
+        <div class="dx-fallo-estado">RECHAZADO</div>
+        <p id="dx-fallo-meta">Sin datos del caso.</p>
+        <div class="dx-fallo-box">
+            <strong>Motivos detectados</strong>
+            <ul id="dx-fallo-lista" class="dx-fallo-lista">
+                <li>Sin detalle disponible.</li>
+            </ul>
+        </div>
+        <p id="dx-fallo-recomendacion" class="dx-fallo-recomendacion">Sugerencia: revisa entrevistas antes de reintentar.</p>
+        <button class="btn btn-danger" onclick="cerrarModal()">Entendido</button>
+    </div>
+</div>
+
+<div id="modal-cliente" class="modal-overlay hidden">
+    <div class="modal-content">
+        <span class="close-btn" onclick="cerrarModal()">&times;</span>
+        <h3>DECLARACI�N DEL CLIENTE</h3>
+        <p id="cliente-explicacion-texto">Sin cliente activo.</p>
+        <div id="cliente-explicacion-meta" style="font-size:0.85rem; color:#d7c29a;"></div>
+        <button class="btn btn-danger" onclick="cerrarModal()">Cerrar</button>
+    </div>
+</div>
+
+<div id="modal-banco" class="modal-overlay hidden">
+    <div class="modal-content modal-banco-content">
+        <span class="close-btn" onclick="cerrarModal()">&times;</span>
+        <div class="modal-banco">
+            <div class="banco-header">
+                <img id="banco-gerente-avatar" src="img/personajes/gerente-banco.png" class="avatar-gerente" alt="Sr. Abreu, gerente de Banco Confianza" onerror="this.onerror=null; this.src='img/personajes/gerente-banco.png';">
+                <div class="gerente-info">
+                    <strong id="banco-gerente-nombre">Sr. Abreu</strong>
+                    <span id="banco-gerente-cargo">Banco Confianza</span>
+                    <small id="banco-evento-tipo" class="banco-evento-tag">Revisi�n financiera</small>
+                </div>
+            </div>
+
+            <div class="banco-dialogo">
+                <p id="texto-gerente">Un negocio en crecimiento siempre necesita respaldo financiero.</p>
+            </div>
+
+            <div class="banco-resumen-grid">
+                <div class="banco-mini-stat">
+                    <span>Deuda viva</span>
+                    <strong id="banco-deuda">RD$ 100,000</strong>
+                </div>
+                <div class="banco-mini-stat">
+                    <span>Disponible</span>
+                    <strong id="banco-disponible">RD$ 6,000</strong>
+                </div>
+                <div class="banco-mini-stat">
+                    <span>Casos sin pago</span>
+                    <strong id="banco-mora-casos">0/4</strong>
+                </div>
+            </div>
+
+            <div class="banco-barras">
+                <div class="banco-bar-box">
+                    <div class="banco-bar-head">
+                        <span>L�nea usada</span>
+                        <strong id="banco-credito-label">0%</strong>
+                    </div>
+                    <div class="bank-progress-track">
+                        <div id="banco-credito-fill" class="bank-progress-fill"></div>
+                    </div>
+                </div>
+                <div class="banco-bar-box">
+                    <div class="banco-bar-head">
+                        <span>Presi�n mora</span>
+                        <strong id="banco-mora-label">0/4</strong>
+                    </div>
+                    <div class="bank-progress-track">
+                        <div id="banco-mora-fill" class="bank-progress-fill"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="banco-info-extra">
+                <p id="banco-info-refinanciacion">Refinanciar reduce presi�n inmediata, pero agrega cargos a la deuda.</p>
+                <p id="banco-info-recomendacion">Estado: sin alertas financieras.</p>
+            </div>
+
+            <div id="banco-opciones-dinamicas" class="banco-opciones"></div>
+
+            <div class="banco-opciones banco-opciones-cierre">
+                <button class="btn btn-secundario" onclick="resolverAccionModalBanco('cerrar_conversacion')">Cerrar conversaci�n</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modal-opciones" class="modal-overlay hidden">
+    <div class="modal-content">
+        <span class="close-btn" onclick="cerrarModal()">&times;</span>
+        <h3>OPCIONES</h3>
+        <div class="opciones-grid">
+            <label><input id="opcion-musica" type="checkbox" checked> M�sica de fondo</label>
+            <label><input id="opcion-efectos" type="checkbox" checked> Efectos de sonido</label>
+            <label><input id="opcion-notificaciones" type="checkbox" checked> Notificaciones</label>
+            <label><input id="opcion-autoavance" type="checkbox" checked> Auto-avance de tiempo</label>
+            <button class="btn" onclick="guardarOpciones()">Guardar Opciones</button>
+            <button class="btn" onclick="abrirModal('editor-ui')">Editor de interfaz</button>
+        </div>
+    </div>
+</div>
+
+<div id="modal-editor-ui" class="modal-overlay hidden">
+    <div class="modal-content modal-editor-ui-content">
+        <span class="close-btn" onclick="cerrarModal()">&times;</span>
+        <h3>EDITOR DE INTERFAZ</h3>
+        <p class="creator-help">Ajusta la interfaz a tu gusto.</p>
+        <div class="ui-editor-grid">
+            <div class="ui-editor-row">
+                <label for="ui-cola-ancho">Ancho cola clientes</label>
+                <input id="ui-cola-ancho" type="range" min="180" max="420" step="5" value="260" oninput="actualizarVistaEditorInterfaz()">
+                <span id="ui-cola-ancho-valor" class="ui-editor-value">260px</span>
+            </div>
+            <div class="ui-editor-row">
+                <label for="ui-fila-mecanicos-alto">Alto fila mec�nicos</label>
+                <input id="ui-fila-mecanicos-alto" type="range" min="86" max="220" step="2" value="132" oninput="actualizarVistaEditorInterfaz()">
+                <span id="ui-fila-mecanicos-alto-valor" class="ui-editor-value">132px</span>
+            </div>
+            <div class="ui-editor-row">
+                <label for="ui-dock-alto">Alto panel inferior</label>
+                <input id="ui-dock-alto" type="range" min="150" max="320" step="2" value="228" oninput="actualizarVistaEditorInterfaz()">
+                <span id="ui-dock-alto-valor" class="ui-editor-value">228px</span>
+            </div>
+            <div class="ui-editor-row">
+                <label for="ui-gap-general">Espacio entre paneles</label>
+                <input id="ui-gap-general" type="range" min="4" max="24" step="1" value="12" oninput="actualizarVistaEditorInterfaz()">
+                <span id="ui-gap-general-valor" class="ui-editor-value">12px</span>
+            </div>
+            <div class="ui-editor-row ui-editor-row-check">
+                <label><input id="ui-cola-derecha" type="checkbox" onchange="actualizarVistaEditorInterfaz()"> Poner cola de clientes a la derecha</label>
+            </div>
+        </div>
+        <div class="ui-editor-actions">
+            <button class="btn" onclick="guardarEditorInterfaz()">Guardar</button>
+            <button class="btn" onclick="resetearEditorInterfaz()">Restablecer</button>
+            <button class="btn btn-danger" onclick="cerrarModal()">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<div id="modal-pausa" class="modal-overlay hidden">
+    <div class="modal-content">
+        <h3>?? MEN� DE PAUSA</h3>
+        <div class="menu-pausa-grid">
+            <button class="btn" onclick="reanudarJuego()">Reanudar</button>
+            <button class="btn" onclick="guardarPartida()">Guardar Partida</button>
+            <button class="btn" onclick="cargarPartida()">Cargar Partida</button>
+            <button class="btn" onclick="abrirModal('opciones')">Opciones</button>
+            <button class="btn" onclick="abrirModal('editor-ui')">Editor de interfaz</button>
+            <button class="btn" onclick="abrirModal('ayuda')">C�mo Jugar</button>
+            <button class="btn btn-danger" onclick="salirAlMenuInicio()">Salir Al Men�</button>
+        </div>
+    </div>
+</div>
+
+<div id="modal-historial" class="modal-overlay hidden">
+    <div class="modal-content">
+        <span class="close-btn" onclick="cerrarModal()">&times;</span>
+        <h3>HISTORIAL RECIENTE</h3>
+        <div class="log-area" id="log"></div>
+        <button class="btn btn-danger" onclick="cerrarModal()">Cerrar</button>
+    </div>
+</div>
+
+<!-- Pantalla final -->
+<div id="pantalla-final" class="modal-overlay hidden">
+    <div class="modal-content modal-final-content">
+        <div class="final-hero-band">
+            <span class="final-kicker">CIERRE DEL TALLER</span>
+            <span id="final-tone-pill" class="final-tone-pill">Veredicto</span>
+        </div>
+        <h2 id="final-titulo" class="final-title"></h2>
+        <p id="final-desc" class="final-desc"></p>
+        <div class="final-stats" aria-label="Resumen final de la partida">
+            <article class="final-stat-card">
+                <span class="final-stat-label">Deuda</span>
+                <strong id="final-stat-deuda" class="final-stat-value">RD$0</strong>
+            </article>
+            <article class="final-stat-card">
+                <span class="final-stat-label">Caja</span>
+                <strong id="final-stat-saldo" class="final-stat-value">RD$0</strong>
+            </article>
+            <article class="final-stat-card">
+                <span class="final-stat-label">Reputacion</span>
+                <strong id="final-stat-reputacion" class="final-stat-value">0</strong>
+            </article>
+            <article class="final-stat-card">
+                <span class="final-stat-label">Equipo</span>
+                <strong id="final-stat-equipo" class="final-stat-value">0</strong>
+            </article>
+            <article class="final-stat-card">
+                <span class="final-stat-label">Nivel taller</span>
+                <strong id="final-stat-taller" class="final-stat-value">1</strong>
+            </article>
+            <article class="final-stat-card">
+                <span class="final-stat-label">Casos cerrados</span>
+                <strong id="final-stat-casos" class="final-stat-value">0</strong>
+            </article>
+        </div>
+        <div class="final-actions">
+            <button class="btn final-restart-btn" onclick="location.reload()">Jugar de nuevo</button>
+        </div>
+    </div>
+</div>
+
+<div class="stamp-overlay">
+    <div id="stamp-note" class="stamp-note">CASO CERRADO</div>
+</div>
+
+<!-- Scripts -->
+
+<script src="js/data/team-data.js"></script>
+
+<script src="js/data/narrative-data.js"></script>
+
+<script src="js/data/client-data.js"></script>
+
+<script src="js/data/economy-data.js"></script>
+
+<script src="js/data/custom-content.js"></script>
+
+<script src="js/data/turn-costs.js"></script>
+
+<script src="js/state.js"></script>
+
+<!-- Pantallas del juego -->
+
+<script src="js/screens/screen-taller.js"></script>
+
+<script src="js/screens/screen-oficina.js"></script>
+
+<script src="js/screens/screen-exterior.js"></script>
+
+<script src="js/screens/screen-mapa.js"></script>
+
+<script src="js/screens/screen-telefono.js"></script>
+
+<script src="js/screens/screen-configuracion.js"></script>
+
+<script src="js/screens/loader.js"></script>
+
+<script src="js/turns.js"></script>
+
+<script src="js/ui.js"></script>
+
+<script src="js/clients.js"></script>
+
+<script src="js/team.js"></script>
+
+<script src="js/game.js"></script>
+
+<script src="js/pwa.js"></script>
+
+<script src="js/character-creator.js"></script>
+
+<!-- Scripts principales -->
+
+<script src="js/ui/xp-hud.js"></script>
+
+</body>
+
+</html>

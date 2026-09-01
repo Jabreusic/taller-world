@@ -1,0 +1,24 @@
+<!--
+  Componente de experiencia (XP/Level) para Taller World
+  Estilo cyberpunk/industrial, responsive y accesible
+-->
+<section class="xp-hud" aria-label="Progreso de experiencia">
+  <div class="xp-level-badge" id="xp-level-badge">
+    <span class="xp-level-label">Nivel</span>
+    <span class="xp-level-num" id="xp-level-num">1</span>
+  </div>
+  <div class="xp-progress-area">
+    <div class="xp-progress-bar" id="xp-progress-bar" aria-hidden="true">
+      <div class="xp-progress-fill" id="xp-progress-fill" style="width:0%"></div>
+      <div class="xp-progress-glow" id="xp-progress-glow"></div>
+    </div>
+    <div class="xp-numbers">
+      <span id="xp-current">0</span>/<span id="xp-needed">120</span> <span class="xp-xp-label">XP</span>
+    </div>
+  </div>
+  <div class="xp-tooltip" id="xp-tooltip" role="tooltip" hidden>
+    <div class="xp-tooltip-row"><strong>Progreso:</strong> <span id="xp-tooltip-percent">0%</span></div>
+    <div class="xp-tooltip-row"><strong>XP restante:</strong> <span id="xp-tooltip-remaining">120</span></div>
+    <div class="xp-tooltip-row"><strong>Bonus racha:</strong> <span id="xp-tooltip-streak">0%</span></div>
+  </div>
+</section>

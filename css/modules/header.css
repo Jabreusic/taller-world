@@ -1,0 +1,43 @@
+/* Estilos del header y HUD */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    background: #262b24;
+    padding: 10px 12px;
+    border-radius: 6px;
+    border: 1px solid #735738;
+}
+.header h1 {
+    margin: 0;
+    color: #e3bf79;
+    font-size: 1.15rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-shadow: none;
+}
+.hud-sticky {
+    position: sticky;
+    top: 0;
+    z-index: 90;
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 6px;
+    background: rgba(14, 18, 15, 0.95);
+    border: 1px solid #7b5d3c;
+    border-radius: 6px;
+    padding: 6px;
+    margin-bottom: 8px;
+    backdrop-filter: blur(2px);
+}
+.hud-chip {
+    text-align: center;
+    font-size: 0.75rem;
+    color: #e6d3ad;
+    border: 1px solid #604a30;
+    border-radius: 4px;
+    background: #151d16;
+    padding: 4px 2px;
+    white-space: nowrap;
+}

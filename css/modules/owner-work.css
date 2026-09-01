@@ -1,0 +1,20 @@
+.inspection-economy { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; margin:9px 0; }
+.inspection-economy span { padding:7px; border:1px solid #294852; border-radius:6px; background:#0c1a20; color:#9ebbc0; font-size:.65rem; }
+.inspection-economy strong { display:block; margin-top:2px; color:#e9eee9; }
+.inspection-economy .is-profit strong { color:#81d6a0; }
+.inspection-economy .is-loss strong { color:#ff8f80; }
+.owner-workbench-lock { padding:14px; border:1px solid #a77734; border-radius:10px; background:linear-gradient(145deg,#14272b,#0d191f); }
+.owner-workbench-lock h3 { margin:7px 0; color:#f3c767; }
+.owner-work-status { display:flex; justify-content:space-between; gap:8px; margin:12px 0 6px; color:#c8d9d6; font-size:.72rem; }
+.owner-work-actions,.owner-challenge-options { display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-top:12px; }
+.owner-challenge { color:#dbe6e2; }
+.owner-challenge h2 { color:#f0c76b; }
+.manual-taller-list { display:grid; gap:7px; max-height:56vh; overflow-y:auto; margin:10px 0; }
+.manual-taller-row { display:grid; gap:3px; padding:9px; border:1px solid #304d55; border-radius:7px; background:#102127; color:#bfd2d0; font-size:.7rem; }
+.manual-taller-row strong { color:#efc56b; }
+.manual-taller-row small { color:#88aeb5; }
+@media (max-width:700px) {
+  .owner-work-actions,.owner-challenge-options { grid-template-columns:1fr; }
+  .inspection-assignment-grid { grid-template-columns:1fr !important; }
+  .manual-taller-list { max-height:52dvh; }
+}

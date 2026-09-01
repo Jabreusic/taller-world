@@ -1,0 +1,223 @@
+/* Tarjetas y paneles para la Oficina (Dashboard) */
+
+.of-card {
+  border: 1px solid var(--shell-card-line, #2f4350);
+  border-radius: 14px;
+  background: var(--shell-card-bg, linear-gradient(180deg, rgba(13,19,24,0.94), rgba(9,14,18,0.97)));
+  box-shadow: 0 4px 18px rgba(0,0,0,0.10);
+  margin-bottom: 14px;
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.of-card-header {
+  font-family: var(--garage-display, inherit);
+  font-size: 1.13rem;
+  font-weight: bold;
+  color: #e3bf79;
+  margin-bottom: 4px;
+  letter-spacing: 0.04em;
+}
+
+.of-card-body {
+  font-size: 1rem;
+  color: #e7e2d0;
+}
+
+.of-finanzas-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.of-finanzas-label {
+  font-weight: 500;
+  color: #b7c7d0;
+  margin-right: 6px;
+}
+
+.of-finanzas-ingreso {
+  color: #3fd47a;
+  font-weight: bold;
+}
+
+.of-finanzas-gasto {
+  color: #e05a5a;
+  font-weight: bold;
+}
+
+.of-finanzas-balance {
+  font-weight: bold;
+  font-size: 1.08em;
+}
+
+.of-finanzas-balance.is-danger {
+  color: #e05a5a;
+}
+
+.of-finanzas-balance.is-success {
+  color: #3fd47a;
+}
+
+.of-facturas-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 6px 0;
+}
+
+.of-facturas-panels {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.of-factura-panel {
+  padding: 12px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.of-factura-panel.is-gastos {
+  box-shadow: inset 0 0 0 1px rgba(224, 90, 90, 0.08);
+}
+
+.of-factura-panel.is-ingresos {
+  box-shadow: inset 0 0 0 1px rgba(63, 212, 122, 0.08);
+}
+
+.of-factura-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.of-factura-row:last-child {
+  border-bottom: 0;
+}
+
+.of-factura-label {
+  font-weight: 500;
+  color: #b7c7d0;
+}
+
+.of-factura-vacio {
+  color: #8e9ba2;
+  font-style: italic;
+  margin-bottom: 4px;
+}
+
+.of-card-equipo-resumen {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+
+.of-team-salary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
+  gap: 10px;
+}
+
+.of-team-salary-card {
+  padding: 12px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(8,14,18,0.88), rgba(12,20,25,0.94));
+  border: 1px solid rgba(72, 101, 116, 0.36);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.of-team-salary-top,
+.of-team-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.of-team-name {
+  color: #edf1e2;
+  font-size: 0.98rem;
+}
+
+.of-team-level,
+.of-team-meta-label {
+  color: #94a2aa;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.of-team-salary-pay {
+  color: #f2d08b;
+  font-family: var(--garage-display, inherit);
+  font-size: 1.45rem;
+  line-height: 1;
+}
+
+.of-team-mood {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 74px;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.82rem;
+}
+
+.of-team-mood.is-good {
+  color: #c9f2d4;
+  background: rgba(63, 212, 122, 0.12);
+  border: 1px solid rgba(63, 212, 122, 0.24);
+}
+
+.of-team-mood.is-mid {
+  color: #f3dfaa;
+  background: rgba(227, 191, 121, 0.12);
+  border: 1px solid rgba(227, 191, 121, 0.24);
+}
+
+.of-team-mood.is-low {
+  color: #ffd0d0;
+  background: rgba(224, 90, 90, 0.14);
+  border: 1px solid rgba(224, 90, 90, 0.24);
+}
+
+@media (max-width: 700px) {
+  .of-facturas-panels {
+    grid-template-columns: 1fr;
+  }
+  .of-card {
+    padding: 10px 8px;
+    margin-bottom: 10px;
+  }
+  .of-card-header {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .of-card {
+    padding: 8px 6px;
+    margin-bottom: 8px;
+    border-radius: 10px;
+  }
+  .of-card-header {
+    font-size: 0.95rem;
+  }
+  .of-card-body {
+    font-size: 0.9rem;
+  }
+  .of-finanzas-label {
+    font-size: 0.82rem;
+  }
+}

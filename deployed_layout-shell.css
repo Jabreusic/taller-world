@@ -1,0 +1,3750 @@
+/*
+⚠ IMPORTANTE
+
+El diseno del juego fue construido con enfoque MOBILE FIRST.
+La interfaz en telefono funciona correctamente y NO debe ser modificada.
+
+Cualquier mejora visual para PC debe implementarse exclusivamente
+dentro de media queries para pantallas grandes.
+
+No modificar tamanos, estructura ni flujo del layout movil.
+
+El objetivo es EXPANDIR la interfaz en PC, no alterar la version movil.
+*/
+
+/* ======================================================
+   REESTRUCTURA VISUAL 2026 - SHELL GENERAL DEL JUEGO
+   ====================================================== */
+
+:root {
+    --shell-gap: 12px;
+    --shell-card-bg: linear-gradient(180deg, rgba(13, 19, 24, 0.94), rgba(9, 14, 18, 0.97));
+    --shell-card-line: #2f4350;
+    --shell-card-line-soft: #21323c;
+}
+
+#screen-taller.active .lane-cola .queue-box,
+#screen-taller.active .lane-cola .dispatch-box,
+#screen-taller.active .lane-mecanicos .reparaciones-box {
+    padding: 10px;
+}
+
+#screen-taller.active .workbench-layout {
+    grid-template-areas:
+        'cola'
+        'mecanicos' !important;
+    grid-template-rows: auto minmax(0, 1fr) !important;
+}
+
+/* ======================================================
+    BASE UNIVERSAL: PANTALLAS VISIBLES / OCULTAS
+    ====================================================== */
+
+.game-screen {
+    display: none;
+    width: 100%;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-gutter: stable;
+    box-sizing: border-box;
+}
+
+.game-screen.active {
+    display: flex;
+    flex-direction: column;
+}
+
+#screen-taller.active {
+    overflow: hidden;
+}
+
+/* Lane-caso oculto fuera del taller actual */
+#screen-exterior .lane-caso {
+    display: none !important;
+}
+
+#screen-taller.active .lane-caso,
+#screen-taller.active .lane-trabajos {
+    display: grid !important;
+}
+
+/* Modo Cola: ocultar caso y trabajos */
+#screen-taller.active .workbench-layout.modo-cola .lane-caso,
+#screen-taller.active .workbench-layout.modo-cola .lane-trabajos {
+    display: none !important;
+}
+
+/* Modo Mi Puesto: ocultar cola y trabajos */
+#screen-taller.active .workbench-layout.modo-mi-puesto .lane-cola,
+#screen-taller.active .workbench-layout.modo-mi-puesto .lane-trabajos {
+    display: none !important;
+}
+
+/* Modo Trabajos: ocultar cola y caso */
+#screen-taller.active .workbench-layout.modo-trabajos .lane-cola,
+#screen-taller.active .workbench-layout.modo-trabajos .lane-caso {
+    display: none !important;
+}
+
+#screen-taller.active .taller-puesto-switch {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-start;
+}
+
+#screen-taller.active .taller-puesto-tabs {
+    grid-template-columns: repeat(2, minmax(0, max-content));
+    gap: 8px;
+}
+
+#screen-taller.active .owner-workbench-card {
+    min-height: 100%;
+}
+
+/* ======================================================
+   OFICINA RESPONSIVE (MEJORADA)
+   ====================================================== */
+
+#screen-oficina.active .of-layout {
+    padding: clamp(8px, 1.5vw, 16px);
+    gap: clamp(8px, 1.2vw, 14px);
+}
+
+#screen-oficina.active .of-topbar {
+    display: grid;
+    grid-template-columns: minmax(220px, auto) 1fr;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+}
+
+#screen-oficina.active .of-topbar-chips {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+    gap: 8px;
+}
+
+#screen-oficina.active .of-body {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: clamp(8px, 1.2vw, 14px);
+}
+
+#screen-oficina.active .of-card {
+    min-height: 0;
+}
+
+#screen-oficina.active .of-actions-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+#screen-oficina.active .of-actions-grid .btn,
+#screen-oficina.active .of-quick-row .btn {
+    min-height: 34px;
+}
+
+@media (max-width: 1200px) {
+    #screen-oficina.active .of-topbar {
+        grid-template-columns: 1fr;
+    }
+
+    #screen-oficina.active .of-topbar-chips {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    #screen-oficina.active .of-body {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    #screen-oficina.active .of-col-center {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 820px) {
+    #screen-oficina.active .of-layout {
+        padding: 8px;
+    }
+
+    #screen-oficina.active .of-player-band {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    #screen-oficina.active .of-topbar-chips {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    #screen-oficina.active .of-body {
+        grid-template-columns: 1fr;
+    }
+
+    #screen-oficina.active .of-col-center {
+        grid-column: auto;
+    }
+
+    #screen-oficina.active .of-actions-grid,
+    #screen-oficina.active .of-mejoras-grid {
+        grid-template-columns: 1fr;
+    }
+
+    #screen-oficina.active .of-card {
+        padding: 10px;
+    }
+}
+
+/* Modal de diagnostico en Oficina */
+.modal-oficina-dx-content {
+    width: min(94vw, 980px);
+    max-height: min(88svh, 820px);
+    overflow: auto;
+}
+
+.ofdx-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 1.1fr 0.9fr;
+    gap: 10px;
+}
+
+.ofdx-card {
+    border: 1px solid #3c4f58;
+    border-radius: 10px;
+    background: rgba(9, 15, 19, 0.7);
+    padding: 10px;
+    display: grid;
+    gap: 8px;
+    align-content: start;
+}
+
+#ofdx-caso-card.ofdx-highlight {
+    border-color: #d6a55f;
+    box-shadow: 0 0 0 1px rgba(214, 165, 95, 0.55), 0 0 18px rgba(214, 165, 95, 0.28);
+    animation: ofdxPulse 1.2s ease;
+}
+
+@keyframes ofdxPulse {
+    0% {
+        transform: translateY(1px) scale(0.995);
+        filter: saturate(1.25);
+    }
+    100% {
+        transform: translateY(0) scale(1);
+        filter: saturate(1);
+    }
+}
+
+.ofdx-card strong {
+    color: #f3ca87;
+    letter-spacing: 0.04em;
+}
+
+.ofdx-readout {
+    font-size: 0.78rem;
+    line-height: 1.45;
+    color: #d8cfb9;
+}
+
+.ofdx-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+}
+
+.ofdx-actions .btn {
+    min-height: 34px;
+    font-size: 0.72rem;
+}
+
+.ofdx-opciones {
+    display: grid;
+    gap: 6px;
+}
+
+.ofdx-cola-lista {
+    display: grid;
+    gap: 6px;
+    max-height: 28svh;
+    overflow: auto;
+}
+
+.ofdx-atendidos-lista {
+    display: grid;
+    gap: 6px;
+    max-height: 28svh;
+    overflow: auto;
+}
+
+.ofdx-cola-item {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 6px;
+    align-items: center;
+    border: 1px solid #32444c;
+    border-radius: 8px;
+    background: rgba(18, 25, 30, 0.7);
+    padding: 6px 8px;
+    font-size: 0.72rem;
+    color: #d7cfbd;
+}
+
+.ofdx-at-item {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 6px;
+    align-items: center;
+    border: 1px solid #32444c;
+    border-radius: 8px;
+    background: rgba(15, 23, 28, 0.78);
+    padding: 7px 8px;
+    font-size: 0.72rem;
+    color: #d7cfbd;
+}
+
+.ofdx-at-sub {
+    color: #a8b4b7;
+    font-size: 0.69rem;
+}
+
+.ofdx-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    border: 1px solid #506168;
+    padding: 2px 8px;
+    min-height: 24px;
+    font-size: 0.66rem;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+}
+
+.ofdx-status.ok {
+    border-color: #4a7a59;
+    color: #b9e8c4;
+    background: rgba(23, 60, 35, 0.65);
+}
+
+.ofdx-status.mid {
+    border-color: #67807b;
+    color: #d2ebea;
+    background: rgba(24, 54, 54, 0.62);
+}
+
+.ofdx-status.warn {
+    border-color: #856247;
+    color: #ffd8a8;
+    background: rgba(77, 45, 20, 0.62);
+}
+
+.ofdx-status.neutral {
+    border-color: #58686f;
+    color: #c5d0d4;
+    background: rgba(28, 39, 45, 0.6);
+}
+
+@media (max-width: 980px) {
+    .ofdx-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ofdx-card-cola {
+        order: 3;
+    }
+
+
+/* ======================================================
+   TELEFONO EXPANDIDO Y BARRA DE MECANICOS
+   ====================================================== */
+
+#screen-telefono.active {
+    padding: 6px !important;
+}
+
+#screen-telefono.active .tel-frame {
+    height: calc(100svh - 210px);
+    min-height: 520px;
+    border: 1px solid #24363f;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.tel-filtros {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    padding: 8px 10px;
+    border-bottom: 1px solid #1e3038;
+    background: #0c1c22;
+}
+
+.tel-filtro-btn {
+    border: 1px solid #35505a;
+    border-radius: 8px;
+    background: #10242b;
+    color: #93abb0;
+    font-size: 0.74rem;
+    font-family: 'IBM Plex Mono', monospace;
+    padding: 7px 8px;
+    cursor: pointer;
+}
+
+.tel-filtro-btn.active {
+    color: #f1dfb6;
+    border-color: #c8a950;
+    background: rgba(200, 169, 80, 0.18);
+}
+
+.tel-back-btn {
+    margin-right: 6px;
+    padding: 4px 10px;
+    min-height: 30px;
+    font-size: 0.72rem;
+}
+
+/* Barra de mecanicos abajo y menos apretada */
+#screen-taller.active .lane-mecanicos {
+    grid-template-rows: auto minmax(0, 1fr) auto !important;
+}
+
+#screen-taller.active #repairs-card {
+    order: 2;
+    overflow: auto;
+}
+
+#screen-taller.active #grid-mecanicos.mecanicos-bar {
+    order: 3;
+    position: sticky;
+    bottom: 0;
+    z-index: 6;
+    background: linear-gradient(180deg, rgba(13, 19, 24, 0.94), rgba(9, 14, 18, 0.98));
+    border-top: 1px solid #32444d;
+    padding-top: 8px;
+    padding-bottom: 2px;
+}
+
+@media (max-width: 980px) {
+    #screen-telefono.active {
+        padding: 4px !important;
+    }
+
+    #screen-telefono.active .tel-frame {
+        height: calc(100svh - 170px);
+        min-height: 420px;
+    }
+
+    #screen-telefono.tel-chat-open .tel-sidebar {
+        display: none;
+    }
+
+    #screen-telefono:not(.tel-chat-open) .tel-chat-area {
+        display: none;
+    }
+
+    #screen-telefono.tel-chat-open .tel-chat-area {
+        display: flex;
+    }
+
+    #screen-telefono.active .tel-sidebar,
+    #screen-telefono.active .tel-chat-area {
+        width: 100%;
+    }
+
+    #screen-taller.active #grid-mecanicos.mecanicos-bar {
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(210px, 84vw);
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-x;
+        overscroll-behavior-x: contain;
+        gap: 8px;
+        max-height: none;
+        padding-right: 2px;
+        scroll-snap-type: x proximity;
+    }
+
+    #screen-taller.active #grid-mecanicos.mecanicos-bar .mecanico-btn {
+        min-height: 92px;
+        scroll-snap-align: start;
+    }
+}
+    .ofdx-at-item {
+        grid-template-columns: 1fr;
+    }
+}
+
+    /* ======================================================
+       APP FLOW PHASE 1 - ESPACIADO Y CONSISTENCIA VISUAL
+       Capa final para unificar ritmo tipo app sin tocar logica
+       ====================================================== */
+
+    :root {
+        --app-gap-xs: 6px;
+        --app-gap-sm: 10px;
+        --app-gap-md: 14px;
+        --app-gap-lg: 18px;
+        --app-radius-sm: 10px;
+        --app-radius-md: 14px;
+        --app-radius-lg: 18px;
+        --app-surface-1: linear-gradient(180deg, rgba(13, 20, 24, 0.95), rgba(9, 14, 18, 0.98));
+        --app-surface-2: linear-gradient(180deg, rgba(18, 27, 34, 0.95), rgba(11, 18, 24, 0.98));
+        --app-line-1: #314751;
+        --app-line-2: #22353f;
+        --app-text-soft: #9db0b8;
+        --app-text-main: #d9ceba;
+    }
+
+    #pantalla-taller.fixed-workbench-layout {
+        gap: var(--app-gap-sm) !important;
+        padding: var(--app-gap-sm) !important;
+    }
+
+    #screen-taller.active {
+        background:
+            radial-gradient(circle at 12% 14%, rgba(87, 155, 118, 0.09), transparent 34%),
+            radial-gradient(circle at 85% 8%, rgba(214, 165, 95, 0.08), transparent 30%),
+            linear-gradient(180deg, rgba(7, 11, 15, 0.95), rgba(8, 13, 17, 0.99));
+        border-radius: var(--app-radius-md);
+    }
+
+    #screen-taller.active .workbench-layout {
+        gap: var(--app-gap-md) !important;
+    }
+
+    #screen-taller.active .panel-header {
+        margin-bottom: 0;
+        padding-bottom: 2px;
+    }
+
+    #screen-taller.active .panel-kicker {
+        color: var(--app-text-soft);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    #screen-taller.active .lane-cola,
+    #screen-taller.active .lane-mecanicos {
+        gap: var(--app-gap-md);
+    }
+
+    #screen-taller.active .lane-cola .queue-box,
+    #screen-taller.active .lane-cola .dispatch-box,
+    #screen-taller.active .lane-cola .meta-dia-box,
+    #screen-taller.active .lane-mecanicos .reparaciones-box,
+    #screen-taller.active #siguiente-accion-card {
+        border: 1px solid var(--app-line-1);
+        border-radius: var(--app-radius-md);
+        background: var(--app-surface-1);
+        box-shadow: 0 10px 26px rgba(0, 0, 0, 0.23);
+        padding: 12px;
+    }
+
+    #screen-taller.active .lane-cola-tabs {
+        gap: var(--app-gap-xs);
+        padding: 4px;
+        border: 1px solid var(--app-line-2);
+        border-radius: 999px;
+        background: rgba(10, 15, 19, 0.85);
+    }
+
+    #screen-taller.active .lane-tab {
+        border-radius: 999px;
+        min-height: 32px;
+        font-size: 0.72rem;
+        letter-spacing: 0.04em;
+        color: var(--app-text-soft);
+        border: 1px solid transparent;
+        background: rgba(20, 31, 38, 0.38);
+    }
+
+    #screen-taller.active .lane-tab:hover {
+        color: #e9dbc1;
+        border-color: #466373;
+    }
+
+    #screen-taller.active .lane-tab.active {
+        color: #f2e2c5;
+        border-color: #7a5a3f;
+        background: linear-gradient(180deg, rgba(107, 72, 43, 0.82), rgba(66, 43, 28, 0.86));
+    }
+
+    #screen-taller.active #grid-mecanicos.mecanicos-bar {
+        border-top: 1px solid var(--app-line-2);
+        padding-top: 10px;
+        margin-top: 2px;
+    }
+
+    #screen-taller.active .mecanicos-bar .mecanico-btn {
+        border-radius: var(--app-radius-sm);
+        border: 1px solid #35505d;
+        background: var(--app-surface-2);
+    }
+
+    #screen-taller.active #repairs-card strong,
+    #screen-taller.active #queue-card strong,
+    #screen-taller.active #pending-dx-card strong,
+    #screen-taller.active #notifications-card strong,
+    #screen-taller.active #siguiente-accion-card strong {
+        color: #f0c887;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+
+    #screen-taller.active #siguiente-accion-texto {
+        color: var(--app-text-main);
+    }
+
+    #screen-taller.active #siguiente-accion-hint {
+        color: #8fb09c;
+        font-size: 0.66rem;
+    }
+
+    #screen-taller.active .bottom-dock {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr);
+        gap: var(--app-gap-md);
+        height: auto;
+        min-height: 176px;
+        overflow: visible;
+    }
+
+    #screen-taller.active .dock-player {
+        display: none;
+    }
+
+    #screen-taller.active .dock-actions {
+        min-height: 176px;
+        height: auto;
+        border: 1px solid var(--app-line-1);
+        border-radius: var(--app-radius-md);
+        background: var(--app-surface-1);
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
+        padding: 12px;
+    }
+
+    #screen-taller.active .dock-actions h4 {
+        margin: 0 0 8px;
+        color: #f0c887;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+    }
+
+    #screen-taller.active .dock-actions .acciones-principales {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    #screen-taller.active .dock-actions .acciones-submenu {
+        margin-top: 8px;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    #screen-taller.active #btn-toggle-operaciones.is-open {
+        border-color: #7a5a3f;
+        background: linear-gradient(180deg, rgba(108, 71, 41, 0.9), rgba(64, 41, 24, 0.9));
+    }
+
+    #screen-taller.active .btn-contextual {
+        border: 1px solid #3f735f;
+        background: linear-gradient(180deg, rgba(59, 123, 93, 0.95), rgba(34, 77, 57, 0.96));
+        color: #f3ecd7;
+    }
+
+    #screen-taller.active .btn-contextual.is-idle {
+        opacity: 0.65;
+        border-color: #4a5e57;
+        background: linear-gradient(180deg, rgba(50, 66, 60, 0.9), rgba(34, 45, 41, 0.92));
+    }
+
+    #screen-oficina.active {
+        background:
+            radial-gradient(circle at 10% 10%, rgba(207, 164, 93, 0.08), transparent 30%),
+            radial-gradient(circle at 88% 16%, rgba(90, 152, 124, 0.1), transparent 34%),
+            linear-gradient(180deg, rgba(10, 19, 24, 0.9), rgba(12, 22, 28, 0.97));
+        border-radius: var(--app-radius-md);
+    }
+
+    #screen-oficina.active .of-layout {
+        gap: var(--app-gap-md);
+    }
+
+    #screen-oficina.active .of-topbar,
+    #screen-oficina.active .of-card {
+        border-radius: var(--app-radius-md);
+        border: 1px solid var(--app-line-1);
+        background: var(--app-surface-1);
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
+    }
+
+    #screen-oficina.active .of-card {
+        padding: 12px;
+    }
+
+    #screen-oficina.active .of-card-head {
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #f1cc8e;
+    }
+
+    #screen-oficina.active .of-chip {
+        border-radius: 12px;
+        border: 1px solid #334b57;
+        background: rgba(16, 26, 33, 0.88);
+    }
+
+    @media (max-width: 980px) {
+        #pantalla-taller.fixed-workbench-layout {
+            padding: 8px !important;
+        }
+
+        #screen-taller.active .workbench-layout {
+            gap: var(--app-gap-sm) !important;
+        }
+
+        #screen-taller.active .lane-cola .queue-box,
+        #screen-taller.active .lane-cola .dispatch-box,
+        #screen-taller.active .lane-cola .meta-dia-box,
+        #screen-taller.active .lane-mecanicos .reparaciones-box,
+        #screen-taller.active #siguiente-accion-card,
+        #screen-oficina.active .of-card,
+        #screen-oficina.active .of-topbar {
+            border-radius: var(--app-radius-sm);
+            padding: 10px;
+        }
+
+        #screen-taller.active .lane-tab {
+            min-height: 30px;
+            font-size: 0.68rem;
+        }
+
+        #screen-taller.active .bottom-dock {
+            grid-template-columns: 1fr;
+            min-height: 0;
+            gap: var(--app-gap-sm);
+        }
+
+        #screen-taller.active .dock-actions {
+            min-height: 0;
+            padding: 10px;
+        }
+
+        #screen-taller.active .dock-actions .acciones-principales {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        #screen-taller.active .dock-actions .acciones-submenu {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+/* ======================================================
+   APP FLOW PHASE 2 - TALLER COMO APP WEB COMPLETA
+   Override final para soltar margenes fijos y rearmar el
+   taller como tablero HTML moderno con toolbar inferior.
+   ====================================================== */
+
+#pantalla-taller {
+    width: 100%;
+    max-width: none;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background:
+        radial-gradient(circle at top left, rgba(78, 153, 125, 0.12), transparent 22%),
+        radial-gradient(circle at top right, rgba(215, 164, 86, 0.12), transparent 26%),
+        linear-gradient(180deg, #091116 0%, #0c171d 45%, #101e25 100%);
+}
+
+#pantalla-taller .turno-activo-bar,
+#pantalla-taller #game-nav,
+#pantalla-taller .game-screen {
+    margin: 0 !important;
+}
+
+#pantalla-taller .turno-activo-bar {
+    position: sticky;
+    top: 12px;
+    z-index: 40;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    border-radius: 22px;
+    border: 1px solid rgba(125, 157, 170, 0.18);
+    background: rgba(7, 14, 19, 0.82);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.26);
+    backdrop-filter: blur(18px);
+}
+
+#pantalla-taller .turno-titulo {
+    flex: 1 1 240px;
+    font-size: 1rem;
+    letter-spacing: 0.04em;
+}
+
+#pantalla-taller .turno-mini,
+#pantalla-taller .turno-ayuda-panel {
+    margin: 0;
+}
+
+#pantalla-taller #game-nav {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 10px;
+    padding: 10px;
+    border-radius: 20px;
+    border: 1px solid rgba(98, 131, 143, 0.18);
+    background: rgba(8, 16, 22, 0.74);
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(14px);
+}
+
+#pantalla-taller #game-nav .game-nav-btn {
+    min-height: 68px;
+    border-radius: 18px;
+    border: 1px solid rgba(96, 128, 140, 0.18);
+    background: linear-gradient(180deg, rgba(20, 33, 40, 0.95), rgba(13, 22, 28, 0.98));
+    color: #dbe4e7;
+}
+
+#pantalla-taller #game-nav .game-nav-btn.active {
+    border-color: rgba(229, 179, 98, 0.62);
+    background: linear-gradient(180deg, rgba(120, 84, 48, 0.95), rgba(64, 42, 26, 0.98));
+    color: #fff2d9;
+    box-shadow: inset 0 1px 0 rgba(255, 231, 188, 0.12), 0 12px 24px rgba(0, 0, 0, 0.24);
+}
+
+#pantalla-taller .game-screen.active {
+    display: block;
+    background: transparent;
+}
+
+#screen-taller.active {
+    background: transparent;
+    border-radius: 0;
+}
+
+#screen-taller.active .taller-app-shell {
+    display: grid;
+    gap: 18px;
+}
+
+#screen-taller.active .taller-dashboard,
+#screen-taller.active .taller-focus-card,
+#screen-taller.active .taller-stage-card,
+#screen-taller.active .taller-toolbar {
+    border: 1px solid rgba(99, 128, 139, 0.18);
+    border-radius: 24px;
+    background:
+        linear-gradient(180deg, rgba(15, 24, 30, 0.96), rgba(10, 18, 24, 0.98));
+    box-shadow: 0 18px 36px rgba(0, 0, 0, 0.22);
+}
+
+#screen-taller.active .taller-dashboard {
+    padding: 18px;
+    display: grid;
+    gap: 16px;
+}
+
+#screen-taller.active .taller-dashboard-head {
+    display: grid;
+    grid-template-columns: minmax(320px, 1.2fr) minmax(260px, 0.8fr);
+    gap: 16px;
+}
+
+#screen-taller.active .taller-hero-card,
+#screen-taller.active .taller-status-tile {
+    border: 1px solid rgba(109, 140, 151, 0.16);
+    border-radius: 20px;
+    background: linear-gradient(180deg, rgba(18, 29, 36, 0.98), rgba(12, 20, 26, 0.98));
+    padding: 16px;
+}
+
+#screen-taller.active .taller-status-bar {
+    display: grid;
+    gap: 12px;
+}
+
+#screen-taller.active .taller-status-note strong {
+    display: block;
+    margin-bottom: 4px;
+    color: #f2e0be;
+}
+
+#screen-taller.active .taller-status-note span {
+    display: block;
+    color: #9db4bd;
+    font-size: 0.85rem;
+}
+
+#screen-taller.active .taller-case-board {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(180px, 1fr));
+    gap: 10px;
+}
+
+#screen-taller.active .taller-stage-card {
+    padding: 12px;
+    display: grid;
+    gap: 10px;
+    min-height: 210px;
+}
+
+#screen-taller.active .taller-stage-head,
+#screen-taller.active .taller-toolbar-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+#screen-taller.active .taller-toolbar-owner {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+#screen-taller.active .taller-toolbar-petline h3 {
+    margin: 2px 0 4px;
+}
+
+#screen-taller.active .taller-toolbar-petline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 8px;
+    padding: 6px 8px;
+    border-radius: 10px;
+    background: rgba(16, 28, 36, 0.72);
+    border: 1px solid rgba(99, 128, 139, 0.14);
+    flex-wrap: wrap;
+}
+
+#screen-taller.active .taller-toolbar-petline #malvavisco-estado {
+    color: #9db4bd;
+    font-size: 0.82rem;
+    flex: 1;
+    min-width: 0;
+}
+
+#screen-taller.active .taller-toolbar-petline .petline-acciones {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+#screen-taller.active .taller-toolbar-petline .petline-btn {
+    font-size: 0.74rem;
+    padding: 4px 10px;
+    min-height: 28px;
+}
+
+#screen-taller.active .taller-toolbar-owner .header-jugador {
+    margin: 0;
+    padding: 10px 12px;
+    border-radius: 18px;
+    border: 1px solid rgba(102, 131, 143, 0.18);
+    background: rgba(16, 27, 34, 0.84);
+}
+
+#screen-taller.active .taller-toolbar-owner .taller-delivery-overview {
+    margin: 0;
+    min-width: 210px;
+    padding: 10px 12px;
+    border-radius: 18px;
+    border: 1px solid rgba(102, 131, 143, 0.18);
+    background: rgba(16, 27, 34, 0.84);
+    display: grid;
+    gap: 6px;
+}
+
+#screen-taller.active .delivery-slots-top {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+#screen-taller.active .delivery-slots-top .delivery-slot-card {
+    border: 1px solid rgba(85, 135, 164, 0.38);
+    background: linear-gradient(180deg, rgba(13, 34, 44, 0.98), rgba(10, 27, 36, 0.98));
+    padding: 7px 8px;
+    border-radius: 12px;
+    min-width: 170px;
+    color: #d6eaf2;
+    cursor: grab;
+}
+
+#screen-taller.active .mecanico-btn.mecanico-selected-mobile {
+    border-color: rgba(121, 221, 170, 0.85);
+    box-shadow: 0 0 0 2px rgba(121, 221, 170, 0.28), 0 10px 24px rgba(0, 0, 0, 0.24);
+    transform: translateY(-1px);
+}
+
+#screen-taller.active .delivery-slots-top .delivery-slot-card.delivery-selected-mobile {
+    border-color: rgba(121, 221, 170, 0.85);
+    box-shadow: 0 0 0 2px rgba(121, 221, 170, 0.28), 0 10px 24px rgba(0, 0, 0, 0.24);
+    transform: translateY(-1px);
+}
+
+/* Taller: solo dos bloques visibles (casos y mecanicos/delivery), con escala tactil limpia. */
+#screen-taller.active .workbench-layout {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr) !important;
+    gap: 12px !important;
+}
+
+#screen-taller.active .lane-cola {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) minmax(220px, auto);
+    gap: 10px;
+    min-height: 0;
+}
+
+#screen-taller.active .lane-mecanicos {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 10px;
+    min-height: 0;
+}
+
+#screen-taller.active #lista-cola-espera,
+#screen-taller.active #lista-reparaciones-activas {
+    display: grid;
+    gap: 8px;
+}
+
+#screen-taller.active .queue-card,
+#screen-taller.active .repair-card,
+#screen-taller.active .flow-case-card {
+    padding: 10px;
+}
+
+#screen-taller.active .mecanicos-bar .mecanico-btn,
+#screen-taller.active .delivery-slots-top .delivery-slot-card {
+    min-height: 92px;
+}
+
+@media (max-width: 980px) {
+    #screen-taller.active .workbench-layout {
+        grid-template-columns: 1fr !important;
+        grid-template-areas:
+            'mecanicos'
+            'cola' !important;
+    }
+
+    #screen-taller.active .lane-cola,
+    #screen-taller.active .lane-mecanicos {
+        grid-template-rows: auto;
+    }
+
+    #screen-taller.active .mecanicos-bar {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    #screen-taller.active .delivery-slots-top {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    #screen-taller.active .queue-card,
+    #screen-taller.active .repair-card,
+    #screen-taller.active .flow-case-card,
+    #screen-taller.active .mecanicos-bar .mecanico-btn,
+    #screen-taller.active .delivery-slots-top .delivery-slot-card,
+    #screen-taller.active .btn-cobrar-caso {
+        min-height: 44px;
+    }
+}
+
+#screen-taller.active .delivery-slots-top .delivery-slot-card .mecanico-status {
+    background: rgba(57, 117, 151, 0.25);
+    border-color: rgba(92, 162, 198, 0.35);
+    color: #cfeffc;
+}
+
+#screen-taller.active .delivery-slots-top .delivery-slot-card .mecanico-card-head.compact {
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+#screen-taller.active .delivery-slots-top .delivery-slot-card .mecanico-avatar {
+    width: 28px;
+    height: 28px;
+}
+
+#screen-taller.active .delivery-slots-top .delivery-slot-card .delivery-slot-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    color: #a7c8d6;
+}
+
+#screen-taller.active .taller-delivery-count {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #f2e0be;
+    line-height: 1.15;
+}
+
+#screen-taller.active .taller-delivery-subline {
+    font-size: 0.76rem;
+    color: #9db4bd;
+    line-height: 1.2;
+}
+
+#screen-taller.active .taller-toolbar-note {
+    color: #9ec3d1;
+    font-size: 0.8rem;
+    font-weight: 600;
+    max-width: 360px;
+    line-height: 1.35;
+}
+
+#screen-taller.active .taller-stage-head-lg {
+    margin-bottom: 6px;
+}
+
+#screen-taller.active .taller-stage-head h3,
+#screen-taller.active .taller-toolbar-head h3 {
+    margin: 2px 0 0;
+    font-size: 1.08rem;
+    color: #f4ead4;
+}
+
+#screen-taller.active .taller-stage-kicker {
+    display: inline-block;
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #86a5b0;
+}
+
+#screen-taller.active .taller-stage-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 32px;
+    padding: 0 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(225, 177, 95, 0.24);
+    background: rgba(125, 88, 49, 0.14);
+    color: #f0c989;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+#screen-taller.active .taller-stage-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 0;
+}
+
+#screen-taller.active .taller-focus-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+}
+
+#screen-taller.active .taller-focus-main {
+    width: min(100%, 620px);
+    margin-inline: auto;
+}
+
+#screen-taller.active .taller-focus-card {
+    padding: 12px;
+}
+
+#screen-taller.active .taller-focus-side {
+    display: grid;
+    gap: 18px;
+}
+
+#screen-taller.active .app-client-card {
+    min-height: auto;
+    border: 1px solid rgba(118, 146, 157, 0.18);
+    border-left: 4px solid #d7b56d;
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(16, 25, 31, 0.98), rgba(12, 19, 24, 0.98));
+    padding: 14px;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+}
+
+#screen-taller.active .app-client-card.dragging {
+    opacity: 0.62;
+    transform: rotate(-1.5deg) scale(0.99);
+}
+
+#screen-taller.active .app-client-card.drop-ready {
+    outline: 2px dashed #d7b077;
+    outline-offset: 4px;
+}
+
+#screen-taller.active .app-client-card .cliente-header,
+#screen-taller.active .app-client-card .cliente-sub,
+#screen-taller.active .app-client-card .cliente-recompensa {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+#screen-taller.active .app-client-card .cliente-header {
+    margin-bottom: 4px;
+}
+
+#screen-taller.active .app-client-card .cliente-worker-badge {
+    margin-bottom: 8px;
+    border-radius: 12px;
+    border: 1px solid rgba(119, 167, 186, 0.35);
+    background: linear-gradient(180deg, rgba(18, 40, 49, 0.94), rgba(12, 30, 38, 0.94));
+    padding: 8px;
+}
+
+#screen-taller.active .app-client-card .cliente-worker-main {
+    margin: 0;
+}
+
+#screen-taller.active .app-client-card .cliente-delivery-card {
+    margin-top: 6px;
+    border-radius: 10px;
+    border: 1px solid rgba(108, 168, 204, 0.42);
+    background: rgba(14, 39, 52, 0.9);
+    padding: 6px;
+}
+
+#screen-taller.active .app-client-card .cliente-worker-head {
+    display: grid;
+    grid-template-columns: 30px 1fr auto;
+    gap: 8px;
+    align-items: center;
+}
+
+#screen-taller.active .app-client-card .cliente-worker-avatar,
+#screen-taller.active .app-client-card .cliente-worker-avatar-placeholder {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1px solid rgba(126, 176, 196, 0.4);
+    object-fit: cover;
+    display: grid;
+    place-items: center;
+}
+
+#screen-taller.active .app-client-card .cliente-worker-avatar-placeholder {
+    background: rgba(74, 120, 138, 0.35);
+    color: #d8edf8;
+    font-weight: 700;
+    font-size: 0.76rem;
+}
+
+#screen-taller.active .app-client-card .cliente-worker-info {
+    min-width: 0;
+    display: grid;
+    gap: 1px;
+}
+
+#screen-taller.active .app-client-card .cliente-worker-info strong {
+    color: #eff8fc;
+    font-size: 0.78rem;
+    line-height: 1.1;
+}
+
+#screen-taller.active .app-client-card .cliente-worker-info span {
+    color: #9dc0cf;
+    font-size: 0.68rem;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#screen-taller.active .app-client-card .cliente-worker-eta {
+    color: #c8ecfb;
+    font-size: 0.67rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+#screen-taller.active .app-client-card .cliente-worker-track {
+    margin-top: 6px;
+    height: 5px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: rgba(95, 132, 146, 0.26);
+}
+
+#screen-taller.active .app-client-card .cliente-worker-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #69cbe3, #8adfb4);
+}
+
+#screen-taller.active .app-client-card .cliente-delivery-card .cliente-worker-fill {
+    background: linear-gradient(90deg, #63c3ff, #d6a63f);
+}
+
+#screen-taller.active .app-client-card #cliente-nombre {
+    font-size: 0.98rem;
+    line-height: 1.25;
+    font-weight: 800;
+    color: #f3e4be;
+}
+
+#screen-taller.active .app-client-card .cliente-sub {
+    font-size: 0.78rem;
+    color: #aec1c9;
+}
+
+#screen-taller.active .app-client-card #cliente-tiempo {
+    color: #d8c48a;
+    font-weight: 700;
+}
+
+#screen-taller.active .app-client-card .cliente-problema {
+    margin-top: 10px;
+}
+
+#screen-taller.active .app-client-card #cliente-estado {
+    display: block;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: rgba(108, 76, 42, 0.16);
+    border: 1px solid rgba(214, 177, 115, 0.22);
+    color: #f5dfb7;
+    font-size: 0.82rem;
+    line-height: 1.35;
+}
+
+#screen-taller.active .app-client-card .cliente-recompensa {
+    margin-top: 10px;
+    font-size: 0.78rem;
+    color: #d7dde0;
+}
+
+#screen-taller.active .app-client-card .cliente-accion {
+    margin-top: 8px;
+    padding-top: 10px;
+    border-top: 1px dashed rgba(168, 185, 192, 0.18);
+    color: #8cbec2;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+#screen-taller.active .taller-control-stack {
+    gap: 12px;
+}
+
+#screen-taller.active .taller-control-card .diag-step {
+    border: 1px solid rgba(104, 132, 142, 0.16);
+    border-radius: 18px;
+    background: rgba(13, 21, 27, 0.7);
+    padding: 12px;
+}
+
+#screen-taller.active .taller-toolbar {
+    padding: 16px;
+    display: grid;
+    gap: 16px;
+}
+
+#screen-taller.active .taller-toolbar-actions {
+    width: min(100%, 520px);
+    margin-left: auto;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    padding: 0;
+    min-height: 0;
+}
+
+#screen-taller.active .taller-toolbar-actions .acciones-principales {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+#screen-taller.active .taller-toolbar-actions .acciones-submenu {
+    margin-top: 8px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+
+#screen-taller.active #grid-mecanicos.mecanicos-bar {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(280px, 320px);
+    gap: 12px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 4px 2px 8px;
+    border-top: 1px solid rgba(103, 130, 141, 0.18);
+}
+
+#screen-taller.active #grid-mecanicos.mecanicos-bar::-webkit-scrollbar {
+    height: 10px;
+}
+
+#screen-taller.active #grid-mecanicos.mecanicos-bar::-webkit-scrollbar-thumb {
+    background: rgba(121, 151, 163, 0.24);
+    border-radius: 999px;
+}
+
+#screen-taller.active #grid-mecanicos.mecanicos-bar .mecanico-btn,
+#screen-taller.active #grid-mecanicos.mecanicos-bar .mecanico-ficha {
+    min-height: 100%;
+    border-radius: 20px;
+    border: 1px solid rgba(84, 116, 129, 0.2);
+    background: linear-gradient(180deg, rgba(18, 29, 36, 0.98), rgba(12, 20, 27, 0.98));
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18);
+}
+
+#screen-taller.active #grid-mecanicos.mecanicos-bar .mecanico-btn:hover {
+    transform: translateY(-2px);
+}
+
+#screen-taller.active #grid-mecanicos.mecanicos-bar .mecanico-progreso {
+    margin-top: 8px;
+}
+
+#screen-taller.active #grid-mecanicos.mecanicos-bar .xp-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.74rem;
+    color: #c6dbe4;
+    font-weight: 600;
+}
+
+#screen-taller.active #grid-mecanicos.mecanicos-bar .xp-barra {
+    margin-top: 4px;
+    height: 6px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: rgba(90, 120, 132, 0.28);
+}
+
+#screen-taller.active #grid-mecanicos.mecanicos-bar .xp-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #6ed7f0, #d6a63f);
+}
+
+#screen-taller.active #grid-mecanicos.mecanicos-bar .mecanico-mejora {
+    margin-top: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.74rem;
+    color: #e2d2b0;
+}
+
+#screen-taller.active #grid-mecanicos.mecanicos-bar .btn.btn-upgrade {
+    background: #d6a63f;
+    color: #111;
+    font-weight: 700;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    padding: 4px 8px;
+    font-size: 0.7rem;
+    white-space: nowrap;
+}
+
+#screen-taller.active #grid-mecanicos.mecanicos-bar .btn.btn-upgrade:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#screen-taller.active #grid-mecanicos.mecanicos-bar .mecanico-upgrade-actions {
+    margin-top: 6px;
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+#screen-taller.active .pedido-delivery-confirm {
+    background: rgba(20, 35, 42, 0.92);
+    border: 1px solid rgba(214, 166, 63, 0.5);
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-top: 8px;
+}
+#screen-taller.active .pedido-piezas-header {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #d6a63f;
+    margin-bottom: 4px;
+}
+#screen-taller.active .pedido-piezas-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    color: #d8cfb9;
+    padding: 2px 0;
+}
+#screen-taller.active .pedido-piezas-total {
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: #fff;
+    border-top: 1px solid rgba(214, 166, 63, 0.28);
+    margin-top: 4px;
+    padding-top: 4px;
+}
+
+#screen-taller.active .flow-case-card,
+#screen-taller.active .nota-viva,
+#screen-taller.active .repair-card,
+#screen-taller.active .queue-card {
+    margin: 0;
+    border: 1px solid rgba(94, 124, 136, 0.16);
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(18, 28, 34, 0.98), rgba(13, 22, 27, 0.98));
+    padding: 12px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+}
+
+#screen-taller.active .flow-case-card.selected,
+#screen-taller.active .nota-viva.selected {
+    border-color: rgba(224, 178, 92, 0.56);
+    box-shadow: 0 0 0 1px rgba(224, 178, 92, 0.18), 0 12px 28px rgba(0, 0, 0, 0.24);
+}
+
+#screen-taller.active .flow-case-card.drop-target {
+    border-color: rgba(115, 209, 163, 0.8);
+    box-shadow: 0 0 0 2px rgba(115, 209, 163, 0.32), 0 14px 30px rgba(0, 0, 0, 0.28);
+    transform: translateY(-1px);
+}
+
+#screen-taller.active .flow-case-repair.drop-ready-delivery {
+    border-color: rgba(117, 197, 231, 0.62);
+    box-shadow: 0 0 0 2px rgba(117, 197, 231, 0.22), 0 12px 28px rgba(0, 0, 0, 0.24);
+}
+
+#screen-taller.active .flow-case-repair.ready-to-charge {
+    border-color: rgba(224, 178, 92, 0.66);
+    box-shadow: 0 0 0 2px rgba(224, 178, 92, 0.24), 0 12px 28px rgba(0, 0, 0, 0.24);
+}
+
+#screen-taller.active .btn-cobrar-caso {
+    width: 100%;
+    min-height: 40px;
+    font-size: 0.86rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border: 1px solid #d6a04a;
+    background: linear-gradient(180deg, rgba(193, 138, 58, 0.94), rgba(117, 76, 30, 0.95));
+    color: #fff8e7;
+}
+
+#screen-taller.active .flow-case-repair.ready.is-cobrando {
+    position: relative;
+    overflow: hidden;
+}
+
+#screen-taller.active .cobro-float-tag {
+    position: absolute;
+    right: 12px;
+    top: 12px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(94, 178, 119, 0.72);
+    background: rgba(26, 78, 46, 0.86);
+    color: #dfffe5;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    pointer-events: none;
+    animation: cobrarFloatOut 0.42s ease forwards;
+    z-index: 4;
+}
+
+#screen-taller.active .cobro-float-tag.bad {
+    border-color: rgba(206, 109, 109, 0.7);
+    background: rgba(94, 33, 33, 0.88);
+    color: #ffdada;
+}
+
+@keyframes cobrarFloatOut {
+    0% {
+        opacity: 0;
+        transform: translateY(10px) scale(0.92);
+    }
+    25% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-18px) scale(1.02);
+    }
+}
+
+#screen-taller.active .flow-case-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+    color: #f4ead5;
+}
+
+#screen-taller.active .flow-case-name {
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: #f6efe2;
+    margin-bottom: 6px;
+}
+
+#screen-taller.active .flow-case-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    color: #9cb3bc;
+    font-size: 0.78rem;
+    margin-bottom: 8px;
+}
+
+#screen-taller.active .flow-case-meta span {
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: rgba(100, 126, 137, 0.12);
+    border: 1px solid rgba(100, 126, 137, 0.12);
+}
+
+#screen-taller.active .flow-case-note {
+    color: #bdd0d7;
+    font-size: 0.78rem;
+    line-height: 1.45;
+}
+
+#screen-taller.active .flow-case-list {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow: hidden;
+}
+
+#screen-taller.active .flow-case-list::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 3px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgba(117, 197, 231, 0.92), rgba(42, 82, 115, 0.12));
+    opacity: 0.9;
+}
+
+#screen-taller.active .flow-case-list.flow-case-dx::before {
+    background: linear-gradient(180deg, rgba(224, 178, 92, 0.96), rgba(111, 73, 25, 0.18));
+}
+
+#screen-taller.active .flow-case-list.flow-case-approved::before {
+    background: linear-gradient(180deg, rgba(115, 209, 163, 0.96), rgba(40, 95, 67, 0.18));
+}
+
+#screen-taller.active .flow-case-list.flow-case-queue.urgencia-rojo {
+    border-color: rgba(206, 109, 109, 0.42);
+    box-shadow: 0 0 0 1px rgba(206, 109, 109, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.02);
+}
+
+#screen-taller.active .flow-case-list.flow-case-queue.urgencia-amarillo {
+    border-color: rgba(224, 178, 92, 0.34);
+}
+
+#screen-taller.active .flow-case-list-head {
+    margin-bottom: 0;
+    align-items: flex-start;
+}
+
+#screen-taller.active .flow-case-list-kicker {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+#screen-taller.active .flow-case-list .flow-case-name,
+#screen-taller.active .flow-case-list .flow-case-meta,
+#screen-taller.active .flow-case-list .flow-case-actions {
+    margin-bottom: 0;
+}
+
+#screen-taller.active .flow-case-list-meta {
+    gap: 7px;
+}
+
+#screen-taller.active .flow-case-list-tags {
+    margin-top: 0;
+}
+
+#screen-taller.active .flow-case-list .flow-case-note {
+    padding: 8px 10px;
+    border-radius: 12px;
+    border: 1px solid rgba(88, 114, 126, 0.16);
+    background: rgba(81, 102, 112, 0.08);
+}
+
+#screen-taller.active .flow-case-inline-label {
+    color: #f1dcc0;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+#screen-taller.active .flow-case-footnote {
+    color: #93a9b1;
+    font-size: 0.72rem;
+    line-height: 1.4;
+    border-top: 1px solid rgba(88, 114, 126, 0.16);
+    padding-top: 8px;
+}
+
+#screen-taller.active .flow-case-actions {
+    margin-top: 10px;
+}
+
+#screen-taller.active .flow-case-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 26px;
+    padding: 0 9px;
+    border-radius: 999px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border: 1px solid transparent;
+}
+
+#screen-taller.active .flow-case-tag.ok {
+    color: #dff8da;
+    background: rgba(74, 126, 91, 0.28);
+    border-color: rgba(89, 160, 113, 0.28);
+}
+
+#screen-taller.active .flow-case-tag.warn {
+    color: #ffe1b8;
+    background: rgba(137, 95, 48, 0.28);
+    border-color: rgba(208, 152, 82, 0.28);
+}
+
+#screen-taller.active .flow-case-tag.info {
+    color: #d4edf6;
+    background: rgba(53, 97, 125, 0.3);
+    border-color: rgba(77, 142, 178, 0.28);
+}
+
+#screen-taller.active .flow-case-empty {
+    min-height: 120px;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    border-radius: 16px;
+    border: 1px dashed rgba(105, 133, 145, 0.24);
+    color: #8ea5ae;
+    padding: 14px;
+    background: rgba(13, 20, 25, 0.42);
+}
+
+#screen-taller.active .repair-progress {
+    margin-top: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: rgba(76, 96, 107, 0.26);
+    overflow: hidden;
+}
+
+#screen-taller.active .repair-progress-fill {
+    background: linear-gradient(90deg, #5dd4a8, #d4bb70);
+    height: 100%;
+    transition: width 0.35s ease, background 0.35s ease, opacity 0.25s ease;
+}
+
+#screen-taller.active .repair-progress-fill.phase-diagnosticando {
+    background: linear-gradient(90deg, #63c8f2, #77e1c5);
+}
+
+#screen-taller.active .repair-progress-fill.phase-piezas {
+    background: linear-gradient(90deg, #d8a14c, #f1d37f);
+}
+
+#screen-taller.active .repair-progress-fill.phase-reparando {
+    background: linear-gradient(90deg, #5dd4a8, #d4bb70);
+}
+
+#screen-taller.active .repair-progress-fill.phase-listo {
+    background: linear-gradient(90deg, #8adfba, #f1d37f);
+}
+
+#screen-taller.active .repair-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    color: #d4e3e8;
+    font-size: 0.8rem;
+}
+
+#screen-taller.active .case-worker-card {
+    margin: 6px 0;
+    padding: 6px;
+    border-radius: 10px;
+    border: 1px solid rgba(114, 149, 162, 0.2);
+    background: rgba(19, 32, 39, 0.84);
+}
+
+#screen-taller.active .case-worker-card.case-worker-delivery {
+    border-color: rgba(100, 170, 201, 0.38);
+    background: rgba(15, 38, 49, 0.88);
+}
+
+#screen-taller.active .case-worker-head {
+    display: grid;
+    grid-template-columns: 28px 1fr auto;
+    gap: 6px;
+    align-items: center;
+}
+
+#screen-taller.active .case-worker-avatar,
+#screen-taller.active .case-worker-avatar-placeholder {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid rgba(120, 160, 177, 0.35);
+    object-fit: cover;
+    display: grid;
+    place-items: center;
+}
+
+#screen-taller.active .case-worker-avatar-placeholder {
+    background: rgba(70, 108, 124, 0.3);
+    color: #d4ecf7;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+#screen-taller.active .case-worker-info {
+    min-width: 0;
+    display: grid;
+    gap: 2px;
+}
+
+#screen-taller.active .case-worker-info strong {
+    font-size: 0.76rem;
+    color: #eff4f6;
+    line-height: 1.1;
+}
+
+#screen-taller.active .case-worker-info span {
+    font-size: 0.68rem;
+    line-height: 1.18;
+    color: #9fc0cc;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#screen-taller.active .case-worker-percent {
+    color: #c8ebff;
+    font-size: 0.68rem;
+    font-weight: 700;
+}
+
+#screen-taller.active .case-worker-progress {
+    margin-top: 6px;
+    height: 5px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: rgba(92, 122, 135, 0.24);
+}
+
+#screen-taller.active .case-worker-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #5db7e1, #8adfba);
+    transition: width 0.35s ease, background 0.35s ease, opacity 0.25s ease;
+}
+
+#screen-taller.active .case-worker-card.case-worker-delivery .case-worker-progress-fill {
+    background: linear-gradient(90deg, #6bc8ff, #d6a63f);
+}
+
+#screen-taller.active .flow-case-repair.ready {
+    cursor: pointer;
+}
+
+#screen-taller.active .repair-card-main {
+    display: grid;
+    gap: 2px;
+}
+
+#screen-taller.active .repair-status-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+#screen-taller.active .repair-progress-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 8px;
+    color: #c7d9df;
+    font-size: 0.74rem;
+}
+
+#screen-taller.active .repair-card-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+#screen-taller.active .repair-card-actions .btn {
+    flex: 1 1 160px;
+}
+
+#screen-taller.active .flow-case-repair.is-paused {
+    border-color: rgba(216, 161, 76, 0.34);
+}
+
+#screen-taller.active .flow-case-repair.ready {
+    border-color: rgba(117, 205, 148, 0.42);
+}
+
+#screen-taller.active .btn,
+#pantalla-taller .turno-activo-bar .btn,
+#pantalla-taller #game-nav .btn {
+    border-radius: 14px;
+}
+
+@media (max-width: 1280px) {
+    #screen-taller.active .taller-case-board {
+        grid-template-columns: repeat(4, minmax(180px, 1fr));
+        overflow-x: auto;
+        align-items: stretch;
+    }
+
+    #screen-taller.active .taller-focus-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 980px) {
+    #pantalla-taller {
+        padding: 12px;
+        gap: 12px;
+    }
+
+    #pantalla-taller #game-nav {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    #screen-taller.active .taller-dashboard,
+    #screen-taller.active .taller-focus-card,
+    #screen-taller.active .taller-stage-card,
+    #screen-taller.active .taller-toolbar {
+        border-radius: 18px;
+    }
+
+    #screen-taller.active .taller-dashboard-head,
+    #screen-taller.active .taller-case-board {
+        grid-template-columns: 1fr;
+    }
+
+    #screen-taller.active .taller-toolbar-head {
+        flex-direction: column;
+    }
+
+    #screen-taller.active .taller-toolbar-actions {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    #screen-taller.active .taller-toolbar-actions .acciones-submenu {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    #screen-taller.active .taller-focus-main {
+        width: 100%;
+    }
+
+    #screen-taller.active .app-client-card {
+        padding: 12px;
+    }
+
+    #screen-taller.active .app-client-card .cliente-header,
+    #screen-taller.active .app-client-card .cliente-sub,
+    #screen-taller.active .app-client-card .cliente-recompensa {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+
+    #screen-taller.active #grid-mecanicos.mecanicos-bar {
+        grid-auto-columns: minmax(240px, 86vw);
+    }
+}
+
+@media (max-width: 640px) {
+    #pantalla-taller .turno-activo-bar {
+        top: 6px;
+        padding: 12px;
+    }
+
+    #pantalla-taller #game-nav {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    #screen-taller.active .taller-toolbar-actions .acciones-principales,
+    #screen-taller.active .taller-toolbar-actions .acciones-submenu,
+    #screen-taller.active .diagnostico-jugador-tools,
+    #screen-taller.active .diag-step-actions,
+    #screen-taller.active .diagnostico-jugador-actions {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ======================================================
+   HUD SUPERIOR FIJO + TOOLBAR INFERIOR COMPACTO
+   ====================================================== */
+
+#game {
+    --hud-top-height: 74px;
+    --hud-bottom-height: 18px;
+}
+
+#game .game-shell {
+    margin-top: calc(var(--hud-top-height) + env(safe-area-inset-top, 0px));
+}
+
+#game .game-flow-layer {
+    padding-bottom: calc(var(--hud-bottom-height) + env(safe-area-inset-bottom, 0px));
+}
+
+#hud-header-fixed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    z-index: 150;
+    margin: 0;
+    min-height: var(--hud-top-height);
+    padding: 10px 14px;
+    border-radius: 0;
+    border: 0;
+    border-bottom: 1px solid rgba(92, 124, 138, 0.42);
+    background:
+        radial-gradient(circle at 14% 12%, rgba(211, 167, 92, 0.18), transparent 36%),
+        linear-gradient(180deg, rgba(7, 15, 20, 0.98), rgba(8, 18, 24, 0.95));
+    backdrop-filter: blur(8px);
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.34);
+}
+
+#hud-header-fixed .hud-owner-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+#hud-header-fixed .hud-owner-avatar {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    border: 1px solid rgba(244, 205, 142, 0.5);
+    object-fit: cover;
+    background: #0c1419;
+}
+
+#hud-header-fixed .hud-owner-meta {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+#hud-header-fixed .hud-owner-label {
+    font-size: 0.66rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #95aeb8;
+}
+
+#hud-header-fixed #hud-dueno-nombre {
+    font-size: 0.88rem;
+    color: #ecf4f7;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#hud-header-fixed .hud-top-chips {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: auto;
+    margin-left: auto;
+    flex: 0 0 auto;
+}
+
+#hud-header-fixed .hud-top-chip {
+    display: grid;
+    gap: 2px;
+    align-content: center;
+    min-height: 38px;
+    min-width: 82px;
+    padding: 4px 8px;
+    border-radius: 10px;
+    border: 1px solid rgba(86, 118, 130, 0.48);
+    background: linear-gradient(180deg, rgba(13, 24, 31, 0.92), rgba(9, 17, 23, 0.94));
+}
+
+#hud-header-fixed .hud-top-chip.hud-top-chip-exp {
+    min-width: 122px;
+    gap: 3px;
+}
+
+#hud-header-fixed .hud-top-label {
+    font-size: 0.58rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #9ab2bc;
+}
+
+#hud-header-fixed #hud-dinero,
+#hud-header-fixed #hud-exp {
+    font-size: 0.82rem;
+    color: #f6f9fa;
+    letter-spacing: 0.02em;
+}
+
+#hud-header-fixed .hud-exp-track {
+    width: 100%;
+    height: 5px;
+    border-radius: 999px;
+    overflow: hidden;
+    border: 1px solid rgba(93, 127, 139, 0.5);
+    background: rgba(8, 16, 22, 0.85);
+}
+
+#hud-header-fixed .hud-exp-fill {
+    height: 100%;
+    width: 0;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #6fa6c1 0%, #7ed6c3 100%);
+    transition: width 0.28s ease;
+}
+
+#hud-header-fixed .hud-exp-meta {
+    font-size: 0.56rem;
+    letter-spacing: 0.06em;
+    color: #8fb6c5;
+}
+
+#game #game-nav {
+    position: relative !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    top: auto !important;
+    z-index: 80 !important;
+    margin: 6px 0 0 !important;
+    display: grid !important;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 6px;
+    padding: 6px;
+    border-radius: 12px;
+    border: 1px solid rgba(84, 118, 133, 0.46);
+    background: rgba(7, 14, 20, 0.96);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.28);
+    backdrop-filter: blur(6px);
+}
+
+#game #game-nav .game-nav-btn {
+    min-height: 42px;
+    gap: 1px;
+    padding: 4px 2px;
+    border-radius: 10px;
+}
+
+#game #game-nav .gnav-icon {
+    font-size: 1rem;
+}
+
+#game #game-nav .gnav-label {
+    font-size: 0.55rem;
+    letter-spacing: 0.04em;
+}
+
+#game #game-nav .gnav-badge {
+    top: 2px;
+    right: 8px;
+}
+
+@media (max-width: 980px) {
+    #game {
+        --hud-top-height: 82px;
+        --hud-bottom-height: 12px;
+    }
+
+    #hud-header-fixed {
+        padding: 10px;
+    }
+
+    #hud-header-fixed .hud-top-chips {
+        gap: 5px;
+    }
+
+    #game #game-nav {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 4px;
+        padding: 5px;
+    }
+
+    #game #game-nav .game-nav-btn {
+        min-height: 40px;
+    }
+}
+
+@media (max-width: 640px) {
+    #game {
+        --hud-top-height: 74px;
+        --hud-bottom-height: 8px;
+    }
+
+    #hud-header-fixed {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 8px 7px;
+    }
+
+    #hud-header-fixed .hud-owner-pill {
+        gap: 6px;
+    }
+
+    #hud-header-fixed .hud-owner-avatar {
+        width: 36px;
+        height: 36px;
+    }
+
+    #hud-header-fixed #hud-dueno-nombre {
+        max-width: 90px;
+        font-size: 0.8rem;
+    }
+
+    #hud-header-fixed .hud-top-chip {
+        min-height: 34px;
+        min-width: 74px;
+        padding: 3px 6px;
+    }
+
+    #hud-header-fixed .hud-top-chip.hud-top-chip-exp {
+        min-width: 96px;
+    }
+
+    #hud-header-fixed #hud-dinero,
+    #hud-header-fixed #hud-exp {
+        font-size: 0.76rem;
+    }
+
+    #hud-header-fixed .hud-exp-track {
+        height: 4px;
+    }
+
+    #game #game-nav {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 3px;
+        padding: 4px;
+    }
+
+    #game #game-nav .game-nav-btn {
+        min-height: 36px;
+        padding: 3px 1px;
+    }
+
+    #game #game-nav .gnav-label {
+        display: none;
+    }
+
+    #game #game-nav .gnav-icon {
+        font-size: 1.05rem;
+    }
+
+    #game #game-nav .gnav-badge {
+        right: 5px;
+    }
+}
+
+/* Cola compacta: evita que los casos largos empujen el resto del tablero. */
+#screen-taller.active .lane-cola .queue-box {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+}
+
+#screen-taller.active #queue-card .panel-header {
+    margin-bottom: 6px;
+}
+
+#screen-taller.active #lista-cola-espera.lane-cola-switcher {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 2px;
+}
+
+#screen-taller.active #lista-cola-espera {
+    gap: 6px;
+}
+
+#screen-taller.active #lista-cola-espera .flow-case-card {
+    padding: 8px;
+    border-radius: 12px;
+}
+
+#screen-taller.active #lista-cola-espera .flow-case-head {
+    gap: 6px;
+    margin-bottom: 5px;
+}
+
+#screen-taller.active #lista-cola-espera .flow-case-name {
+    margin-bottom: 4px;
+    font-size: 0.84rem;
+}
+
+#screen-taller.active #lista-cola-espera .flow-case-meta {
+    gap: 4px;
+    margin-bottom: 6px;
+    font-size: 0.72rem;
+}
+
+#screen-taller.active #lista-cola-espera .flow-case-meta span {
+    padding: 2px 6px;
+}
+
+#screen-taller.active #lista-cola-espera .flow-case-note {
+    font-size: 0.72rem;
+    line-height: 1.3;
+    display: -webkit-box;
+    line-clamp: 4;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+#screen-taller.active #lista-cola-espera .flow-case-actions {
+    margin-top: 6px;
+}
+
+#screen-taller.active #lista-cola-espera .flow-case-footnote {
+    font-size: 0.68rem;
+    padding-top: 6px;
+}
+
+#screen-taller.active #lista-cola-espera .queue-card-actions {
+    gap: 4px;
+}
+
+#screen-taller.active #lista-cola-espera .queue-card-actions .btn.btn-compact-queue {
+    min-height: 22px;
+    padding: 2px 6px;
+    font-size: 0.64rem;
+}
+
+/* Operaciones compacto: solo iconos + numeros, con barra mini y sin empujar layout. */
+#screen-taller.active #panel-operaciones {
+    gap: 8px;
+    min-height: 0;
+}
+
+#screen-taller.active #pending-dx-card {
+    padding: 8px;
+    border-radius: 12px;
+    min-height: 0;
+    max-height: 230px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+#screen-taller.active #pending-dx-card .taller-delivery-overview {
+    min-width: 0;
+    padding: 6px;
+    border-radius: 10px;
+    gap: 5px;
+}
+
+#screen-taller.active #pending-dx-card .taller-stage-kicker {
+    display: none;
+}
+
+#screen-taller.active #pending-dx-card .taller-delivery-count,
+#screen-taller.active #pending-dx-card .taller-delivery-subline {
+    margin: 0;
+    line-height: 1;
+    letter-spacing: 0.02em;
+}
+
+#screen-taller.active #pending-dx-card .taller-delivery-count {
+    font-size: 0.9rem;
+}
+
+#screen-taller.active #pending-dx-card .taller-delivery-subline {
+    font-size: 0.72rem;
+}
+
+#screen-taller.active #pending-dx-card .delivery-mini-progress {
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(56, 74, 84, 0.6);
+    border: 1px solid rgba(93, 126, 140, 0.45);
+    overflow: hidden;
+}
+
+#screen-taller.active #pending-dx-card .delivery-mini-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, rgba(75, 178, 132, 0.95), rgba(95, 206, 151, 0.95));
+    box-shadow: 0 0 10px rgba(75, 178, 132, 0.35);
+}
+
+#screen-taller.active #pending-dx-card #delivery-slots-top {
+    margin-top: 2px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+#screen-taller.active #pending-dx-card #delivery-slots-top .delivery-slot-card {
+    flex: 0 0 132px;
+    min-width: 132px;
+    max-width: 132px;
+    min-height: 52px;
+    padding: 5px 6px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+}
+
+#screen-taller.active #pending-dx-card #delivery-slots-top .mecanico-card-head.compact {
+    margin-bottom: 0;
+    gap: 5px;
+    width: 100%;
+}
+
+#screen-taller.active #pending-dx-card #delivery-slots-top .mecanico-card-head-info {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+#screen-taller.active #pending-dx-card #delivery-slots-top .mecanico-avatar {
+    width: 24px;
+    height: 24px;
+}
+
+#screen-taller.active #pending-dx-card #delivery-slots-top .mecanico-nombre {
+    font-size: 0.68rem;
+    line-height: 1.05;
+}
+
+#screen-taller.active #pending-dx-card #delivery-slots-top .mecanico-especialidad {
+    font-size: 0.6rem;
+    line-height: 1;
+}
+
+#screen-taller.active #pending-dx-card #delivery-slots-top .delivery-status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-left: auto;
+    flex: 0 0 auto;
+    border: 1px solid rgba(210, 228, 216, 0.28);
+    box-shadow: 0 0 8px rgba(93, 206, 151, 0.34);
+}
+
+#screen-taller.active #pending-dx-card #delivery-slots-top .delivery-status-dot.is-available {
+    background: #57d188;
+}
+
+#screen-taller.active #pending-dx-card #delivery-slots-top .delivery-status-dot.is-unavailable {
+    background: #7f8d95;
+    border-color: rgba(171, 181, 188, 0.32);
+    box-shadow: none;
+}
+
+#screen-taller.active #pending-dx-card #delivery-slots-top .delivery-slot-card.is-unavailable .mecanico-avatar {
+    filter: grayscale(1) saturate(0) opacity(0.5);
+}
+
+#screen-taller.active #pending-dx-card #delivery-slots-top .delivery-slot-card.is-unavailable {
+    border-color: rgba(92, 104, 112, 0.5);
+    background: linear-gradient(180deg, rgba(30, 40, 46, 0.88), rgba(22, 30, 34, 0.9));
+}
+
+#screen-taller.active #pending-dx-card #delivery-slots-top .delivery-slot-card.is-unavailable .mecanico-nombre,
+#screen-taller.active #pending-dx-card #delivery-slots-top .delivery-slot-card.is-unavailable .mecanico-especialidad {
+    color: #90a0a7;
+}
+
+@media (max-width: 980px) {
+    #screen-taller.active #pending-dx-card {
+        max-height: 190px;
+        padding: 7px;
+    }
+
+    #screen-taller.active #pending-dx-card #delivery-slots-top {
+        gap: 5px;
+    }
+
+    #screen-taller.active #pending-dx-card #delivery-slots-top .delivery-slot-card {
+        flex-basis: 122px;
+        min-width: 122px;
+        max-width: 122px;
+    }
+}
+
+@media (max-width: 640px) {
+    #screen-taller.active #pending-dx-card {
+        max-height: 170px;
+        padding: 6px;
+    }
+
+    #screen-taller.active #pending-dx-card #delivery-slots-top .delivery-slot-card {
+        flex-basis: 112px;
+        min-width: 112px;
+        max-width: 112px;
+        min-height: 48px;
+    }
+
+    #screen-taller.active #pending-dx-card .taller-delivery-count {
+        font-size: 0.84rem;
+    }
+
+    #screen-taller.active #pending-dx-card .taller-delivery-subline {
+        font-size: 0.68rem;
+    }
+}
+
+/* Mecanicos compactos: avatar + nombre + barras con iconos. */
+#screen-taller.active #grid-mecanicos.mecanicos-bar {
+    grid-auto-columns: 186px;
+    gap: 8px;
+    padding: 2px 1px 6px;
+}
+
+#screen-taller.active #grid-mecanicos.mecanicos-bar .mecanico-btn {
+    width: 186px;
+    min-width: 186px;
+    max-width: 186px;
+    height: 152px;
+    min-height: 152px;
+    max-height: 152px;
+    padding: 7px;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+#screen-taller.active #grid-mecanicos.mecanicos-bar .mecanico-card-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 5px;
+}
+
+#screen-taller.active #grid-mecanicos.mecanicos-bar .mecanico-avatar,
+#screen-taller.active #grid-mecanicos.mecanicos-bar .mecanico-avatar-placeholder {
+    width: 24px;
+    height: 24px;
+}
+
+#screen-taller.active #grid-mecanicos.mecanicos-bar .mecanico-card-head-info {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+#screen-taller.active #grid-mecanicos.mecanicos-bar .mecanico-nombre {
+    font-size: 0.66rem;
+    line-height: 1.05;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#screen-taller.active #grid-mecanicos.mecanicos-bar .mecanico-especialidad {
+    font-size: 0.58rem;
+    line-height: 1;
+    opacity: 0.9;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#screen-taller.active #grid-mecanicos.mecanicos-bar .mecanico-status {
+    min-width: 16px;
+    min-height: 16px;
+    padding: 0;
+    font-size: 0.62rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#screen-taller.active #grid-mecanicos.mecanicos-bar .mecanico-meter {
+    display: grid;
+    grid-template-columns: 16px minmax(0, 1fr) 30px;
+    align-items: center;
+    gap: 4px;
+    margin-top: 3px;
+}
+
+#screen-taller.active #grid-mecanicos.mecanicos-bar .mecanico-meter-label {
+    width: auto;
+    min-width: 0;
+    text-align: center;
+    font-size: 0.66rem;
+    line-height: 1;
+}
+
+#screen-taller.active #grid-mecanicos.mecanicos-bar .mecanico-meter-track {
+    height: 5px;
+    border-radius: 999px;
+}
+
+#screen-taller.active #grid-mecanicos.mecanicos-bar .mecanico-meter-value {
+    font-size: 0.56rem;
+    text-align: right;
+    line-height: 1;
+}
+
+#screen-taller.active #grid-mecanicos.mecanicos-bar .mecanico-progreso,
+#screen-taller.active #grid-mecanicos.mecanicos-bar .mecanico-mejora,
+#screen-taller.active #grid-mecanicos.mecanicos-bar .mecanico-upgrade-actions {
+    display: none !important;
+}
+
+@media (max-width: 640px) {
+    #screen-taller.active #grid-mecanicos.mecanicos-bar {
+        grid-auto-columns: 186px;
+        gap: 6px;
+    }
+
+    #screen-taller.active #grid-mecanicos.mecanicos-bar .mecanico-btn {
+        width: 186px;
+        min-width: 186px;
+        max-width: 186px;
+        height: 152px;
+        min-height: 152px;
+        max-height: 152px;
+        padding: 6px;
+    }
+}
+
+/* Toolbar superior de asignacion (Mecanicos / Delivery). */
+#screen-taller.active .workbench-layout {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto minmax(0, 1fr) !important;
+    gap: 8px !important;
+}
+
+#screen-taller.active .taller-recursos-toolbar {
+    min-height: 0;
+    position: sticky;
+    top: 0;
+    z-index: 12;
+}
+
+#screen-taller.active .taller-recursos-toolbar #pending-dx-card {
+    padding: 8px;
+    border-radius: 12px;
+    min-height: 0;
+    max-height: 240px;
+    overflow: hidden;
+    transition: max-height 0.2s ease, padding 0.2s ease;
+}
+
+#screen-taller.active .taller-recursos-toolbar #pending-dx-card.is-collapsed {
+    max-height: 46px;
+    padding: 6px 8px;
+}
+
+#screen-taller.active .taller-recursos-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+#screen-taller.active .resource-toolbar-toggle {
+    display: none;
+    width: 100%;
+    min-height: 28px;
+    border-radius: 9px;
+    border: 1px solid #4a6674;
+    background: linear-gradient(180deg, rgba(28, 46, 55, 0.95), rgba(18, 31, 38, 0.98));
+    color: #e6dcc8;
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-weight: 700;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 0 10px;
+    cursor: pointer;
+}
+
+#screen-taller.active .resource-toolbar-toggle.hidden {
+    display: none !important;
+}
+
+#screen-taller.active .taller-recursos-toolbar #pending-dx-card.is-collapsed .taller-recursos-head {
+    justify-content: flex-start;
+    align-items: center;
+}
+
+#screen-taller.active .taller-recursos-toolbar #pending-dx-card.is-collapsed .taller-delivery-overview {
+    display: none !important;
+}
+
+#screen-taller.active .taller-recursos-toolbar #pending-dx-card.is-collapsed .taller-recursos-tabs {
+    width: 100%;
+}
+
+#screen-taller.active .taller-recursos-tabs {
+    display: inline-grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px;
+    padding: 2px;
+    border-radius: 999px;
+    border: 1px solid rgba(83, 113, 126, 0.5);
+    background: rgba(14, 22, 28, 0.85);
+}
+
+#screen-taller.active .taller-recurso-tab {
+    min-height: 28px;
+    padding: 2px 10px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    background: rgba(27, 40, 49, 0.7);
+    color: #a8bac2;
+    font-size: 0.68rem;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+}
+
+#screen-taller.active .taller-recurso-tab.active {
+    color: #e7f0f4;
+    border-color: rgba(99, 153, 180, 0.5);
+    background: linear-gradient(180deg, rgba(54, 92, 111, 0.95), rgba(36, 62, 76, 0.96));
+}
+
+#screen-taller.active .taller-recursos-pool-wrap {
+    margin-top: 6px;
+    min-height: 0;
+}
+
+#screen-taller.active .taller-recursos-toolbar #pending-dx-card.is-collapsed .taller-recursos-pool-wrap {
+    display: none;
+}
+
+#screen-taller.active .taller-recursos-pool-wrap #grid-mecanicos,
+#screen-taller.active .taller-recursos-pool-wrap #delivery-slots-top {
+    margin-top: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+#screen-taller.active .taller-recursos-pool-wrap #grid-mecanicos.hidden,
+#screen-taller.active .taller-recursos-pool-wrap #delivery-slots-top.hidden {
+    display: none !important;
+}
+
+#screen-taller.active .lane-cola {
+    grid-template-rows: minmax(0, 1fr) minmax(210px, auto);
+    gap: 8px;
+}
+
+@media (max-width: 980px) {
+    #screen-taller.active .taller-recursos-toolbar #pending-dx-card {
+        max-height: 220px;
+    }
+
+    #screen-taller.active .taller-recursos-toolbar #pending-dx-card.is-collapsed {
+        max-height: 44px;
+    }
+}
+
+@media (max-width: 640px) {
+    #screen-taller.active .taller-recursos-head {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    #screen-taller.active .resource-toolbar-toggle {
+        display: flex;
+    }
+
+    #screen-taller.active .taller-recursos-tabs {
+        width: 100%;
+    }
+
+    #screen-taller.active .taller-recurso-tab {
+        min-height: 26px;
+        font-size: 0.64rem;
+    }
+
+    #screen-taller.active .taller-recursos-toolbar #pending-dx-card {
+        max-height: 208px;
+        padding: 7px;
+    }
+
+    #screen-taller.active .taller-recursos-toolbar #pending-dx-card.is-collapsed {
+        max-height: 42px;
+        padding: 5px 7px;
+    }
+}
+
+/* Toolbar colapsable de casos en trabajo sobre la barra de navegacion. */
+#screen-taller.active .lane-cola {
+    grid-template-rows: minmax(0, 1fr) !important;
+}
+
+#screen-taller.active .taller-work-toolbar {
+    position: fixed;
+    left: 10px;
+    right: 10px;
+    bottom: 74px;
+    z-index: 76;
+    pointer-events: none;
+}
+
+#screen-taller.active .taller-work-toolbar #repairs-card {
+    pointer-events: auto;
+    border: 1px solid #35505d;
+    border-radius: 12px;
+    background: linear-gradient(180deg, rgba(13, 19, 24, 0.96), rgba(9, 14, 18, 0.98));
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.34);
+    padding: 4px 4px 2px 4px;
+    display: grid;
+    gap: 4px;
+}
+
+#screen-taller.active .work-toolbar-toggle {
+    width: 100%;
+    min-height: 24px;
+    border-radius: 9px;
+    border: 1px solid #4a6674;
+    background: linear-gradient(180deg, rgba(28, 46, 55, 0.95), rgba(18, 31, 38, 0.98));
+    color: #e6dcc8;
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 0 10px;
+    cursor: pointer;
+}
+
+#screen-taller.active .work-toolbar-body {
+    max-height: 110px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-auto-rows: max-content;
+    align-content: start;
+    gap: 8px;
+}
+
+#screen-taller.active #lista-reparaciones-activas {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-auto-rows: max-content;
+    align-content: start;
+    gap: 8px;
+}
+
+#screen-taller.active #lista-reparaciones-activas .repair-card {
+    position: relative;
+    width: 100%;
+    margin: 0 0 1px 0;
+    padding: 2px 3px 2px 3px !important;
+    font-size: 0.65rem !important;
+    min-height: 18px;
+    border-radius: 5px !important;
+    line-height: 1.08;
+}
+
+#screen-taller.active #repairs-card.is-collapsed {
+    padding-bottom: 6px;
+}
+
+#screen-taller.active #repairs-card.is-collapsed .work-toolbar-body {
+    display: none;
+}
+
+@media (max-width: 980px) {
+    #screen-taller.active .taller-work-toolbar {
+        left: 8px;
+        right: 8px;
+        bottom: 70px;
+    }
+
+    #screen-taller.active .work-toolbar-body {
+        max-height: 320px;
+    }
+}
+
+/* Override final: evita que el toolbar de recursos crezca de mas al abrir Mecanicos/Delivery. */
+#screen-taller.active .taller-recursos-toolbar #pending-dx-card {
+    max-height: 214px !important;
+    overflow: hidden !important;
+}
+
+#screen-taller.active .taller-recursos-toolbar #pending-dx-card.is-collapsed {
+    max-height: 46px !important;
+}
+
+#screen-taller.active .taller-recursos-pool-wrap {
+    height: 158px;
+    max-height: 158px;
+    overflow: hidden;
+}
+
+#screen-taller.active .taller-recursos-pool-wrap #grid-mecanicos,
+#screen-taller.active .taller-recursos-pool-wrap #delivery-slots-top {
+    height: 100%;
+    max-height: 100%;
+}
+
+#screen-taller.active .taller-recursos-pool-wrap #delivery-slots-top:not(.hidden) {
+    display: grid !important;
+    grid-auto-flow: column;
+    grid-auto-columns: 132px;
+    justify-content: start;
+    align-content: start;
+    gap: 6px;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    padding-bottom: 2px;
+}
+
+#screen-taller.active .taller-recursos-pool-wrap #delivery-slots-top .delivery-slot-card {
+    width: 132px;
+    min-width: 132px;
+    max-width: 132px;
+    min-height: 52px;
+    max-height: 52px;
+}
+
+#screen-taller.active .taller-recursos-pool-wrap #grid-mecanicos.mecanicos-bar:not(.hidden) {
+    display: grid !important;
+    grid-auto-flow: column !important;
+    grid-auto-columns: 186px !important;
+    grid-template-columns: none !important;
+    align-content: start;
+    gap: 8px;
+    padding: 2px 1px 6px;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    touch-action: pan-x;
+    -webkit-overflow-scrolling: touch;
+}
+
+#screen-taller.active .taller-recursos-pool-wrap #grid-mecanicos.mecanicos-bar:not(.hidden) .mecanico-btn,
+#screen-taller.active .taller-recursos-pool-wrap #delivery-slots-top:not(.hidden) .delivery-slot-card {
+    touch-action: pan-x;
+}
+
+#screen-taller.active .taller-recursos-pool-wrap #grid-mecanicos.hidden,
+#screen-taller.active .taller-recursos-pool-wrap #delivery-slots-top.hidden {
+    display: none !important;
+}
+
+@media (max-width: 980px) {
+    #screen-taller.active .taller-recursos-toolbar #pending-dx-card {
+        max-height: 198px !important;
+    }
+
+    #screen-taller.active .taller-recursos-toolbar #pending-dx-card.is-collapsed {
+        max-height: 44px !important;
+    }
+
+    #screen-taller.active .taller-recursos-pool-wrap {
+        height: 152px;
+        max-height: 152px;
+    }
+
+    #screen-taller.active .taller-recursos-pool-wrap #delivery-slots-top {
+        grid-auto-columns: 122px;
+        gap: 5px;
+    }
+
+    #screen-taller.active .taller-recursos-pool-wrap #delivery-slots-top .delivery-slot-card {
+        width: 122px;
+        min-width: 122px;
+        max-width: 122px;
+    }
+}
+
+@media (max-width: 640px) {
+    #screen-taller.active .taller-recursos-pool-wrap #delivery-slots-top {
+        grid-auto-columns: 112px;
+        gap: 5px;
+    }
+
+    #screen-taller.active .taller-recursos-pool-wrap #grid-mecanicos.mecanicos-bar:not(.hidden) {
+        grid-auto-columns: 186px !important;
+        gap: 6px;
+    }
+
+    #screen-taller.active .taller-recursos-pool-wrap #delivery-slots-top .delivery-slot-card {
+        width: 112px;
+        min-width: 112px;
+        max-width: 112px;
+        min-height: 48px;
+        max-height: 48px;
+    }
+}
+
+
+/* ======================================================
+   TELEFONO - OPTIMIZACION PARA ESCRITORIO (PC)
+   Corrige height, border, overflow, sidebar, espaciado
+   y columnas de respuesta en pantallas >= 981px.
+   ====================================================== */
+
+@media (min-width: 981px) {
+
+    /* ---- Frame principal: height + borde + overflow ---- */
+    #screen-telefono.active {
+        padding: 0 !important;
+        overflow: hidden !important;
+    }
+
+    #screen-telefono.active .tel-frame {
+        height: 100%;
+        min-height: 0;
+        border: 1px solid #24363f;
+        border-radius: 14px;
+        overflow: hidden;
+    }
+
+    /* ---- Sidebar mas amplia ---- */
+    #screen-telefono.active .tel-sidebar {
+        width: clamp(300px, 27vw, 420px);
+    }
+
+    #screen-telefono.active .tel-sidebar-header {
+        padding: 14px 18px;
+        font-size: 1.15rem;
+    }
+
+    #screen-telefono.active .tel-search-wrap {
+        padding: 10px 14px;
+    }
+
+    #screen-telefono.active .tel-search-input {
+        font-size: 0.8rem;
+        padding: 9px 12px;
+    }
+
+    /* Filtros en una fila en PC (no 2x2 grid) */
+    #screen-telefono.active .tel-filtros {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        padding: 10px 14px;
+    }
+
+    #screen-telefono.active .tel-sidebar-stats {
+        padding: 7px 14px;
+        font-size: 0.67rem;
+    }
+
+    #screen-telefono.active .tel-contact {
+        padding: 11px 16px;
+        gap: 12px;
+    }
+
+    #screen-telefono.active .tel-contact-info strong {
+        font-size: 0.88rem;
+    }
+
+    #screen-telefono.active .tel-contact-preview {
+        font-size: 0.74rem;
+    }
+
+    #screen-telefono.active .tel-avatar {
+        width: 36px;
+        height: 36px;
+        font-size: 1.45rem;
+    }
+
+    /* ---- Area de chat mas espaciosa ---- */
+    #screen-telefono.active .tel-chat-header {
+        padding: 12px 18px;
+    }
+
+    #screen-telefono.active .tel-chat-nombre {
+        font-size: 1.15rem;
+    }
+
+    #screen-telefono.active .tel-messages {
+        padding: 16px 22px;
+        gap: 10px;
+    }
+
+    #screen-telefono.active .tel-msg {
+        max-width: 62%;
+    }
+
+    #screen-telefono.active .tel-msg-bubble {
+        font-size: 0.86rem;
+        padding: 9px 14px;
+        border-radius: 12px;
+    }
+
+    #screen-telefono.active .tel-msg-hora {
+        font-size: 0.65rem;
+    }
+
+    /* ---- Botones de respuesta rapida: columnas adaptables ---- */
+    #screen-telefono.active .tel-reply-row {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 10px;
+        padding: 14px 18px;
+    }
+
+    #screen-telefono.active .tel-reply-btn {
+        min-height: 46px;
+        font-size: 0.78rem;
+        padding: 10px 14px;
+    }
+}
+
+/* ======================================================
+   PC REDESIGN — layout exclusivo escritorio (>= 981px)
+   Movil NO se toca. Todo PC va dentro de este bloque.
+   ====================================================== */
+
+@media (min-width: 981px) {
+
+    /* 1. Contenedor principal: flex column, pantalla completa */
+    #game.game-container {
+        display: flex !important;
+        flex-direction: column !important;
+        height: 100svh !important;
+        max-height: 100svh !important;
+        width: 100vw !important;
+        max-width: none !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        gap: 0 !important;
+    }
+
+    /* 2. Header: en flujo normal para escritorio */
+    #game.game-container #hud-header-fixed {
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        right: auto !important;
+        flex: 0 0 auto !important;
+    }
+
+    /* ── 3. Shell: sidebar fija izquierda + área principal ── */
+    #game.game-container .game-shell {
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
+        margin-top: 0 !important;
+        display: grid !important;
+        grid-template-columns: 230px minmax(0, 1fr) !important;
+        grid-template-rows: 1fr !important;
+        align-items: stretch !important;
+        gap: 0 !important;
+    }
+
+    /* ── 4. Sidebar de stats ── */
+    #game.game-container .game-status-layer {
+        order: 1 !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        border-right: 1px solid rgba(42, 61, 72, 0.9) !important;
+        background: rgba(6, 10, 14, 0.88) !important;
+        padding: 14px 12px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 10px !important;
+        scrollbar-gutter: stable !important;
+    }
+
+    #game.game-container .stats-panel {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+    }
+
+    #game.game-container .owner-overview {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 10px !important;
+        margin: 0 !important;
+    }
+
+    #game.game-container #panel-bienestar {
+        border-radius: 12px !important;
+        padding: 10px !important;
+    }
+
+    /* ── 5. Área de flujo principal ── */
+    #game.game-container .game-flow-layer {
+        order: 2 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        min-height: 0 !important;
+        overflow: hidden !important;
+    }
+
+    /* Pantallas historia y cierre */
+    #game.game-container #pantalla-historia,
+    #game.game-container #pantalla-cierre {
+        flex: 1 !important;
+        border-radius: 0 !important;
+        border-left-width: 1px !important;
+        margin: 0 !important;
+        max-height: none !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+    }
+
+    /* ── 6. Pantalla taller: flex column con nav arriba ── */
+    #game.game-container #pantalla-taller {
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
+        border-radius: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        background: transparent !important;
+    }
+
+    #game.game-container #pantalla-taller.fixed-workbench-layout {
+        display: flex !important;
+        flex-direction: column !important;
+        height: 100% !important;
+        max-height: 100% !important;
+        min-height: 0 !important;
+        overflow: hidden !important;
+        padding: 12px !important;
+        gap: 8px !important;
+    }
+
+    /* ── 7. Nav de pantallas: horizontal fijo arriba ── */
+    #game.game-container #pantalla-taller #game-nav {
+        position: relative !important;
+        top: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+        left: auto !important;
+        order: 1 !important;
+        flex: 0 0 auto !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: 52px !important;
+        margin: 0 !important;
+        display: grid !important;
+        grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+        gap: 6px !important;
+        padding: 6px !important;
+        border-radius: 12px !important;
+        border: 1px solid rgba(84, 118, 133, 0.46) !important;
+        background: rgba(7, 14, 20, 0.96) !important;
+        backdrop-filter: blur(6px) !important;
+        z-index: 40 !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+    }
+
+    #game.game-container #pantalla-taller #game-nav .game-nav-btn {
+        min-height: 44px !important;
+        padding: 5px 2px !important;
+        border-radius: 10px !important;
+        gap: 2px !important;
+        flex-direction: column !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    #game.game-container #pantalla-taller #game-nav .gnav-icon {
+        font-size: 1.1rem !important;
+    }
+
+    #game.game-container #pantalla-taller #game-nav .gnav-label {
+        display: block !important;
+        font-size: 0.57rem !important;
+        letter-spacing: 0.04em !important;
+    }
+
+    /* ── 8. Alertas: antes del screen ── */
+    #game.game-container #pantalla-taller #fin-jornada-aviso,
+    #game.game-container #pantalla-taller #feedback-gameplay {
+        flex: 0 0 auto !important;
+        order: 2 !important;
+    }
+
+    /* ── 9. Screens activos: ocupan el espacio restante ── */
+    #game.game-container #pantalla-taller .game-screen {
+        order: 3 !important;
+    }
+
+    #game.game-container #pantalla-taller .game-screen.active {
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
+        height: auto !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    #game.game-container #screen-taller.active {
+        overflow: hidden !important;
+    }
+
+    /* ── 10. Workbench del taller ── */
+    #game.game-container #screen-taller.active .workbench-layout {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.9fr) !important;
+        grid-template-rows: auto auto minmax(0, 1fr) minmax(168px, auto) !important;
+        grid-template-areas:
+            'tabs tabs'
+            'ops ops'
+            'cola puesto'
+            'cola work' !important;
+        gap: 10px !important;
+        height: 100% !important;
+        min-height: 0 !important;
+        overflow: hidden !important;
+    }
+
+    #game.game-container #screen-taller.active .workbench-layout.modo-cola {
+        grid-template-areas:
+            'tabs tabs'
+            'ops ops'
+            'cola work'
+            'cola work' !important;
+    }
+
+    #game.game-container #screen-taller.active .workbench-layout.modo-mi-puesto {
+        grid-template-areas:
+            'tabs tabs'
+            'ops ops'
+            'puesto work'
+            'puesto work' !important;
+    }
+
+    #game.game-container #screen-taller.active .workbench-layout.modo-trabajos {
+        grid-template-areas:
+            'tabs tabs'
+            'ops ops'
+            'trabajos work'
+            'trabajos work' !important;
+    }
+
+    #game.game-container #screen-taller.active .taller-puesto-switch {
+        grid-area: tabs !important;
+        min-height: 0 !important;
+    }
+
+    #game.game-container #screen-taller.active .taller-recursos-toolbar {
+        grid-area: ops !important;
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 10 !important;
+    }
+
+    #game.game-container #screen-taller.active .lane-cola {
+        grid-area: cola !important;
+        min-height: 0 !important;
+        overflow: hidden !important;
+    }
+
+    #game.game-container #screen-taller.active .lane-caso {
+        grid-area: puesto !important;
+        min-height: 0 !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        align-content: start !important;
+    }
+
+    #game.game-container #screen-taller.active .lane-trabajos {
+        grid-area: trabajos !important;
+        min-height: 0 !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        align-content: start !important;
+    }
+
+    #game.game-container #screen-taller.active .lane-caso .taller-focus-card {
+        display: flex !important;
+        flex-direction: column !important;
+        min-height: 0 !important;
+        overflow: visible !important;
+    }
+
+    #game.game-container #screen-taller.active .lane-caso .owner-workbench-card {
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
+        overflow: visible !important;
+    }
+
+    #game.game-container #screen-taller.active .taller-work-toolbar {
+        grid-area: work !important;
+        position: relative !important;
+        top: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+        left: auto !important;
+        z-index: 12 !important;
+        pointer-events: auto !important;
+        min-height: 0 !important;
+        overflow: hidden !important;
+    }
+
+    #game.game-container #screen-taller.active .taller-work-toolbar #repairs-card {
+        height: 100% !important;
+        min-height: 0 !important;
+        overflow: hidden !important;
+    }
+
+    #game.game-container #screen-taller.active .work-toolbar-body {
+        max-height: none !important;
+        min-height: 0 !important;
+    }
+
+    #game.game-container #screen-taller.active .lane-cola .queue-box {
+        display: flex !important;
+        flex-direction: column !important;
+        min-height: 0 !important;
+        overflow: hidden !important;
+    }
+
+    #game.game-container #screen-taller.active #lista-cola-espera.lane-cola-switcher {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important;
+        gap: 8px !important;
+        align-content: start !important;
+        overflow-y: auto !important;
+        flex: 1 !important;
+        min-height: 0 !important;
+    }
+
+    #game.game-container #screen-taller.active #lista-cola-espera .flow-case-card,
+    #game.game-container #screen-taller.active #lista-cola-espera .queue-card {
+        padding: 7px 9px !important;
+        border-radius: 10px !important;
+    }
+
+    #game.game-container #screen-taller.active #lista-cola-espera .flow-case-name {
+        font-size: 0.82rem !important;
+        margin-bottom: 3px !important;
+    }
+
+    #game.game-container #screen-taller.active #lista-cola-espera .flow-case-meta {
+        font-size: 0.68rem !important;
+        gap: 3px !important;
+        margin-bottom: 5px !important;
+    }
+
+    #game.game-container #screen-taller.active #lista-cola-espera .queue-card-actions .btn.btn-compact-queue {
+        min-height: 20px !important;
+        padding: 1px 5px !important;
+        font-size: 0.61rem !important;
+    }
+
+    /* ── 11. Otras pantallas ── */
+    #game.game-container #screen-oficina.active,
+    #game.game-container #screen-exterior.active,
+    #game.game-container #screen-mapa.active,
+    #game.game-container #screen-configuracion.active {
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        padding: 16px !important;
+    }
+
+    #game.game-container #screen-telefono.active {
+        overflow: hidden !important;
+        padding: 10px !important;
+    }
+
+    #game.game-container #screen-telefono.active .tel-frame {
+        height: 100% !important;
+        min-height: 0 !important;
+        max-height: none !important;
+    }
+
+    /* ── 12. Oficina layout expandido ── */
+    #game.game-container #screen-oficina.active .of-topbar {
+        grid-template-columns: minmax(220px, auto) 1fr !important;
+    }
+
+    #game.game-container #screen-oficina.active .of-topbar-chips {
+        grid-template-columns: repeat(5, minmax(96px, 1fr)) !important;
+    }
+
+    #game.game-container #screen-oficina.active .of-body {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) minmax(0, 1fr) !important;
+    }
+
+    #game.game-container #screen-oficina.active .of-actions-grid,
+    #game.game-container #screen-oficina.active .of-mejoras-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    /* ── 13. Modo oficina: colapsa sidebar ── */
+    #game.game-container.modo-oficina .game-status-layer {
+        display: none !important;
+    }
+
+    #game.game-container.modo-oficina .game-shell {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* Pantallas muy anchas: sidebar más amplia */
+@media (min-width: 1400px) {
+    #game.game-container .game-shell {
+        grid-template-columns: 270px minmax(0, 1fr) !important;
+    }
+
+    #game.game-container #screen-taller.active #lista-cola-espera.lane-cola-switcher {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+    }
+
+    #game.game-container #screen-oficina.active .of-body {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr) minmax(0, 1fr) !important;
+    }
+}
+
+/* ======================================================
+   DESKTOP NAV SAFETY
+   Elimina restos de sidebar/nav fijo de intentos anteriores
+   sin tocar comportamiento movil.
+   ====================================================== */
+@media (min-width: 981px) {
+    #pantalla-taller.fixed-workbench-layout {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+        padding-bottom: 0 !important;
+        min-height: 0 !important;
+    }
+
+    #pantalla-taller #game-nav,
+    #game.game-container #pantalla-taller #game-nav {
+        position: relative !important;
+        top: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+        left: auto !important;
+        width: 100% !important;
+        margin: 0 !important;
+        order: 1 !important;
+        display: grid !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        z-index: 40 !important;
+    }
+
+    #pantalla-taller .game-screen.active,
+    #game.game-container #pantalla-taller .game-screen.active {
+        order: 3 !important;
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
+    }
+}
+
+/* ======================================================
+   TELEFONO MOBILE SAFETY
+   Refuerzo final para evitar desborde horizontal en chat.
+   ====================================================== */
+@media (max-width: 980px) {
+    #screen-telefono.active,
+    #screen-telefono.active .tel-frame,
+    #screen-telefono.active .tel-sidebar,
+    #screen-telefono.active .tel-chat-area,
+    #screen-telefono.active .tel-chat-header,
+    #screen-telefono.active .tel-chat-head-main,
+    #screen-telefono.active .tel-messages,
+    #screen-telefono.active .tel-reply-row {
+        min-width: 0 !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    #screen-telefono.active .tel-chat-header {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) !important;
+        align-items: start !important;
+        gap: 6px !important;
+    }
+
+    #screen-telefono.active .tel-chat-tools {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 6px !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+    }
+
+    #screen-telefono.active .tel-tool-btn {
+        min-width: 0 !important;
+        flex: 1 1 120px !important;
+    }
+
+    #screen-telefono.active .tel-messages {
+        overflow-x: hidden !important;
+        padding-inline: 10px !important;
+    }
+
+    #screen-telefono.active .tel-msg {
+        max-width: 88% !important;
+        min-width: 0 !important;
+    }
+
+    #screen-telefono.active .tel-msg-bubble,
+    #screen-telefono.active .tel-msg-bubble * {
+        max-width: 100% !important;
+        overflow-wrap: anywhere !important;
+        word-break: break-word !important;
+    }
+
+    #screen-telefono.active .tel-reply-btn {
+        white-space: normal !important;
+    }
+
+    /* Mecanicos mobile safety: scroll horizontal sin romper borde derecho. */
+    #pantalla-taller,
+    #screen-taller.active,
+    #screen-taller.active .workbench-layout,
+    #screen-taller.active .taller-recursos-toolbar,
+    #screen-taller.active .taller-recursos-pool-wrap {
+        min-width: 0 !important;
+        max-width: 100% !important;
+        overflow-x: hidden !important;
+        box-sizing: border-box !important;
+    }
+
+    #screen-taller.active #grid-mecanicos.mecanicos-bar:not(.hidden) {
+        display: grid !important;
+        grid-auto-flow: column !important;
+        grid-auto-columns: minmax(176px, 82vw) !important;
+        gap: 8px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+        touch-action: pan-x !important;
+        overscroll-behavior-x: contain !important;
+        padding-inline: 2px !important;
+        padding-bottom: 6px !important;
+        box-sizing: border-box !important;
+    }
+
+    #screen-taller.active #grid-mecanicos.mecanicos-bar:not(.hidden) .mecanico-btn,
+    #screen-taller.active #grid-mecanicos.mecanicos-bar:not(.hidden) .mecanico-ficha {
+        width: auto !important;
+        min-width: 176px !important;
+        max-width: 82vw !important;
+        min-height: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Mobile fail-safe: apilar el taller evita que la grilla colapse a 0px en navegadores moviles. */
+    #pantalla-taller.fixed-workbench-layout {
+        min-height: calc(100svh - 140px) !important;
+        height: auto !important;
+        max-height: none !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+    }
+
+    #pantalla-taller .game-screen.active,
+    #screen-taller.active {
+        min-height: 0 !important;
+        height: auto !important;
+        overflow-y: visible !important;
+        overflow-x: hidden !important;
+    }
+
+    #screen-taller.active .workbench-layout,
+    #screen-taller.active .workbench-layout.modo-cola,
+    #screen-taller.active .workbench-layout.modo-mi-puesto {
+        display: flex !important;
+        flex-direction: column !important;
+        grid-template-columns: none !important;
+        grid-template-rows: none !important;
+        grid-template-areas: none !important;
+        height: auto !important;
+        min-height: 0 !important;
+        overflow: visible !important;
+    }
+
+    #screen-taller.active .taller-puesto-switch,
+    #screen-taller.active .taller-recursos-toolbar,
+    #screen-taller.active .lane-cola,
+    #screen-taller.active .lane-caso,
+    #screen-taller.active .taller-work-toolbar {
+        grid-area: auto !important;
+        min-height: 0 !important;
+        width: 100% !important;
+    }
+
+    #screen-taller.active .lane-cola,
+    #screen-taller.active .lane-caso,
+    #screen-taller.active .lane-trabajos,
+    #screen-taller.active .taller-work-toolbar,
+    #screen-taller.active .queue-box,
+    #screen-taller.active #lista-cola-espera,
+    #screen-taller.active #repairs-card,
+    #screen-taller.active .work-toolbar-body,
+    #screen-taller.active .owner-workbench-card {
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+}

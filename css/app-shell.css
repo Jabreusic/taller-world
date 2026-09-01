@@ -1,0 +1,746 @@
+:root {
+    --app-bg: #101516;
+    --app-surface: #1a2122;
+    --app-surface-raised: #222b2b;
+    --app-border: #3a4846;
+    --app-text: #f2f1ea;
+    --app-muted: #aeb8b3;
+    --app-primary: #f0bd4f;
+    --app-primary-strong: #ffd36b;
+    --app-success: #5fbd83;
+    --app-danger: #e66b5f;
+    --app-nav-height: 64px;
+}
+
+/* Mobile workshop: compact hierarchy with one clear action per row. */
+@media (max-width: 640px) and (orientation: portrait) {
+    #game.game-container { --hud-top-height: 64px !important; --app-nav-height: 62px !important; }
+    #game .game-screen {
+        box-sizing: border-box !important;
+        padding-bottom: calc(var(--app-nav-height) + env(safe-area-inset-bottom, 0px) + 18px) !important;
+    }
+    #game #hud-header-fixed {
+        min-height: 64px !important;
+        padding: calc(6px + env(safe-area-inset-top, 0px)) 8px 6px !important;
+        gap: 6px !important;
+    }
+    #game #hud-header-fixed .hud-owner-pill { flex: 0 1 84px !important; min-width: 0 !important; gap: 5px !important; }
+    #game #hud-header-fixed .hud-owner-avatar { width: 32px !important; height: 32px !important; flex-basis: 32px !important; }
+    #game #hud-header-fixed #hud-dueno-nombre {
+        max-width: 45px !important; overflow: hidden !important; font-size: .66rem !important;
+        text-overflow: ellipsis !important; white-space: nowrap !important;
+    }
+    #game #hud-header-fixed .hud-top-chips {
+        display: grid !important; flex: 1 1 auto !important;
+        grid-template-columns: 1.35fr repeat(3, minmax(0, .8fr)) !important;
+        gap: 3px !important; min-width: 0 !important;
+    }
+    #game #hud-header-fixed .hud-top-chip,
+    #game #hud-header-fixed .hud-top-chip.hud-top-chip-exp { min-height: 34px !important; padding: 3px 4px !important; }
+    #game #hud-header-fixed .hud-top-label { font-size: .43rem !important; letter-spacing: .06em !important; }
+    #game #hud-header-fixed #hud-dinero,
+    #game #hud-header-fixed #hud-exp,
+    #game #hud-header-fixed #hud-casos,
+    #game #hud-header-fixed #hud-racha,
+    #game #hud-header-fixed #hud-nivel { font-size: .64rem !important; }
+
+    #game #pantalla-taller.fixed-workbench-layout,
+    #game #pantalla-taller {
+        padding: calc(70px + env(safe-area-inset-top, 0px)) 7px calc(var(--app-nav-height) + env(safe-area-inset-bottom, 0px) + 18px) !important;
+        gap: 7px !important;
+    }
+    #game #screen-taller.active .workbench-layout,
+    #game #screen-taller.active .workbench-layout.modo-cola { gap: 7px !important; padding-bottom: calc(var(--app-nav-height) + env(safe-area-inset-bottom, 0px) + 18px) !important; }
+    #game #screen-taller.active .taller-puesto-switch {
+        display: grid !important; grid-template-columns: minmax(0, 1fr) 76px !important;
+        gap: 6px !important; align-items: stretch !important;
+    }
+    #game #screen-taller.active .taller-puesto-tabs {
+        display: grid !important; grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: 3px !important; padding: 3px !important; border-radius: 10px !important;
+    }
+    #game #screen-taller.active .taller-puesto-tabs .lane-tab {
+        min-width: 0 !important; min-height: 42px !important; padding: 6px 2px !important;
+        font-size: .58rem !important; line-height: 1.05 !important; white-space: normal !important;
+    }
+    #game #screen-taller.active .taller-fast-forward {
+        display: flex !important; min-width: 0 !important; min-height: 48px !important;
+        margin: 0 !important; padding: 5px !important; flex-direction: column !important;
+        justify-content: center !important; gap: 1px !important; font-size: .68rem !important; line-height: 1.05 !important;
+    }
+    #game #screen-taller.active .taller-fast-forward small { display: block !important; font-size: .43rem !important; line-height: 1.05 !important; }
+
+    #game #screen-taller.active .taller-recursos-toolbar #pending-dx-card,
+    #game #screen-taller.active .taller-recursos-toolbar #pending-dx-card.is-collapsed {
+        min-height: 0 !important; max-height: none !important; padding: 6px !important; border-radius: 10px !important;
+    }
+    #game #screen-taller.active .resource-toolbar-toggle { min-height: 34px !important; padding: 6px 9px !important; font-size: .62rem !important; }
+    #game #screen-taller.active .lane-cola .queue-box { padding: 7px !important; border-radius: 11px !important; }
+    #game #screen-taller.active .queue-mobile-head { min-height: 38px !important; margin: 0 0 6px !important; padding: 0 !important; }
+    #game #screen-taller.active .queue-mobile-title { font-size: .72rem !important; }
+    #game #screen-taller.active .queue-mobile-toggle { min-height: 32px !important; padding: 5px 9px !important; font-size: .58rem !important; }
+    #game #screen-taller.active #lista-cola-espera .flow-case-card { padding: 9px !important; border-radius: 11px !important; }
+
+    #game #screen-taller.active .flow-case-note-collapsible .detalle-full {
+        display: -webkit-box !important; overflow: hidden !important;
+        -webkit-box-orient: vertical !important; -webkit-line-clamp: 3 !important;
+    }
+    #game #screen-taller.active .flow-case-note-collapsible.expandido .detalle-full {
+        display: inline !important; overflow: visible !important; -webkit-line-clamp: unset !important;
+    }
+    #game #screen-taller.active .btn-expandir-caso {
+        display: block !important; min-height: 32px !important; margin: 6px 0 0 auto !important;
+        padding: 4px 9px !important; border: 1px solid #516875 !important; border-radius: 7px !important;
+        background: #15232a !important; color: #f3c77e !important; font: inherit !important;
+        font-size: .58rem !important; font-weight: 800 !important;
+    }
+
+    #game #game-nav {
+        right: 5px !important; bottom: calc(4px + env(safe-area-inset-bottom, 0px)) !important; left: 5px !important;
+        height: 60px !important; padding: 3px !important; border-radius: 10px !important;
+    }
+    #game #game-nav .game-nav-btn { min-height: 52px !important; padding: 4px 1px !important; gap: 2px !important; }
+    #game #game-nav .gnav-icon { font-size: 1rem !important; }
+    #game #game-nav .gnav-label { font-size: .43rem !important; }
+    #game > .app-progress-tray { right: 9px !important; bottom: calc(70px + env(safe-area-inset-bottom, 0px)) !important; }
+}
+
+/* Phone mobile: use the full canvas and reveal secondary context on demand. */
+@media (max-width: 640px) and (orientation: portrait) {
+  #game #screen-telefono.active {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: calc(100svh - 130px) !important;
+    margin: 0 !important;
+    padding: 4px 6px calc(var(--app-nav-height) + env(safe-area-inset-bottom, 0px) + 18px) !important;
+    border: 0 !important;
+  }
+  #game #screen-telefono.active .tel-frame {
+    width: 100% !important;
+    max-width: none !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    border-radius: 12px !important;
+  }
+  #game #screen-telefono.active .tel-sidebar,
+  #game #screen-telefono.active .tel-chat-area {
+    width: 100% !important;
+  }
+  #game #screen-telefono.active .tel-sidebar-header {
+    min-height: 38px !important;
+    padding: 7px 10px !important;
+    font-size: .86rem !important;
+  }
+  #game #screen-telefono.active .tel-filtros {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    flex-wrap: nowrap !important;
+    gap: 4px !important;
+    padding: 5px 8px !important;
+  }
+  #game #screen-telefono.active .tel-filtro-btn {
+    min-width: 0 !important;
+    min-height: 30px !important;
+    padding: 4px 2px !important;
+    font-size: .55rem !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+  #game #screen-telefono.active .tel-search-wrap { padding: 5px 8px !important; }
+  #game #screen-telefono.active .tel-search-input { min-height: 34px !important; padding: 6px 8px !important; font-size: .65rem !important; }
+  #game #screen-telefono.active .tel-sidebar-stats {
+    padding: 4px 8px !important;
+    font-size: .49rem !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+  #game #screen-telefono.active .tel-story-panel {
+    position: relative !important;
+    padding: 7px 9px !important;
+  }
+  #game #screen-telefono.active .tel-story-kicker { margin: 0 92px 2px 0 !important; font-size: .49rem !important; }
+  #game #screen-telefono.active .tel-story-title { font-size: .84rem !important; }
+  #game #screen-telefono.active .tel-story-toggle {
+    position: absolute !important;
+    top: 7px !important;
+    right: 8px !important;
+    min-height: 28px !important;
+    padding: 3px 7px !important;
+    border: 1px solid #526770 !important;
+    border-radius: 7px !important;
+    background: #14252b !important;
+    color: #f0d296 !important;
+    font: inherit !important;
+    font-size: .5rem !important;
+    font-weight: 700 !important;
+  }
+  #game #screen-telefono.active .tel-story-copy {
+    display: -webkit-box !important;
+    margin: 4px 0 0 !important;
+    overflow: hidden !important;
+    font-size: .61rem !important;
+    line-height: 1.35 !important;
+    -webkit-box-orient: vertical !important;
+    -webkit-line-clamp: 2 !important;
+  }
+  #game #screen-telefono.active .tel-story-meta,
+  #game #screen-telefono.active .tel-story-action { display: none !important; }
+  #game #screen-telefono.active .tel-story-panel.is-expanded .tel-story-copy {
+    display: block !important;
+    overflow: visible !important;
+    -webkit-line-clamp: unset !important;
+  }
+  #game #screen-telefono.active .tel-story-panel.is-expanded .tel-story-meta { display: flex !important; margin: 6px 0 !important; }
+  #game #screen-telefono.active .tel-story-panel.is-expanded .tel-story-action { display: flex !important; min-height: 34px !important; }
+  #game #screen-telefono.active .tel-contact {
+    min-height: 50px !important;
+    padding: 7px 10px !important;
+    gap: 9px !important;
+  }
+  #game #screen-telefono.active .tel-contact .tel-avatar { width: 30px !important; height: 30px !important; }
+  #game #screen-telefono.active .tel-contact-info strong { font-size: .7rem !important; }
+  #game #screen-telefono.active .tel-contact-preview { font-size: .57rem !important; }
+  #game #screen-telefono.active .tel-chat-header { padding: 7px 8px !important; gap: 5px !important; }
+  #game #screen-telefono.active .tel-back-btn { min-height: 34px !important; padding: 5px 8px !important; }
+  #game #screen-telefono.active .tel-messages { padding: 9px 8px !important; gap: 7px !important; }
+  #game #screen-telefono.active .tel-msg { max-width: 92% !important; }
+  #game #screen-telefono.active .tel-msg-bubble { padding: 7px 9px !important; font-size: .72rem !important; line-height: 1.4 !important; }
+  #game #screen-telefono.active .tel-reply-row { padding: 7px 8px !important; gap: 6px !important; }
+  #game #screen-telefono.active .tel-reply-btn { min-height: 40px !important; padding: 7px 9px !important; font-size: .63rem !important; }
+}
+
+@media (min-width: 641px) {
+  .tel-story-toggle { display: none; }
+}
+
+@media (min-width: 641px) {
+    .flow-case-note-collapsible .btn-expandir-caso { display: none; }
+}
+
+html {
+    min-height: 100%;
+    background: var(--app-bg);
+    color-scheme: dark;
+    overscroll-behavior: none;
+}
+
+body {
+    min-height: 100%;
+    margin: 0;
+    background: var(--app-bg);
+    color: var(--app-text);
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior: none;
+}
+
+button,
+[role="button"],
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+button,
+[role="button"] {
+    touch-action: manipulation;
+}
+
+button:focus-visible,
+[role="button"]:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible {
+    outline: 2px solid var(--app-primary-strong);
+    outline-offset: 2px;
+}
+
+/* Full-screen launch surface using the actual workshop art. */
+#menu-inicio.menu-inicio {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    width: auto;
+    max-width: none;
+    min-height: 100dvh;
+    margin: 0;
+    padding: max(28px, env(safe-area-inset-top)) clamp(20px, 7vw, 88px)
+        max(28px, calc(env(safe-area-inset-bottom) + 24px));
+    border: 0;
+    border-radius: 0;
+    background:
+        linear-gradient(180deg, rgba(11, 16, 17, 0.08) 20%, rgba(11, 16, 17, 0.72) 58%, #101516 100%),
+        url("../img/bg/taller/3.png") center 42% / cover no-repeat;
+    box-shadow: none;
+    box-sizing: border-box;
+    overflow-y: auto;
+}
+
+/* El menu de arranque nunca puede cubrir el juego restaurado o iniciado. */
+body:has(#game:not(.hidden)) #menu-inicio.menu-inicio {
+    display: none !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+}
+
+#menu-inicio.menu-inicio > * {
+    width: min(100%, 680px);
+}
+
+.menu-brand {
+    margin-bottom: 6px;
+}
+
+#menu-inicio .menu-kicker {
+    display: block;
+    margin-bottom: 2px;
+    color: var(--app-primary-strong);
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+#menu-inicio.menu-inicio h2 {
+    margin: 0;
+    color: #fff;
+    font-family: "Teko", sans-serif;
+    font-size: 5.5rem;
+    line-height: 0.88;
+    text-align: left;
+    text-shadow: 0 3px 18px rgba(0, 0, 0, 0.85);
+}
+
+#menu-inicio.menu-inicio > p {
+    max-width: 600px;
+    margin: 10px 0 18px;
+    color: #eef0eb;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    text-shadow: 0 2px 8px #000;
+}
+
+#menu-inicio .menu-launch-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin: 0;
+}
+
+#menu-inicio .menu-launch-actions .btn {
+    min-height: 48px;
+    margin: 0;
+    border-radius: 6px;
+    border-color: #58635e;
+    background: rgba(20, 28, 28, 0.94);
+    color: var(--app-text);
+    backdrop-filter: blur(10px);
+}
+
+#menu-inicio .menu-launch-actions .btn:first-child,
+#menu-inicio .menu-launch-actions #menu-btn-continuar:not(:disabled) {
+    border-color: #d39b32;
+    background: var(--app-primary);
+    color: #211b0f;
+    font-weight: 700;
+}
+
+#menu-inicio .menu-launch-actions .btn:disabled {
+    opacity: 0.48;
+}
+
+#menu-inicio .app-install-btn {
+    border-color: #4b9d6b;
+    color: #dff8e8;
+}
+
+.menu-app-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+#menu-inicio .menu-app-meta .creator-help {
+    margin: 0;
+    color: var(--app-muted);
+    font-size: 0.76rem;
+}
+
+.app-connection-status {
+    flex: 0 0 auto;
+    padding: 5px 8px;
+    border: 1px solid #3e7152;
+    border-radius: 999px;
+    background: rgba(20, 54, 35, 0.8);
+    color: #bce8cb;
+    font-size: 0.68rem;
+    font-weight: 700;
+}
+
+body.is-offline .app-connection-status {
+    border-color: #a45149;
+    background: rgba(84, 33, 29, 0.92);
+    color: #ffd1cc;
+}
+
+.game-container {
+    width: 100%;
+    min-height: 100dvh;
+    background-color: var(--app-bg);
+}
+
+.app-progress-tray {
+    position: fixed;
+    top: calc(env(safe-area-inset-top) + 78px);
+    right: 12px;
+    z-index: 118;
+    width: min(340px, calc(100vw - 24px));
+    border: 1px solid var(--app-border);
+    border-radius: 6px;
+    background: rgba(20, 27, 27, 0.96);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.38);
+    color: var(--app-text);
+}
+
+.app-progress-tray:not([open]) {
+    width: auto;
+}
+
+.app-progress-tray summary {
+    min-height: 36px;
+    padding: 8px 12px;
+    box-sizing: border-box;
+    color: var(--app-primary-strong);
+    cursor: pointer;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.app-progress-list,
+#logros-ui.app-progress-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 6px;
+    max-width: none;
+    margin: 0;
+    padding: 8px 10px;
+    border-top: 1px solid var(--app-border);
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    font-size: 0.72rem;
+}
+
+.game-nav-btn {
+    min-height: 48px;
+}
+
+@media (display-mode: standalone) {
+    body {
+        user-select: none;
+    }
+
+    input,
+    textarea,
+    [contenteditable="true"] {
+        user-select: text;
+    }
+}
+
+@media (max-width: 980px) {
+    .game-nav {
+        height: calc(var(--app-nav-height) + env(safe-area-inset-bottom));
+        padding-top: 0;
+        padding-right: 4px;
+        padding-bottom: env(safe-area-inset-bottom);
+        padding-left: 4px;
+        border-top: 1px solid #43504d;
+        background: rgba(16, 22, 22, 0.97);
+        backdrop-filter: blur(14px);
+        box-sizing: border-box;
+    }
+
+    .game-nav-btn {
+        min-height: var(--app-nav-height);
+        border-top-width: 2px;
+        padding: 6px 2px 4px;
+        letter-spacing: 0;
+    }
+
+    .game-nav-btn.active {
+        border-top-color: var(--app-primary);
+        background: rgba(240, 189, 79, 0.1);
+        color: #ffe7a6;
+    }
+
+    .gnav-icon {
+        font-size: 1.22rem;
+    }
+
+    .gnav-label {
+        font-size: 0.62rem;
+    }
+
+    #pantalla-taller.fixed-workbench-layout,
+    #pantalla-taller {
+        padding-bottom: calc(var(--app-nav-height) + env(safe-area-inset-bottom) + 8px) !important;
+    }
+
+    .app-progress-tray {
+        top: calc(env(safe-area-inset-top) + 62px);
+        right: 8px;
+    }
+}
+
+@media (max-width: 560px) {
+    #menu-inicio.menu-inicio {
+        justify-content: flex-end;
+        padding-right: 16px;
+        padding-left: 16px;
+        background-position: 58% center;
+    }
+
+    #menu-inicio.menu-inicio h2 {
+        font-size: 4.25rem;
+    }
+
+    #menu-inicio .menu-launch-actions {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    #menu-inicio .menu-launch-actions .btn {
+        width: 100%;
+        min-height: 46px;
+    }
+
+    .menu-app-meta {
+        align-items: flex-start;
+    }
+
+    .app-progress-tray {
+        top: auto;
+    }
+}
+
+/* Comfortable mobile layout: prioritize touch and reading over density. */
+@media (max-width: 640px) and (orientation: portrait) {
+    #game.game-container {
+        --hud-top-height: 68px !important;
+        --app-nav-height: 72px;
+    }
+
+    #game #hud-header-fixed {
+        min-height: 68px !important;
+        padding: 8px 10px !important;
+        padding-top: calc(8px + env(safe-area-inset-top, 0px)) !important;
+        gap: 8px !important;
+    }
+
+    #game #hud-header-fixed .hud-owner-pill {
+        gap: 8px !important;
+    }
+
+    #game #hud-header-fixed .hud-owner-avatar {
+        width: 36px !important;
+        height: 36px !important;
+        flex: 0 0 36px;
+    }
+
+    #game #hud-header-fixed #hud-dueno-nombre {
+        font-size: 0.8rem !important;
+        line-height: 1.2 !important;
+    }
+
+    #game #hud-header-fixed .hud-top-chips {
+        gap: 5px !important;
+    }
+
+    #game #hud-header-fixed .hud-top-chip,
+    #game #hud-header-fixed .hud-top-chip.hud-top-chip-exp {
+        min-width: 0 !important;
+        min-height: 36px !important;
+        padding: 4px 6px !important;
+        border-radius: 7px !important;
+    }
+
+    #game #hud-header-fixed .hud-top-label {
+        font-size: 0.54rem !important;
+        line-height: 1.1 !important;
+    }
+
+    #game #hud-header-fixed #hud-dinero,
+    #game #hud-header-fixed #hud-exp,
+    #game #hud-header-fixed #hud-casos,
+    #game #hud-header-fixed #hud-racha,
+    #game #hud-header-fixed #hud-nivel {
+        font-size: 0.76rem !important;
+        line-height: 1.15 !important;
+    }
+
+    #game #pantalla-taller.fixed-workbench-layout,
+    #game #pantalla-taller {
+        padding-top: calc(78px + env(safe-area-inset-top, 0px)) !important;
+        padding-right: 10px !important;
+        padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)) !important;
+        padding-left: 10px !important;
+        gap: 10px !important;
+    }
+
+    #game #screen-taller.active .workbench-layout {
+        gap: 10px !important;
+    }
+
+    #game #screen-taller.active .taller-puesto-tabs {
+        gap: 6px !important;
+        padding: 4px !important;
+    }
+
+    #game #screen-taller.active .taller-puesto-tabs .lane-tab {
+        min-height: 40px !important;
+        padding: 8px 6px !important;
+        font-size: 0.68rem !important;
+    }
+
+    #game #screen-taller.active .taller-recursos-toolbar #pending-dx-card,
+    #game #screen-taller.active .lane-cola .queue-box {
+        padding: 12px !important;
+        border-radius: 8px !important;
+    }
+
+    #game #screen-taller.active .resource-toolbar-toggle,
+    #game #screen-taller.active .queue-mobile-toggle {
+        min-height: 40px !important;
+        padding: 8px 10px !important;
+        font-size: 0.68rem !important;
+    }
+
+    #game #screen-taller.active .queue-mobile-head {
+        min-height: 44px !important;
+        gap: 10px !important;
+        padding: 0 0 8px !important;
+    }
+
+    #game #screen-taller.active .queue-mobile-title {
+        font-size: 0.82rem !important;
+    }
+
+    #game #screen-taller.active .flow-case-empty {
+        min-height: 150px !important;
+        padding: 20px !important;
+        font-size: 0.76rem !important;
+        line-height: 1.5 !important;
+    }
+
+    #game #screen-taller.active .queue-card-actions .btn,
+    #game #screen-taller.active .repair-card-actions .btn,
+    #game #screen-taller.active .active-case-actions .btn,
+    #game #screen-taller.active .btn-cobrar-caso {
+        min-height: 44px !important;
+        padding: 9px 12px !important;
+        font-size: 0.72rem !important;
+    }
+
+    #game #game-nav {
+        position: fixed !important;
+        top: auto !important;
+        right: 8px !important;
+        bottom: calc(6px + env(safe-area-inset-bottom, 0px)) !important;
+        left: 8px !important;
+        z-index: 140 !important;
+        width: auto !important;
+        height: 72px !important;
+        margin: 0 !important;
+        padding: 5px 4px !important;
+        grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+        gap: 2px !important;
+        border-radius: 8px !important;
+    }
+
+    #game #game-nav .game-nav-btn {
+        min-height: 60px !important;
+        padding: 6px 1px 5px !important;
+        gap: 4px !important;
+        border-radius: 6px !important;
+    }
+
+    #game #game-nav .gnav-icon {
+        font-size: 1.15rem !important;
+    }
+
+    #game #game-nav .gnav-label {
+        display: block !important;
+        font-size: 0.53rem !important;
+        line-height: 1 !important;
+        letter-spacing: 0 !important;
+    }
+
+    #game > .app-progress-tray {
+        top: auto !important;
+        right: 12px !important;
+        bottom: calc(86px + env(safe-area-inset-bottom, 0px)) !important;
+        max-height: min(52vh, 420px);
+        overflow-y: auto;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+.hud-queue-alert {
+  position: fixed;
+  top: 72px;
+  left: 50%;
+  z-index: 1200;
+  transform: translateX(-50%);
+  max-width: calc(100vw - 24px);
+  padding: 9px 14px;
+  border: 1px solid #f0b84f;
+  border-radius: 6px;
+  background: #3a2217;
+  color: #fff1c7;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Final mobile HUD correction: chips live inside the owner row. */
+@media (max-width: 640px) and (orientation: portrait) {
+  #game #hud-header-fixed .hud-owner-pill {
+    width: 100% !important;
+    max-width: none !important;
+    flex: 1 1 100% !important;
+  }
+  #game #hud-header-fixed .hud-owner-meta {
+    flex: 0 1 42px !important;
+    min-width: 0 !important;
+  }
+  #game #hud-header-fixed .hud-owner-label,
+  #game #hud-header-fixed .hud-taller-nombre {
+    display: none !important;
+  }
+  #game #hud-header-fixed .hud-top-chips {
+    width: auto !important;
+    margin-left: auto !important;
+  }
+}
+#btn-esperar-gratis { display: none !important; }
+.case-patience { margin: 8px 0; padding: 6px 8px; border: 1px solid rgba(255,255,255,.12); border-radius: 6px; background: rgba(0,0,0,.16); }
+.case-patience-head { display:flex; justify-content:space-between; font-size:.72rem; }
+.case-patience-track { height:6px; margin-top:5px; overflow:hidden; border-radius:99px; background:#263b42; }
+.case-patience-track span { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,#ef5350,#fbc02d,#66bb6a); transition:width .25s ease; }

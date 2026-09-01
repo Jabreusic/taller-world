@@ -1,0 +1,372 @@
+/* App shell mobile: one viewport, one vertical scroll owner. */
+@media (max-width: 700px) {
+  #btn-esperar-gratis { display: none !important; }
+  html, body { width:100%; min-height:100%; overflow-x:hidden; }
+  body { overflow-y:hidden; }
+  #game.game-container {
+    width:100% !important;
+    max-width:none !important;
+    height:100dvh !important;
+    min-height:100dvh !important;
+    max-height:none !important;
+    margin:0 !important;
+    padding:0 !important;
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+    overscroll-behavior-y:contain;
+  }
+  #game #hud-header-fixed {
+    position:sticky !important;
+    top:0 !important;
+    min-height:60px !important;
+    height:auto !important;
+  }
+  #game .game-flow-layer,
+  #game #screen-taller,
+  #game #pantalla-taller,
+  #game #screen-oficina,
+  #game #screen-exterior,
+  #game #screen-mapa,
+  #game #screen-telefono,
+  #game #screen-configuracion {
+    height:auto !important;
+    min-height:0 !important;
+    max-height:none !important;
+    overflow:visible !important;
+  }
+  #game #pantalla-taller,
+  #game #pantalla-taller.fixed-workbench-layout,
+  #game #screen-taller.active {
+    padding: 0 8px calc(var(--app-nav-height, 62px) + env(safe-area-inset-bottom, 0px) + 18px) !important;
+  }
+  #game #screen-taller.active .workbench-layout,
+  #game #screen-taller.active .workbench-layout.modo-cola {
+    height:auto !important;
+    min-height:0 !important;
+    overflow:visible !important;
+    display:flex !important;
+    flex-direction:column !important;
+  }
+  #game #screen-taller.active .taller-recursos-toolbar,
+  #game #screen-taller.active .lane-cola,
+  #game #screen-taller.active .lane-caso,
+  #game #screen-taller.active .lane-trabajos { flex:none !important; }
+  #game #screen-taller.active .lane-cola-switcher { max-height:none !important; overflow:visible !important; }
+  /* Recursos: una sola fila cerrada; el pool aparece solo bajo demanda. */
+  #game #screen-taller.active .taller-recursos-toolbar #pending-dx-card {
+    max-height:48px !important;
+    padding:6px !important;
+    overflow:hidden !important;
+    background:#0d1a20 !important;
+    border:1px solid #36515a !important;
+    border-radius:10px !important;
+    box-shadow:0 5px 14px rgba(0,0,0,.22) !important;
+    transition:max-height .18s ease;
+  }
+  #game #screen-taller.active .taller-recursos-toolbar { background:transparent !important; border:0 !important; }
+  #game #screen-taller.active .taller-recursos-toolbar #pending-dx-card:not(.is-collapsed) {
+    max-height:205px !important;
+  }
+  #game #screen-taller.active .resource-toolbar-toggle {
+    display:flex !important;
+    min-height:34px !important;
+    width:100% !important;
+    padding:6px 9px !important;
+    border:1px solid #3b5963 !important;
+    border-radius:7px !important;
+    background:#14262d !important;
+    color:#f0c66f !important;
+    font-size:.68rem !important;
+  }
+  #game #screen-taller.active .taller-recursos-toolbar #pending-dx-card.is-collapsed .taller-recursos-tabs,
+  #game #screen-taller.active .taller-recursos-toolbar #pending-dx-card.is-collapsed .taller-recursos-pool-wrap {
+    display:none !important;
+  }
+  #game #screen-taller.active .taller-recursos-toolbar #pending-dx-card:not(.is-collapsed) .taller-recursos-tabs {
+    display:grid !important;
+    grid-template-columns:1fr 1fr !important;
+    margin-top:6px !important;
+    background:#091216 !important;
+    border-color:#2d4650 !important;
+  }
+  #game #screen-taller.active .taller-recursos-toolbar #pending-dx-card:not(.is-collapsed) .taller-recursos-pool-wrap {
+    display:block !important;
+    margin-top:6px !important;
+    height:auto !important;
+    max-height:none !important;
+    overflow:visible !important;
+  }
+  #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos,
+  #game #screen-taller.active .taller-recursos-toolbar #delivery-slots-top {
+    height:auto !important;
+    min-height:0 !important;
+    max-height:none !important;
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
+    align-content:start !important;
+  }
+  #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos {
+    display:flex !important;
+    flex-wrap:nowrap !important;
+    gap:8px !important;
+    padding:0 1px 3px !important;
+  }
+  #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-btn,
+  #game #screen-taller.active .taller-recursos-toolbar #delivery-slots-top > * {
+    flex:0 0 154px !important;
+    width:154px !important;
+    min-width:154px !important;
+    min-height:82px !important;
+    max-height:100px !important;
+    padding:7px !important;
+    overflow:hidden !important;
+  }
+  #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-meter:nth-of-type(n+3) { display:none !important; }
+  #game #screen-taller.active .taller-recursos-toolbar #delivery-slots-top:not(.hidden) { display:flex !important; flex-wrap:nowrap !important; gap:8px !important; }
+  #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos.hidden,
+  #game #screen-taller.active .taller-recursos-toolbar #delivery-slots-top.hidden { display:none !important; }
+  #game #screen-taller.active .lane-cola .flow-case-empty { min-height:64px !important; padding:20px 12px !important; }
+  #game #screen-taller.active .lane-cola .queue-box { min-height:0 !important; }
+  #game #game-nav { position:fixed !important; bottom:6px !important; z-index:140 !important; }
+  #game > .app-progress-tray { position:fixed !important; max-height:30vh !important; overflow:auto !important; }
+  #game > .app-progress-tray {
+    right:8px !important;
+    bottom:84px !important;
+    left:8px !important;
+    z-index:135 !important;
+    border:1px solid #36515a !important;
+    border-radius:9px !important;
+    background:#0d1a20 !important;
+  }
+  #game > .app-progress-tray summary { padding:10px 12px !important; color:#efc56b !important; font-size:.72rem !important; font-weight:800 !important; }
+  #game > .app-progress-tray[open] { max-height:38vh !important; }
+
+  /* Oficina: centro de control compacto, no una pila interminable de tarjetas. */
+  #game #screen-oficina.active { padding:10px 8px calc(var(--app-nav-height, 62px) + env(safe-area-inset-bottom, 0px) + 18px) !important; }
+  #game #screen-oficina.active .of-layout { display:flex !important; flex-direction:column !important; gap:10px !important; }
+  #game #screen-oficina.active .of-topbar { display:flex !important; flex-direction:column !important; gap:8px !important; padding:10px !important; position:sticky !important; top:0 !important; z-index:5 !important; background:#0d1a20 !important; border:1px solid #36515a !important; border-radius:10px !important; }
+  #game #screen-oficina.active .of-topbar-chips { display:grid !important; grid-template-columns:repeat(5,minmax(0,1fr)) !important; gap:4px !important; }
+  #game #screen-oficina.active .of-chip { min-width:0 !important; padding:6px 3px !important; border-radius:5px !important; text-align:center !important; }
+  #game #screen-oficina.active .of-chip small { display:block !important; font-size:.48rem !important; }
+  #game #screen-oficina.active .of-chip strong { display:block !important; font-size:.64rem !important; white-space:nowrap !important; overflow:hidden !important; text-overflow:ellipsis !important; }
+  #game #screen-oficina.active .of-body { display:grid !important; grid-template-columns:repeat(2,minmax(0,1fr)) !important; gap:7px !important; align-items:start !important; }
+  #game #screen-oficina.active .of-card { padding:10px !important; margin:0 !important; border:1px solid #304b55 !important; border-radius:8px !important; background:#0d1a20 !important; }
+  #game #screen-oficina.active .of-card-head { padding:0 0 7px !important; margin-bottom:8px !important; border-bottom:1px solid #243b43 !important; color:#edbf63 !important; font-size:.72rem !important; letter-spacing:.06em !important; text-transform:uppercase !important; }
+  #game #screen-oficina.active .of-card-proyecto-muscle { grid-column:1 / -1 !important; order:-2 !important; background:linear-gradient(135deg,#182b30,#101b20) !important; }
+  #game #screen-oficina.active .of-col { display:contents !important; }
+  #game #screen-oficina.active .of-col-center { display:contents !important; }
+  #game #screen-oficina.active .of-card:has(.of-actions-grid),
+  #game #screen-oficina.active .of-card:has(#evento-container) { grid-column:1 / -1 !important; }
+  #game #screen-oficina.active .of-card-malvavisco { grid-column:1 / -1 !important; }
+  #game #screen-oficina.active .of-actions-grid { display:grid !important; grid-template-columns:repeat(2,minmax(0,1fr)) !important; gap:6px !important; }
+  #game #screen-oficina.active .of-actions-grid .btn, #game #screen-oficina.active .of-quick-row .btn { min-height:38px !important; padding:7px 5px !important; font-size:.62rem !important; }
+  #game #screen-oficina.active .of-mejoras-grid { display:grid !important; grid-template-columns:repeat(2,minmax(0,1fr)) !important; gap:7px !important; }
+  #game #screen-oficina.active .of-mej-row { padding:7px !important; border:1px solid #253f48 !important; border-radius:6px !important; background:#101f25 !important; }
+  #game #screen-oficina.active .of-mej-meta { display:none !important; }
+  #game #screen-oficina.active .of-mej-chips, #game #screen-oficina.active .of-mej-prestigio { grid-column:1 / -1 !important; }
+  #game #screen-oficina.active .of-kpi-pack { display:grid !important; grid-template-columns:1fr 1fr !important; gap:6px !important; }
+  #game #screen-oficina.active .of-kpi { padding:7px !important; }
+  #game #screen-oficina.active .of-readout { padding:7px !important; font-size:.65rem !important; }
+  #game #screen-oficina.active .of-quick-row { display:grid !important; grid-template-columns:1fr 1fr !important; gap:5px !important; }
+  #game #screen-oficina.active .of-card-proyecto-muscle .btn { min-height:34px !important; margin-top:4px !important; }
+
+  /* Exterior y mapa: paneles de decision, compactos y escaneables. */
+  #game #screen-exterior.active, #game #screen-mapa.active { padding:10px 8px calc(var(--app-nav-height, 62px) + env(safe-area-inset-bottom, 0px) + 18px) !important; }
+  #game #screen-exterior.active .ext-layout, #game #screen-mapa.active .mapa-layout { display:flex !important; flex-direction:column !important; gap:8px !important; }
+  #game #screen-exterior.active .ext-title, #game #screen-mapa.active .mapa-title { padding:4px 2px 8px !important; font-size:1.15rem !important; color:#efc56b !important; }
+  #game #screen-exterior.active .ext-status-bar, #game #screen-mapa.active .mapa-status-bar { display:grid !important; grid-template-columns:repeat(5,minmax(0,1fr)) !important; gap:4px !important; }
+  #game #screen-exterior.active .ext-status-chip, #game #screen-mapa.active .mapa-status-chip { min-width:0 !important; padding:6px 3px !important; text-align:center !important; border-radius:6px !important; }
+  #game #screen-exterior.active .ext-status-chip small, #game #screen-mapa.active .mapa-status-chip small { font-size:.45rem !important; }
+  #game #screen-exterior.active .ext-status-chip strong, #game #screen-mapa.active .mapa-status-chip strong { display:block !important; overflow:hidden !important; text-overflow:ellipsis !important; white-space:nowrap !important; font-size:.62rem !important; }
+  #game #screen-exterior.active .ext-grid { display:grid !important; grid-template-columns:1fr 1fr !important; gap:7px !important; }
+  #game #screen-exterior.active .ext-card { min-width:0 !important; padding:9px !important; border-radius:8px !important; }
+  #game #screen-exterior.active .ext-card-bank { grid-column:1 / -1 !important; }
+  #game #screen-exterior.active .ext-card-name { font-size:.78rem !important; }
+  #game #screen-exterior.active .ext-card-desc { font-size:.62rem !important; line-height:1.3 !important; max-height:34px !important; overflow:hidden !important; }
+  #game #screen-exterior.active .ext-card-btn, #game #screen-exterior.active .ext-bank-actions .btn { min-height:34px !important; padding:6px 5px !important; font-size:.58rem !important; }
+  #game #screen-exterior.active .ext-bank-snapshot { display:grid !important; grid-template-columns:repeat(3,1fr) !important; gap:4px !important; }
+  #game #screen-exterior.active .ext-bank-actions { display:grid !important; grid-template-columns:repeat(2,1fr) !important; gap:5px !important; }
+  #game #screen-mapa.active .mapa-seccion-titulo { margin-top:4px !important; padding:7px 9px !important; border-radius:6px !important; background:#12232a !important; color:#efc56b !important; font-size:.7rem !important; }
+  #game #screen-mapa.active .mapa-ranking-lista, #game #screen-mapa.active .mapa-contexto-texto, #game #screen-mapa.active .mapa-arco-card { padding:8px !important; font-size:.68rem !important; }
+
+  /* Teléfono: lista y conversación ocupan vistas consecutivas, no dos columnas comprimidas. */
+  #game #screen-telefono.active { padding:8px 6px calc(var(--app-nav-height, 62px) + env(safe-area-inset-bottom, 0px) + 18px) !important; }
+  #game #screen-telefono.active .tel-frame { display:flex !important; flex-direction:column !important; height:auto !important; min-height:0 !important; gap:7px !important; }
+  #game #screen-telefono.active .tel-sidebar, #game #screen-telefono.active .tel-chat-area { width:100% !important; min-height:0 !important; }
+  #game #screen-telefono.active .tel-sidebar { max-height:310px !important; overflow:hidden !important; border-radius:9px !important; }
+  #game #screen-telefono.active .tel-contact-list { max-height:190px !important; overflow-y:auto !important; }
+  #game #screen-telefono.active .tel-chat-area { min-height:360px !important; border-radius:9px !important; }
+  #game #screen-telefono.active .tel-messages { max-height:270px !important; overflow-y:auto !important; }
+  #game #screen-taller.active .inspection-360-panel { padding:12px !important; border:1px solid #3a5962 !important; border-radius:9px !important; background:#0e1e24 !important; }
+  #game #screen-taller.active .inspection-360-head { display:flex !important; justify-content:space-between !important; color:#f0c76b !important; font-size:.68rem !important; letter-spacing:.08em !important; }
+  #game #screen-taller.active .inspection-360-panel h3 { margin:8px 0 2px !important; font-size:1rem !important; }
+  #game #screen-taller.active .inspection-vehicle { color:#8fcbd4 !important; font-size:.7rem !important; }
+  #game #screen-taller.active .inspection-symptom { margin:9px 0 !important; color:#e8eee7 !important; font-size:.78rem !important; line-height:1.35 !important; }
+  #game #screen-taller.active .inspection-objective { padding:7px !important; color:#b7c7c7 !important; background:#122930 !important; font-size:.65rem !important; }
+  #game #screen-taller.active .inspection-360-actions { display:grid !important; grid-template-columns:1fr !important; gap:6px !important; margin-top:9px !important; }
+  #game #screen-taller.active .inspection-360-actions .btn { min-height:38px !important; font-size:.66rem !important; }
+  #game #screen-taller.active .rhythm-dx-container { display:none !important; }
+  #game #screen-taller.active .inspection-evidence-summary { margin:10px 0 !important; padding:9px !important; border:1px solid #36515a !important; border-radius:6px !important; background:#101f25 !important; color:#b9d2cf !important; font-size:.7rem !important; line-height:1.5 !important; }
+  #game #screen-taller.active .inspection-tools,
+  #game #screen-taller.active .inspection-assignment-grid { display:grid !important; grid-template-columns:1fr 1fr !important; gap:6px !important; margin:9px 0 !important; }
+  #game #screen-taller.active .inspection-tools .btn,
+  #game #screen-taller.active .inspection-assignment-grid .btn { min-height:38px !important; font-size:.62rem !important; padding:6px !important; }
+  #game #screen-taller.active .inspection-hypothesis-panel { margin:10px 0 !important; padding:10px !important; border:1px solid #4c6a66 !important; border-radius:8px !important; background:#102228 !important; color:#f0c76b !important; font-size:.66rem !important; letter-spacing:.04em !important; }
+  #game #screen-taller.active .inspection-hypothesis-panel > strong { display:block !important; margin:0 0 6px !important; }
+  #game #screen-taller.active .inspection-hypothesis-panel > strong:not(:first-child) { margin-top:10px !important; }
+  #game #screen-taller.active .inspection-hypothesis-panel small { color:#91aeb4 !important; font-size:.57rem !important; font-weight:400 !important; letter-spacing:0 !important; }
+  #game #screen-taller.active .inspection-hypothesis-grid { display:grid !important; grid-template-columns:1fr 1fr !important; gap:5px !important; }
+  #game #screen-taller.active .inspection-confidence-grid { display:grid !important; grid-template-columns:repeat(3, minmax(0, 1fr)) !important; gap:5px !important; }
+  #game #screen-taller.active .inspection-hypothesis,
+  #game #screen-taller.active .inspection-confidence { min-height:36px !important; padding:6px !important; border:1px solid #36515a !important; border-radius:6px !important; background:#0c1a20 !important; color:#c9dedb !important; font:inherit !important; font-size:.58rem !important; line-height:1.2 !important; text-align:left !important; }
+  #game #screen-taller.active .inspection-confidence { text-align:center !important; }
+  #game #screen-taller.active .inspection-hypothesis.is-selected,
+  #game #screen-taller.active .inspection-confidence.is-selected { border-color:#e6b650 !important; background:#3b2a17 !important; color:#fff0c9 !important; box-shadow:inset 0 0 0 1px rgba(230,182,80,.22) !important; }
+  #game #screen-taller.active .inspection-confidence:disabled { opacity:.35 !important; }
+  #game #screen-taller.active .inspection-live-status { color:#9bb6c0 !important; font-size:.62rem !important; line-height:1.35 !important; }
+  #game #screen-taller.active .inspection-assignment { border-top:1px solid rgba(255,255,255,.12); margin-top:10px; padding-top:9px; }
+  #game #screen-taller.active .case-economic-actions { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:9px; }
+  #game #screen-taller.active .case-economic-actions .btn { min-height:36px; font-size:.6rem; padding:6px; }
+  #game #screen-taller.active .flow-case-economy.low-margin { border-left-color:#d98b62 !important; background:rgba(180,94,58,.12) !important; }
+  #game #screen-taller.active .case-risk.risk-high { color:#ef8b7d !important; font-weight:800 !important; }
+  #game #screen-taller.active .case-risk.risk-mid { color:#e9c06d !important; font-weight:800 !important; }
+  #game #screen-taller.active .case-risk.risk-low { color:#8bd49a !important; font-weight:800 !important; }
+  #game #screen-taller.active .case-accept-btn { display:block !important; width:100% !important; min-height:36px !important; margin-top:8px !important; padding:7px !important; background:#a87532 !important; color:#fff1c9 !important; border:1px solid #d7a24d !important; border-radius:6px !important; font-size:.68rem !important; font-weight:800 !important; text-transform:uppercase !important; }
+
+  /* Reserva común: navegación fija (60px) + bandeja Resumen + respiración táctil.
+     Las cinco pantallas comparten el scroll de la app, por eso el margen vive aquí. */
+  #game.game-container {
+    --tw-bottom-clearance:calc(152px + env(safe-area-inset-bottom, 0px));
+    scroll-padding-bottom:var(--tw-bottom-clearance) !important;
+  }
+  #game #screen-taller.active,
+  #game #screen-oficina.active,
+  #game #screen-exterior.active,
+  #game #screen-mapa.active,
+  #game #screen-telefono.active {
+    padding-bottom:0 !important;
+    scroll-padding-bottom:var(--tw-bottom-clearance) !important;
+  }
+  #game #pantalla-taller,
+  #game #pantalla-taller.fixed-workbench-layout {
+    padding-bottom:var(--tw-bottom-clearance) !important;
+  }
+  #game #screen-taller.active .workbench-layout,
+  #game #screen-taller.active .workbench-layout.modo-cola {
+    padding-bottom:0 !important;
+  }
+  /* El pseudo-elemento pertenece a una interfaz antigua; el espacio ahora lo
+     aporta el contenedor real del scroll, sin generar una segunda franja. */
+  #game #pantalla-taller::before,
+  #game #pantalla-taller::after { display:none !important; }
+  /* Mantener los últimos CTAs a una distancia cómoda al enfocarlos. */
+  #game #screen-taller.active .workbench-layout,
+  #game #screen-taller.active .workbench-layout.modo-cola,
+  #game #screen-taller.active .lane-cola,
+  #game #screen-taller.active .lane-caso,
+  #game #screen-taller.active .lane-trabajos,
+  #game #screen-exterior.active .ext-layout,
+  #game #screen-mapa.active .mapa-layout,
+  #game #screen-oficina.active .of-tab-panels { scroll-margin-bottom:var(--tw-bottom-clearance) !important; }
+  /* Teléfono: la lista completa vive en el scroll de la app, no en una caja
+     de 190px que ocultaba los últimos contactos tras la navegación. */
+  #game #screen-telefono.active { height:auto !important; min-height:0 !important; }
+  #game #screen-telefono.active .tel-sidebar { max-height:none !important; overflow:visible !important; }
+  #game #screen-telefono.active .tel-contact-list { max-height:none !important; overflow:visible !important; }
+  #game #screen-telefono.active .tel-chat-area { min-height:0 !important; }
+  #game #screen-telefono.active .tel-messages { max-height:none !important; overflow:visible !important; }
+
+  /* Resumen cerrado deja de ser una barra que invade el ancho de la app.
+     Abierto conserva un panel de lectura, separado de la navegación. */
+  #game > .app-progress-tray {
+    right:10px !important;
+    bottom:calc(76px + env(safe-area-inset-bottom, 0px)) !important;
+    left:auto !important;
+    width:auto !important;
+    max-width:calc(100vw - 20px) !important;
+    max-height:min(46svh, 360px) !important;
+    border-color:#46636a !important;
+    box-shadow:0 8px 22px rgba(0,0,0,.38) !important;
+  }
+  #game > .app-progress-tray:not([open]) { min-width:0 !important; }
+  #game > .app-progress-tray[open] { width:min(350px, calc(100vw - 20px)) !important; }
+  #game > .app-progress-tray summary {
+    display:flex !important;
+    align-items:center !important;
+    gap:6px !important;
+    min-height:32px !important;
+    padding:7px 10px !important;
+    font-size:.62rem !important;
+    list-style:none !important;
+  }
+  #game > .app-progress-tray summary::-webkit-details-marker { display:none; }
+  #game > .app-progress-tray summary::after { content:"⌄"; color:#8ecdb8; font-size:.9rem; }
+  #game > .app-progress-tray[open] summary::after { transform:rotate(180deg); }
+
+  /* Trabajos es una pantalla completa al seleccionar su pestaña. No debe
+     heredar la ventana corta de la antigua barra flotante de reparaciones. */
+  #game #screen-taller.active #panel-taller.modo-trabajos .lane-trabajos,
+  #game #screen-taller.active #panel-taller.modo-trabajos .trabajos-box,
+  #game #screen-taller.active #panel-taller.modo-trabajos .work-toolbar-body,
+  #game #screen-taller.active #panel-taller.modo-trabajos #lista-reparaciones-activas {
+    display:grid !important;
+    height:auto !important;
+    min-height:0 !important;
+    max-height:none !important;
+    overflow:visible !important;
+  }
+  #game #screen-taller.active #panel-taller.modo-trabajos .lane-trabajos { padding-bottom:8px !important; }
+  #game #screen-taller.active #panel-taller.modo-trabajos #lista-reparaciones-activas .repair-card {
+    height:auto !important;
+    max-height:none !important;
+    overflow:visible !important;
+  }
+  /* Cada pantalla móvil tiene su propio recorrido y reserva inferior. */
+  #game .game-screen.active {
+    box-sizing: border-box !important;
+    max-height: calc(100dvh - var(--hud-top-height, 64px)) !important;
+    overflow-y: auto !important;
+    padding-bottom: 120px !important;
+    overscroll-behavior-y: contain !important;
+  }
+  #game .stamp-overlay {
+    pointer-events: none !important;
+    z-index: 1300 !important;
+  }
+}
+
+/* Reserva final: ninguna regla especifica puede dejar el ultimo contenido
+   debajo del menu inferior fijo en movil. */
+@media (max-width: 700px) {
+  #game {
+    scroll-padding-bottom: calc(var(--app-nav-height, 62px) + env(safe-area-inset-bottom, 0px) + 34px) !important;
+  }
+  #game #screen-taller.active,
+  #game #screen-oficina.active,
+  #game #screen-exterior.active,
+  #game #screen-mapa.active,
+  #game #screen-telefono.active,
+  #game #screen-configuracion.active {
+    box-sizing: border-box !important;
+    padding-bottom: var(--tw-bottom-clearance, calc(152px + env(safe-area-inset-bottom, 0px))) !important;
+  }
+  /* El scroll real pertenece a game-flow-layer; el padding del screen no
+     alcanza cuando el contenido interno termina en el borde del viewport. */
+  #game .game-flow-layer {
+    box-sizing: border-box !important;
+    padding-bottom: var(--tw-bottom-clearance, 152px) !important;
+  }
+  #game #game-nav {
+    z-index: 1600 !important;
+    transition: transform .22s ease, opacity .22s ease !important;
+  }
+  #game #game-nav.nav-hidden-mobile {
+    transform: translateY(calc(100% + env(safe-area-inset-bottom, 10px))) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+  #game > .app-progress-tray {
+    bottom: calc(78px + env(safe-area-inset-bottom, 0px)) !important;
+    z-index: 1390 !important;
+  }
+}

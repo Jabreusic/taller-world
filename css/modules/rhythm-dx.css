@@ -1,0 +1,17 @@
+/* Taller World - Rhythm-based Diagnosis Minigame Styles */
+/* css/modules/rhythm-dx.css */
+
+.rhythm-dx-container {
+    position: relative;
+    width: 100%;
+    height: 400px;
+    background-color: #1a1a1a;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+#rhythm-track-container { position: relative; height: 190px; margin: 16px; border: 1px solid #36505b; background: #0b1418; overflow: hidden; }
+.rhythm-target { position: absolute; top: 50%; width: 52px; height: 52px; transform: translate(-50%, -50%); border: 2px solid #f2c14e; border-radius: 50%; background: #17313b; color: #fff; font: inherit; font-weight: 800; cursor: pointer; }
+.rhythm-target.hit { background: #26734d; }
+.rhythm-target.miss { background: #8b2f36; }
+.rhythm-feedback, .rhythm-score, .rhythm-actions { padding: 4px 16px; text-align: center; }

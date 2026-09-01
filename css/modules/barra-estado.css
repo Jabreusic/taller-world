@@ -1,0 +1,53 @@
+/* Barras de estado animadas y semánticas */
+
+.estado-barra {
+  transition: width 0.3s cubic-bezier(.4,1.2,.6,1);
+  height: 18px;
+  border-radius: 8px;
+  background: #2a3a3e;
+  position: relative;
+  overflow: hidden;
+}
+
+.estado-barra.estado-estable {
+  background: linear-gradient(90deg, #3fd47a 0%, #b6e7c7 100%);
+}
+.estado-barra.estado-alerta {
+  background: linear-gradient(90deg, #ffe066 0%, #ffb347 100%);
+}
+.estado-barra.estado-critico {
+  background: linear-gradient(90deg, #e05a5a 0%, #ff8a8a 100%);
+  animation: barraParpadeo 0.7s steps(2, start) infinite;
+}
+
+@keyframes barraParpadeo {
+  0%, 100% { filter: brightness(1.1); }
+  50% { filter: brightness(0.7); }
+}
+
+.estado-tag {
+  font-size: 0.85em;
+  font-weight: bold;
+  padding: 2px 8px;
+  border-radius: 6px;
+  margin-left: 8px;
+  vertical-align: middle;
+  background: #232b2e;
+  color: #fff;
+  transition: background 0.2s;
+}
+.estado-tag.estable { background: #3fd47a; color: #1a2a1e; }
+.estado-tag.alerta { background: #ffe066; color: #6a4a00; }
+.estado-tag.critico { background: #e05a5a; color: #fff; }
+
+/* Ajuste para barras más pequeñas */
+.estado-barra-peq { height: 12px; border-radius: 6px; }
+
+@media (max-width: 700px) {
+  .estado-barra { height: 12px; }
+}
+
+@media (max-width: 420px) {
+  .estado-barra { height: 10px; border-radius: 5px; }
+  .estado-tag { font-size: 0.75em; padding: 2px 6px; }
+}

@@ -1,0 +1,32 @@
+{
+  "name": "Taller World: Cronicas",
+  "id": "./",
+  "short_name": "Taller World",
+  "description": "Gestiona energia, equipo y reputacion para salvar tu taller.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0c1318",
+  "theme_color": "#0c1318",
+  "lang": "es",
+  "categories": ["games", "simulation"],
+  "icons": [
+    {
+      "src": "img/icon/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "img/icon/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "img/icon/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
