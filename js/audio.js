@@ -6,10 +6,12 @@
   var masterGain = null;
   var backgroundMusic = null;
   var backgroundMusicUnlocked = false;
+  var musicIndex = 0;
   var MUSIC_SOURCES = [
-    "audio/main/taller-world-theme.mp3.mp3",
-    "audio/main/taller-world-theme.ogg",
     "audio/main/taller-world-theme.mp3",
+    "audio/main/taller-world-theme2.mp3",
+    "audio/main/taller-world-theme3.mp3",
+    "audio/main/taller-world-theme4.mp3",
   ];
 
   function ensureContext() {
@@ -43,14 +45,13 @@
     if (backgroundMusic) return backgroundMusic;
     backgroundMusic = document.createElement("audio");
     backgroundMusic.preload = "auto";
-    backgroundMusic.loop = true;
+    backgroundMusic.loop = false;
     backgroundMusic.volume = 0.12;
-    MUSIC_SOURCES.forEach(function (src) {
-      var source = document.createElement("source");
-      source.src = src;
-      if (/\.ogg$/i.test(src)) source.type = "audio/ogg";
-      else if (/\.mp3$/i.test(src)) source.type = "audio/mpeg";
-      backgroundMusic.appendChild(source);
+    backgroundMusic.src = MUSIC_SOURCES[musicIndex];
+    backgroundMusic.addEventListener("ended", function () {
+      musicIndex = (musicIndex + 1) % MUSIC_SOURCES.length;
+      backgroundMusic.src = MUSIC_SOURCES[musicIndex];
+      backgroundMusic.play().catch(function () {});
     });
     return backgroundMusic;
   }
