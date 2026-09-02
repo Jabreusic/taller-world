@@ -1,5 +1,37 @@
 /* App shell mobile: one viewport, one vertical scroll owner. */
 @media (max-width: 700px) {
+  #game #lista-cola-espera .case-queue-actions { display:grid !important; grid-template-columns:2fr 1fr 1fr !important; gap:4px !important; margin-top:6px !important; }
+  #game #lista-cola-espera .case-queue-actions .btn { min-height:27px !important; padding:4px 3px !important; font-size:.48rem !important; line-height:1 !important; }
+  #game #screen-taller.active #lista-cola-espera .flow-case-card,
+  #game #screen-taller.active #lista-cola-espera .queue-card,
+  #game #screen-taller.active #lista-reparaciones-activas .repair-card { padding:8px !important; margin-bottom:8px !important; border-radius:10px !important; }
+  #game #screen-taller.active #lista-cola-espera .flow-case-head,
+  #game #screen-taller.active #lista-cola-espera .queue-card-head { gap:5px !important; margin-bottom:4px !important; }
+  #game #screen-taller.active #lista-cola-espera .flow-case-name,
+  #game #screen-taller.active #lista-cola-espera .queue-card-title { font-size:.68rem !important; line-height:1.15 !important; }
+  #game #screen-taller.active #lista-cola-espera .flow-case-meta,
+  #game #screen-taller.active #lista-cola-espera .queue-card-meta { gap:4px !important; font-size:.58rem !important; line-height:1.2 !important; }
+  #game #screen-taller.active #lista-cola-espera .case-patience { margin:5px 0 !important; padding:4px 6px !important; }
+  #game #screen-taller.active #lista-cola-espera .queue-card-actions .btn,
+  #game #screen-taller.active #lista-cola-espera .flow-case-actions .btn { min-height:28px !important; padding:5px 6px !important; font-size:.55rem !important; }
+  #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos,
+  #game #screen-taller.active .taller-recursos-toolbar #delivery-slots-top { transform:translateY(-2%) !important; }
+  #game .btn:disabled, #game button[aria-disabled="true"] { background:linear-gradient(135deg,#202638,#2b3040) !important; border-color:#485064 !important; color:#8992a5 !important; opacity:.58 !important; filter:grayscale(.8) !important; cursor:not-allowed !important; box-shadow:none !important; transform:none !important; }
+  #game .btn:disabled::after { content:" · BLOQUEADO"; font-size:.62em; }
+  #game #hud-header-fixed .hud-owner-pill { display:grid !important; grid-template-columns:34px 62px minmax(0,1fr) !important; width:100% !important; min-width:0 !important; gap:5px !important; }
+  #game #hud-header-fixed .hud-owner-meta { min-width:0 !important; width:62px !important; overflow:hidden !important; }
+  #game #hud-header-fixed .hud-owner-meta strong { display:block !important; max-width:62px !important; overflow:hidden !important; text-overflow:ellipsis !important; white-space:nowrap !important; font-size:.62rem !important; }
+  #game #hud-header-fixed .hud-top-chips { display:grid !important; grid-template-columns:72px minmax(0,1fr) !important; width:100% !important; min-width:0 !important; gap:4px !important; margin:0 !important; }
+  #game #hud-header-fixed .hud-top-chip { min-width:0 !important; overflow:hidden !important; padding:4px 5px !important; }
+  #game #hud-header-fixed .hud-top-label { font-size:.45rem !important; }
+  #game #hud-header-fixed .hud-top-chip strong { display:block !important; overflow:hidden !important; text-overflow:ellipsis !important; white-space:nowrap !important; font-size:.68rem !important; }
+  #game #hud-header-fixed .hud-level-chip strong { display:grid !important; gap:1px !important; line-height:1.05 !important; }
+  #game #hud-header-fixed .hud-level-chip { min-width:92px !important; padding:4px 7px !important; }
+  #game #hud-header-fixed .hud-level-chip .hud-top-label { font-size:.5rem !important; letter-spacing:.04em !important; }
+  #game #hud-header-fixed .hud-level-chip strong span { display:block !important; font-size:.7rem !important; line-height:1.15 !important; }
+  #game #hud-header-fixed .hud-status-bars { grid-template-columns:repeat(4,minmax(0,1fr)) !important; gap:2px !important; }
+  #game #hud-queue-alert:not(.hidden) { display:flex !important; align-items:center !important; justify-content:center !important; pointer-events:auto !important; z-index:1800 !important; min-height:42px !important; width:auto !important; cursor:pointer !important; touch-action:manipulation !important; }
+  #game #hud-queue-alert-text { pointer-events:none !important; }
   #btn-esperar-gratis { display: none !important; }
   html, body { width:100%; min-height:100%; overflow-x:hidden; }
   body { overflow-y:hidden; }
@@ -337,7 +369,41 @@
 
 /* Ultima capa movil: las tarjetas no recortan informacion funcional. */
 @media (max-width: 700px) {
-  #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-btn { height:auto !important; min-height:184px !important; max-height:none !important; overflow:hidden !important; flex-basis:190px !important; width:190px !important; min-width:190px !important; padding:8px !important; }
+  #game #hud-header-fixed { min-height:78px !important; padding:6px 8px !important; overflow:visible !important; }
+  #game #hud-header-fixed .hud-owner-pill { display:grid !important; grid-template-columns:34px 62px minmax(0,1fr) !important; align-items:center !important; gap:5px !important; }
+  #game #hud-header-fixed .hud-owner-avatar { width:32px !important; height:32px !important; }
+  #game #hud-header-fixed .hud-owner-meta { min-width:0 !important; flex:none !important; }
+  #game #hud-header-fixed .hud-top-chips { display:grid !important; grid-template-columns:68px minmax(0,1fr) !important; min-width:0 !important; width:100% !important; margin:0 !important; }
+  #game #hud-header-fixed .hud-level-chip { display:none !important; }
+  #game #hud-header-fixed .hud-needs-chip { min-width:0 !important; padding:4px 6px !important; }
+  #game #hud-header-fixed .hud-status-bars { display:grid !important; grid-template-columns:repeat(4,minmax(0,1fr)) !important; gap:3px !important; }
+  #game #hud-header-fixed .hud-status-item b { font-size:.42rem !important; }
+  #game #hud-queue-alert { top:92px !important; align-items:center !important; gap:4px !important; max-width:calc(100vw - 24px) !important; padding:3px !important; }
+  #game #hud-queue-alert button:first-child { border:0 !important; background:transparent !important; color:#fff1c7 !important; padding:6px 8px !important; font:inherit !important; font-weight:700 !important; text-align:left !important; }
+}
+
+@media (max-width: 700px) {
+  #game #screen-taller.active .inspection-360-actions button[onclick*="iniciarMiniJuegoMiPuesto"] { display:none !important; }
+}
+
+@media (max-width: 700px) {
+  #game { background:radial-gradient(circle at 50% 0%,#202653 0,#0b0e22 46%,#050611 100%) !important; }
+  #game .game-screen, #game .modal-content, #game .of-card, #game .tel-frame { background-color:#11152d !important; border-color:rgba(116,151,225,.42) !important; }
+  #game .btn { background:linear-gradient(135deg,#263b72,#60459b) !important; color:#f4f6ff !important; border-color:rgba(142,231,255,.48) !important; }
+  #game .btn.btn-danger { background:linear-gradient(135deg,#612f61,#8d3f58) !important; }
+  #game #game-nav { background:linear-gradient(180deg,#141936,#090b1c) !important; border-color:rgba(142,231,255,.35) !important; }
+  #game .section-title, #game .of-card-head, #game .tel-sidebar-header { color:#8ee7ff !important; }
+}
+
+@media (max-width: 700px) {
+  #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-btn { height:auto !important; min-height:105px !important; max-height:105px !important; overflow:hidden !important; flex-basis:109px !important; width:109px !important; min-width:109px !important; padding:3px !important; gap:1px !important; }
+  #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-card-head { gap:4px !important; }
+  #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-avatar { width:20px !important; height:20px !important; }
+  #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-nombre { font-size:.52rem !important; }
+  #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-especialidad { font-size:.38rem !important; }
+  #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-meter { min-height:8px !important; gap:2px !important; }
+  #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-meter-label { font-size:.52rem !important; }
+  #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-meter-value { font-size:.46rem !important; }
   #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-meter:nth-of-type(n) { display:grid !important; }
   #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-habilidad-especial { display:grid !important; gap:2px !important; font-size:.58rem !important; line-height:1.25 !important; }
   #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-habilidad-especial span { white-space:nowrap !important; overflow:hidden !important; text-overflow:ellipsis !important; }
