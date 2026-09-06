@@ -8096,14 +8096,20 @@
 .upgrade-shop-section:not([open]){opacity:.88}
 
 /* Capa visual unificada: contraste, profundidad y estados mas legibles. */
-:root { --ui-bg-deep:#071216; --ui-bg-panel:#0d2026; --ui-border:rgba(91,151,139,.34); --ui-gold:#e4b35d; --ui-green:#55c581; --ui-shadow:0 12px 30px rgba(0,0,0,.28); }
-body { background:radial-gradient(circle at 20% 0%,#19343a 0,var(--ui-bg-deep) 46%,#050b0d 100%); }
+:root { --ui-bg-deep:#090b1c; --ui-bg-panel:#13162e; --ui-border:rgba(116,151,225,.38); --ui-gold:#8ee7ff; --ui-green:#71e0b2; --ui-violet:#b69cff; --ui-shadow:0 14px 34px rgba(0,0,0,.38); }
+body { background:radial-gradient(circle at 18% 0%,#202653 0,#0b0e22 46%,#050611 100%); }
 .game-screen,.modal-content,.of-card,.tel-frame,.mecanico-btn,.flow-case-card { border-color:var(--ui-border); box-shadow:var(--ui-shadow); }
 .section-title,.of-card-head,.tel-sidebar-header,.resultado-rep-zone-label { color:var(--ui-gold); letter-spacing:.08em; }
 .btn { border:1px solid rgba(228,179,93,.45); transition:transform .16s ease,filter .16s ease,box-shadow .16s ease; }
 .btn:hover:not(:disabled) { transform:translateY(-1px); filter:brightness(1.08); box-shadow:0 5px 14px rgba(0,0,0,.25); }
 .btn:focus-visible,button:focus-visible,input:focus-visible { outline:2px solid var(--ui-gold); outline-offset:2px; }
-.tel-chat-header { background:linear-gradient(135deg,#102b31,#0a171b); }
-.tel-social-panel { padding:5px 8px; border:1px solid var(--ui-border); border-radius:8px; background:rgba(7,18,22,.7); }
+.tel-chat-header { background:linear-gradient(135deg,#202654,#10132b); }
+.tel-social-panel { padding:5px 8px; border:1px solid var(--ui-border); border-radius:8px; background:rgba(9,11,28,.78); }
 .mecanico-habilidad-especial { margin-top:7px; padding:6px 8px; color:#c8d8d1; font-size:.64rem; line-height:1.3; border-left:2px solid var(--ui-gold); background:rgba(228,179,93,.06); }
+.btn { background:linear-gradient(135deg,#263b72,#60459b); color:#f4f6ff; }
+.btn.btn-danger { background:linear-gradient(135deg,#612f61,#8d3f58); }
+.mecanico-habilidad-especial { color:#d6eaff; background:rgba(142,231,255,.07); }
+.mecanico-meter-track { background:#202646; }
+.mecanico-meter-fill.skill { background:linear-gradient(90deg,#6c8dff,#8ee7ff) !important; }
+.mecanico-meter-fill.anger { background:linear-gradient(90deg,#ff7b9e,#ff506f) !important; }
 .upgrade-shop-section summary{cursor:pointer;list-style:none}.upgrade-shop-section summary::-webkit-details-marker{display:none}.upgrade-shop-section summary h4{display:flex;justify-content:space-between;align-items:center}.upgrade-shop-section summary h4 span{font-size:1rem}.upgrade-shop-section:not([open]){opacity:.88}

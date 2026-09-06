@@ -26,7 +26,8 @@
         <!-- Barras de estado animadas y semánticas -->
         <link rel="stylesheet" href="css/modules/barra-estado.css">
     <link rel="stylesheet" href="css/app-shell.css?v=10">
-<link rel="stylesheet" href="css/mobile-shell.css?v=8">
+<link rel="stylesheet" href="css/mobile-shell.css?v=10">
+    <script src="js/app-meta.js"></script>
 </head>
 <body>
 
@@ -92,6 +93,12 @@
     </div>
     <p>Administra el taller, resuelve casos y mantén al equipo operativo. Desde aquí puedes iniciar una partida limpia, continuar una sesión válida o abrir el editor narrativo.</p>
 
+    <section class="onboarding-steps" aria-label="Primeros pasos">
+        <span class="onboarding-kicker">PRIMERA PARTIDA</span>
+        <strong>Tu objetivo inicial: cerrar un caso completo.</strong>
+        <p>1. Revisa la cola. 2. Entrevista y diagnostica. 3. Asigna un mecánico. 4. Cobra el resultado.</p>
+    </section>
+
     <div class="creator-actions menu-launch-actions">
         <button id="menu-btn-nueva-partida" class="btn" type="button" onclick="iniciarDesdeMenu()">Nueva Partida</button>
         <button id="menu-btn-continuar" class="btn" type="button" onclick="cargarPartidaDesdeMenu()" disabled>Continuar</button>
@@ -108,7 +115,7 @@
 
 
 <div class="game-container hidden" id="game">
-    <button id="hud-queue-alert" class="hud-queue-alert hidden" type="button" onclick="navegarPantalla('taller'); seleccionarPuestoTaller('cola')">Cola estable</button>
+    <button id="hud-queue-alert" class="hud-queue-alert hidden" type="button" role="status" onclick="abrirColaDesdeAlerta(event)"><span id="hud-queue-alert-text">Cola estable</span></button>
     <header id="hud-header-fixed" class="header header-live" aria-label="HUD del dueño">
         <div class="hud-owner-pill">
             <img id="hud-dueno-avatar" class="hud-owner-avatar" src="img/boss/boss.png" alt="Avatar del dueño" title="Ver perfil del dueño" role="button" tabindex="0" onclick="abrirPerfilDueno()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();abrirPerfilDueno();}" onerror="this.src='img/boss/boss.png'">
@@ -130,6 +137,10 @@
                         <span class="hud-status-item"><b>Estrés</b><i class="hud-status-bar stress"><em id="hud-estres-fill"></em></i></span>
                         <span class="hud-status-item"><b>Humor</b><i class="hud-status-bar team"><em id="hud-humor-fill"></em></i></span>
                     </div>
+                </div>
+                <div class="hud-top-chip hud-level-chip" title="Nivel y XP del dueño">
+                    <span class="hud-top-label">Progreso</span>
+                    <strong><span>Nivel: <b id="hud-nivel">1</b></span><span id="hud-xp">XP: 0</span></strong>
                 </div>
             </div>
         </div>
@@ -291,6 +302,16 @@
 </div>
 
 <!-- MODALES -->
+<div id="modal-delivery-gestion" class="modal-overlay hidden">
+  <div class="modal-content">
+    <span class="close-btn" onclick="cerrarModal()">&times;</span>
+    <h3>GESTION DE DELIVERY</h3>
+    <p id="delivery-gestion-resumen" class="shop-item-hint"></p>
+    <div id="delivery-gestion-lista"></div>
+    <button class="btn btn-danger" onclick="cerrarModal()">Cerrar</button>
+  </div>
+</div>
+
 <div id="modal-tienda" class="modal-overlay hidden">
     <div class="modal-content">
         <span class="close-btn" onclick="cerrarModal()">&times;</span>
@@ -337,6 +358,10 @@
             <button id="btn-tactica-scanner" class="btn" onclick="comprarMejoraTactica('scanner_dx')">Scanner OBD</button>
             <button id="btn-tactica-flujo" class="btn" onclick="comprarMejoraTactica('flujo_reparacion')">Flujo de Reparación</button>
             <button id="btn-tactica-kit" class="btn" onclick="comprarMejoraTactica('kit_herramientas_pro')">Kit Profesional</button>
+            <button class="btn" onclick="comprarMejoraTactica('organizador_cola')">Organizador de Cola</button>
+            <button class="btn" onclick="comprarMejoraTactica('control_calidad')">Control de Calidad</button>
+            <button class="btn" onclick="comprarMejoraTactica('fidelidad_clientes')">Programa de Fidelidad</button>
+            <button class="btn" onclick="comprarMejoraTactica('ahorro_operativo')">Plan de Ahorro</button>
             <button class="btn btn-danger" onclick="cerrarModal()">Cerrar</button>
         </div>
     </div>
@@ -390,6 +415,35 @@
         <div id="repuestos-inventario" class="repuestos-inventario">Sin piezas en inventario.</div>
         <button class="btn btn-danger" style="margin-top:10px;" onclick="cerrarModal()">Cerrar</button>
     </div>
+</div>
+
+<div id="modal-inspeccion" class="modal-overlay hidden">
+  <div class="modal-content">
+    <span class="close-btn" onclick="cerrarModal()">&times;</span>
+    <h3>REVISAR EVIDENCIAS</h3>
+    <div id="inspeccion-resumen"></div>
+    <div id="inspeccion-documentos"></div>
+    <div class="inspection-evidence-summary"><strong>Comparación</strong><div id="inspeccion-seleccion"></div><div id="inspeccion-resultado"></div></div>
+    <div class="inspection-evidence-summary"><strong>Hallazgos</strong><div id="inspeccion-hallazgos"></div></div>
+    <button class="btn btn-danger" onclick="cerrarModal()">Cerrar</button>
+  </div>
+</div>
+
+<div id="modal-cajab" class="modal-overlay hidden">
+  <div class="modal-content">
+    <span class="close-btn" onclick="cerrarModal()">&times;</span>
+    <h3>CAJA B DEL BARRIO</h3>
+    <div class="cajab-contact"><img class="cajab-avatar-placeholder" src="img/tiendas/caja b/Mr.Colon.jpg" alt="Mr. Colon"><div><strong>Mr. Colon</strong><small>Contacto del barrio · operador de Caja B</small></div></div>
+    <p>Movidas informales con cupos limitados. Generan caja, pero aumentan el calor del inspector.</p>
+    <div class="ext-bank-info">Caja B: <strong id="modal-cajab-monto">RD$0</strong></div>
+    <div class="ext-bank-info">Cupos: <strong id="modal-cajab-cupos">0/3</strong></div>
+    <div class="ext-bank-info">Calor inspector: <strong id="modal-cajab-calor">0/100</strong></div>
+    <div class="delivery-stat"><span>Cupos</span><div class="delivery-stat-track"><i id="modal-cajab-cupos-fill" style="width:66%"></i></div><b>3 max.</b></div>
+    <div class="delivery-stat"><span>Rastreo</span><div class="delivery-stat-track speed"><i id="modal-cajab-calor-fill" style="width:0%"></i></div><b>riesgo</b></div>
+    <div class="cajab-operation-list"><div><strong>Picoteo rápido</strong><small>RD$220–420 · riesgo bajo · 1 cupo</small></div><div><strong>Rescate en calle</strong><small>RD$480–920 · riesgo alto · 1 cupo</small></div><div><strong>Cuadre con equipo</strong><small>Gasta RD$210+ · baja calor y sube moral</small></div></div>
+    <div class="ext-bank-actions"><button class="btn" onclick="operarCajaB('picoteo')">Picoteo rápido</button><button class="btn" onclick="operarCajaB('rescate')">Rescate en calle</button><button class="btn" onclick="operarCajaB('cuadre')">Cuadre con equipo</button></div>
+    <button class="btn btn-danger" onclick="cerrarModal()">Cerrar</button>
+  </div>
 </div>
 
 <div id="modal-comida" class="modal-overlay hidden">
@@ -794,7 +848,13 @@
 
 <script src="js/data/turn-costs.js"></script>
 
+<script src="js/data/expansion-data.js"></script>
+
 <script src="js/state.js"></script>
+<script src="js/analytics/events.js"></script>
+<script src="js/analytics/player-profile.js"></script>
+<script src="js/analytics/narrative-director.js"></script>
+<script src="js/onboarding.js"></script>
 
 <!-- Pantallas del juego -->
 
@@ -823,9 +883,15 @@
 <script src="js/minigames/rhythm-dx.js"></script>
     <script src="js/ui.js?v=31"></script>
 
+<script src="js/modules/clients-history.js"></script>
+
 <script src="js/clients.js?v=19"></script>
 
+<script src="js/modules/team-parts.js"></script>
+
 <script src="js/team.js?v=15"></script>
+
+<script src="js/modules/progression.js"></script>
 
 <script src="js/game.js"></script>
 <script src="js/owner-work.js?v=1"></script>

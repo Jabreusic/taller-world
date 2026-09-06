@@ -1,108 +1,5 @@
-﻿﻿// --- Sistema de logros ---
-// Variable global para solicitudes de mecánico
+﻿﻿// Variable global para solicitudes de mecánico
 var solicitudMecanicoActiva = null;
-const LOGROS = [
-    { id: 'primer-caso', descripcion: 'Resuelve tu primer caso', check: () => (window.resumenCasos && window.resumenCasos.totalCasosJugados >= 1) },
-    { id: 'racha-5', descripcion: 'Logra una racha de 5 casos exitosos', check: () => (window.resumenCasos && window.resumenCasos.rachaCasosExitosos >= 5) },
-    { id: 'dinero-10k', descripcion: 'Alcanza RD$10,000', check: () => (window.saldo >= 10000) },
-    { id: 'reputacion-10', descripcion: 'Llega a 10 de reputación', check: () => (window.reputacion >= 10) },
-    { id: '50-casos', descripcion: 'Resuelve 50 casos', check: () => (window.resumenCasos && window.resumenCasos.totalCasosJugados >= 50) },
-];
-let logrosDesbloqueados = [];
-
-function renderizarLogrosUI() {
-    const cont = document.getElementById('logros-ui');
-    if (!cont) return;
-    cont.innerHTML = LOGROS.map(logro => {
-        const unlocked = logrosDesbloqueados.includes(logro.id) || logro.check();
-        return `<span style="display:inline-block;padding:0.3em 1em;border-radius:8px;${unlocked ? 'background:#90caf9;color:#222;font-weight:bold;' : 'background:#eee;color:#888;'};min-width:90px;">${logro.descripcion}</span>`;
-    }).join('');
-}
-
-function verificarLogros() {
-    let huboCambio = false;
-    LOGROS.forEach(logro => {
-        if (logro.check() && !logrosDesbloqueados.includes(logro.id)) {
-            logrosDesbloqueados.push(logro.id);
-            huboCambio = true;
-            if (typeof log === 'function') log(`¡Logro desbloqueado! ${logro.descripcion}`, 'exito');
-            if (typeof mostrarFeedbackGameplay === 'function') mostrarFeedbackGameplay(`¡Logro desbloqueado! ${logro.descripcion}`, 'ok');
-        }
-    });
-    renderizarLogrosUI();
-}
-// --- Sistema de hitos, objetivos y recompensas ---
-const HITOS_OBJETIVOS = [
-    { casos: 5, descripcion: '¡Primeros 5 casos!', recompensa: { saldo: 500, reputacion: 2 } },
-    { casos: 10, descripcion: '¡10 casos resueltos!', recompensa: { saldo: 1000, reputacion: 3 } },
-    { casos: 20, descripcion: '¡20 casos, taller en marcha!', recompensa: { saldo: 2000, reputacion: 5 } },
-    { casos: 50, descripcion: '¡50 casos, leyenda local!', recompensa: { saldo: 5000, reputacion: 10 } },
-];
-let hitosAlcanzados = [];
-var monitorProgresoInterval = null;
-
-function renderizarHitosObjetivosUI() {
-    const cont = document.getElementById('hitos-ui');
-    if (!cont) return;
-    const casosTotales = Math.max(0, Math.round((window.resumenCasos && window.resumenCasos.totalCasosJugados) || 0));
-    cont.innerHTML = HITOS_OBJETIVOS.map(hito => {
-        const alcanzado = hitosAlcanzados.includes(hito.casos) || casosTotales >= hito.casos;
-        return `<span style="display:inline-block;padding:0.3em 1em;border-radius:8px;${alcanzado ? 'background:#f6d365;color:#222;font-weight:bold;' : 'background:#eee;color:#888;'};min-width:110px;">${hito.descripcion}</span>`;
-    }).join('');
-}
-
-function verificarHitosObjetivos() {
-    renderizarHitosObjetivosUI();
-    if (!window.resumenCasos || typeof window.resumenCasos.totalCasosJugados !== 'number') return;
-    const total = window.resumenCasos.totalCasosJugados;
-    let huboCambio = false;
-    HITOS_OBJETIVOS.forEach((hito, idx) => {
-        if (total >= hito.casos && !hitosAlcanzados.includes(hito.casos)) {
-            // Otorgar recompensa
-            if (typeof window.saldo === 'number') window.saldo += hito.recompensa.saldo || 0;
-            if (typeof window.reputacion === 'number') window.reputacion += hito.recompensa.reputacion || 0;
-            hitosAlcanzados.push(hito.casos);
-            huboCambio = true;
-            if (typeof log === 'function') log(`Hito alcanzado: ${hito.descripcion} +${hito.recompensa.saldo} RD$, +${hito.recompensa.reputacion} reputación`, 'exito');
-            if (typeof mostrarFeedbackGameplay === 'function') mostrarFeedbackGameplay(`¡${hito.descripcion}! +${hito.recompensa.saldo} RD$, +${hito.recompensa.reputacion} reputación`, 'ok');
-        }
-    });
-    renderizarHitosObjetivosUI();
-}
-
-function detenerMonitorProgreso() {
-    if (!monitorProgresoInterval) return false;
-    clearInterval(monitorProgresoInterval);
-    monitorProgresoInterval = null;
-    return true;
-}
-
-function iniciarMonitorProgreso() {
-    detenerMonitorProgreso();
-    verificarHitosObjetivos();
-    verificarLogros();
-    monitorProgresoInterval = setInterval(function() {
-        if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
-        verificarHitosObjetivos();
-        verificarLogros();
-    }, 2000);
-}
-
-if (typeof window !== 'undefined') {
-    window.detenerMonitorProgreso = detenerMonitorProgreso;
-}
-
-// Inicia el juego real (sin tutorial)
-function iniciarJuegoReal() {
-    if (typeof empezarJornada === 'function') empezarJornada();
-    if (typeof iniciarTimer === 'function') iniciarTimer();
-    if (typeof mostrarHistoriaPrincipalModal === 'function') {
-        setTimeout(function() { mostrarHistoriaPrincipalModal(); }, 60);
-    }
-    iniciarMonitorProgreso();
-    setTimeout(renderizarHitosObjetivosUI, 400);
-    setTimeout(renderizarLogrosUI, 400);
-}
 cargarOpciones = function() {
     if (typeof cargarOpcionesEnUI === 'function') cargarOpcionesEnUI();
 };
@@ -1548,8 +1445,13 @@ function abrirModal(tipo) {
     } else if (tipo === 'tienda-tactica') {
         if (typeof renderizarTiendasMejoras === 'function') renderizarTiendasMejoras();
         document.getElementById('modal-tienda-tactica').classList.remove('hidden');
+    } else if (tipo === 'delivery-gestion') {
+        if (typeof renderizarGestionDelivery === 'function') renderizarGestionDelivery();
+        document.getElementById('modal-delivery-gestion').classList.remove('hidden');
     } else if (tipo === 'comida') {
         document.getElementById('modal-comida').classList.remove('hidden');
+    } else if (tipo === 'cajab') {
+        document.getElementById('modal-cajab').classList.remove('hidden');
     } else if (tipo === 'banco') {
         if (!window.bancoModalContexto || typeof window.bancoModalContexto !== 'object') {
             window.bancoModalContexto = construirContextoBanco('manual', 'manual');
@@ -1658,7 +1560,27 @@ function renderizarTiendasMejoras() {
     const btnP = document.getElementById('btn-tienda-publicidad');
     const btnC = document.getElementById('btn-tienda-capacitacion');
     const btnM = document.getElementById('btn-tienda-maquina');
+    const btnLavado = document.getElementById('btn-tienda-autolavado');
     const estadoBase = document.getElementById('tienda-mejoras-estado');
+    document.querySelectorAll("#modal-tienda-tactica button[onclick*='organizador_cola'],#modal-tienda-tactica button[onclick*='control_calidad'],#modal-tienda-tactica button[onclick*='fidelidad_clientes'],#modal-tienda-tactica button[onclick*='ahorro_operativo']").forEach(function(btn) {
+        var tipo = (btn.getAttribute('onclick') || '').match(/'([^']+)'/);
+        var mapaNivel = { organizador_cola:['Organizador de Cola','organizadorCola'], control_calidad:['Control de Calidad','controlCalidad'], fidelidad_clientes:['Programa de Fidelidad','fidelidadClientes'], ahorro_operativo:['Plan de Ahorro','ahorroOperativo'] };
+        var item = tipo && mapaNivel[tipo[1]];
+        if (item) {
+            var nivelItem = Math.min(10, Math.round(Number(mejorasTacticas[item[1]]) || 0));
+            var costoItem = ({organizador_cola:1100, control_calidad:1450, fidelidad_clientes:1600, ahorro_operativo:1250}[tipo[1]]) + (nivelItem * ({organizador_cola:350, control_calidad:450, fidelidad_clientes:500, ahorro_operativo:400}[tipo[1]]));
+            var bloqueadoItem = nivelItem >= 10 || progresoOperativo < 2 || reputacion < 40 || saldo < costoItem;
+            btn.innerText = bloqueadoItem
+                ? '🔒 ' + item[0] + ' · BLOQUEADO · Nv.' + nivelItem + '/10 · RD$' + costoItem + ' · Req P2 R40'
+                : item[0] + ' · Nv.' + nivelItem + '/10 · RD$' + costoItem;
+            // Se mantiene pulsable para explicar el requisito; la compra sigue
+            // protegida por comprarMejoraTactica/comprarMejora.
+            btn.disabled = false;
+            btn.classList.toggle('upgrade-locked', bloqueadoItem);
+            btn.setAttribute('aria-disabled', String(bloqueadoItem));
+            btn.title = nivelItem >= 10 ? 'Nivel máximo alcanzado.' : (!bloqueadoItem ? 'Disponible.' : 'Bloqueado: requiere Progreso 2, Reputación 40 y RD$' + costoItem + '.');
+        }
+    });
 
     if (btnT) {
         const dataMejora = ECONOMY_DATA.mejoraTaller || { costoBase: 1400, costoPorNivel: 900, diaBase: 2, repBase: 52, repPorNivel: 4, nivelMax: 6 };
@@ -1671,10 +1593,35 @@ function renderizarTiendasMejoras() {
         const reqTxt = `Req P${reqAvance} R${reqRep}`;
         btnT.innerText = agotado
             ? `EXPANDIR TALLER | MAX ${nivelMax}`
+            : bloqueado
+                ? `🔒 EXPANDIR TALLER | BLOQUEADO | Nivel ${tallerNivel}/${nivelMax} | ${reqTxt}`
             : `EXPANDIR TALLER | Nivel ${tallerNivel}/${nivelMax} | RD$${costo} | +puestos | ${reqTxt}`;
-        btnT.disabled = agotado || bloqueado;
+        btnT.disabled = false;
+        btnT.classList.toggle('upgrade-locked', agotado || bloqueado);
         btnT.title = agotado ? 'Nivel máximo alcanzado.' : (bloqueado ? 'Requisitos: Progreso P' + reqAvance + ', reputación R' + reqRep + ' y RD$' + costo + '.' : 'Disponible.');
         btnT.setAttribute('aria-disabled', String(btnT.disabled));
+    }
+
+    if (btnLavado) {
+        const costoLavado = 2800;
+        const nivelLavado = mejoras && mejoras.autolavado ? 1 : 0;
+        const tieneAccesoLavado = tallerNivel >= 2 || casosCerrados >= 8;
+        const sinCajaLavado = saldo < costoLavado;
+        const bloqueadoLavado = nivelLavado >= 1 || !tieneAccesoLavado || sinCajaLavado;
+        btnLavado.innerText = nivelLavado >= 1
+            ? 'AUTOLAVADO | DESBLOQUEADO'
+            : bloqueadoLavado
+                ? `🔒 AUTOLAVADO | BLOQUEADO | RD$${costoLavado} | Req Taller 2 o 8 casos`
+            : `AUTOLAVADO | RD$${costoLavado} | Nv. taller 2 o 8 casos`;
+        btnLavado.disabled = false;
+        btnLavado.setAttribute('aria-disabled', String(bloqueadoLavado));
+        btnLavado.title = nivelLavado >= 1
+            ? 'Servicio ya desbloqueado.'
+            : (!tieneAccesoLavado
+                ? `Bloqueado: requiere Taller nivel 2 o 8 casos completados. Vas ${casosCerrados} casos.`
+                : (sinCajaLavado ? `Bloqueado: necesitas RD$${costoLavado}.` : 'Disponible para comprar.'));
+        btnLavado.classList.toggle('is-locked', bloqueadoLavado);
+        btnLavado.classList.toggle('upgrade-locked', bloqueadoLavado);
     }
 
     const map = {
@@ -1688,7 +1635,7 @@ function renderizarTiendasMejoras() {
         const btn = map[tipo];
         if (!btn) return;
         const req = requisitosMejora(tipo);
-        const nivelActual = tipo === 'maquina' ? (mejoras.maquinaDiagnosis ? 1 : 0) : (mejoras[tipo] || 0);
+        const nivelActual = tipo === 'maquina' ? (Number(mejoras.maquinaDiagnosis) || 0) : (mejoras[tipo] || 0);
         const bloqueado = progresoOperativo < req.nivelMin || reputacion < req.repMin || tallerNivel < req.tallerMin || saldo < req.costo;
         const agotado = nivelActual >= req.max;
         const efecto = tipo === 'herramientas'
@@ -1699,11 +1646,15 @@ function renderizarTiendasMejoras() {
                     ? `Mejor lectura tecnica y menos enojo`
                     : 'Impulso fuerte al OBD y precision de dictamen'));
         const reqTxt = `Req P${req.nivelMin} R${req.repMin} T${req.tallerMin}`;
-        btn.innerText = `${tipo.toUpperCase()} | Nivel ${nivelActual}/${req.max} | RD$${req.costo} | ${efecto} | ${reqTxt}`;
-        btn.disabled = agotado || bloqueado;
+        btn.innerText = agotado
+            ? `${tipo.toUpperCase()} | MAXIMO ALCANZADO`
+            : bloqueado
+                ? `🔒 ${tipo.toUpperCase()} | BLOQUEADO | Nivel ${nivelActual}/${req.max} | ${reqTxt}`
+                : `${tipo.toUpperCase()} | Nivel ${nivelActual}/${req.max} | RD$${req.costo} | ${efecto} | ${reqTxt}`;
+        btn.disabled = false;
+        btn.classList.toggle('upgrade-locked', agotado || bloqueado);
         btn.title = agotado ? 'Nivel máximo alcanzado.' : (bloqueado ? 'Requisitos: Progreso P' + req.nivelMin + ', reputación R' + req.repMin + ', taller T' + req.tallerMin + ' y RD$' + req.costo + '.' : 'Disponible.');
         btn.setAttribute('aria-disabled', String(btn.disabled));
-        if (agotado) btn.innerText = `${tipo.toUpperCase()} | MAXIMO ALCANZADO`;
     });
 
     const btnRec = document.getElementById('btn-tactica-recarga');
@@ -1836,9 +1787,11 @@ function renderizarLoreMecanicos() {
             return `<div class="mecanico-ficha"><strong>${caso.idCaso}</strong> | ${caso.nombre}<br><em>${caso.nota}</em></div>`;
         }).join('');
 
-    const bioExtra = window.mecanicoPanelBioAbierta
-        ? `<div class="mecanico-ficha" style="margin-top:8px;"><strong>Biografia</strong><br>${bio.historia}<br><em>Fortaleza:</em> ${bio.habilidadTexto}<br><em>Rivalidad:</em> ${bio.rivalidad}<br><em>Necesidad actual:</em> ${bio.necesidad}</div>`
-        : '';
+    const problemaNarrativo = m.bloqueoAyudaTurnos > 0
+        ? `${m.nombre} está atendiendo un asunto personal y no puede concentrarse.`
+        : (m.enojo >= 6 ? `${m.nombre} siente que el taller le exige demasiado y está a punto de explotar.`
+            : (m.enojo >= 4 ? `${m.nombre} está tenso: necesita apoyo antes de aceptar otro caso.`
+                : `${m.nombre} está disponible y espera instrucciones claras.`));
 
     cont.innerHTML = `
         <div class="mecanico-ficha">
@@ -1847,6 +1800,7 @@ function renderizarLoreMecanicos() {
             <div><strong>${humor}</strong> | Ritmo ${ritmoPct}%</div>
             <div><strong>Ventaja:</strong> ${rasgo.ventaja}</div>
             <div><strong>Desventaja:</strong> ${rasgo.desventaja}</div>
+            <div class="mecanico-problema-narrativo"><strong>Problema actual:</strong> ${problemaNarrativo}</div>
             <div><strong>${recordatorioTxt}</strong></div>
             <div style="margin-top:8px; display:grid; gap:6px;">
                 <div>
@@ -1862,11 +1816,9 @@ function renderizarLoreMecanicos() {
             <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;">
                 <button class="btn" onclick="hablarConMecanicoPanel()">Hablar con el</button>
                 <button class="btn" onclick="verMecanicoPanel()">Ver mecanico</button>
-                <button class="btn" onclick="toggleBiografiaMecanicoPanel()">Biografia</button>
                 <button class="btn btn-danger" onclick="despedirMecanico('${m.nombre}')">Despedir</button>
             </div>
         </div>
-        ${bioExtra}
         <div class="mecanico-ficha" style="margin-top:10px;">
             <strong>Asignar caso</strong><br>
             <span>Arrastra un caso aprobado desde el panel principal y sueltalo sobre este mecanico.</span>
@@ -2369,6 +2321,7 @@ function hablarConMecanicoPanel() {
     const frase = opciones[Math.floor(Math.random() * opciones.length)];
     window.dialogoMecanicoPanel[m.nombre] = frase;
     log(`${m.nombre}: ${frase}`, 'info');
+    if (typeof mostrarFeedbackGameplay === 'function') mostrarFeedbackGameplay(`${m.nombre} respondió: ${frase}`, 'info');
     renderizarLoreMecanicos();
 }
 
@@ -2521,12 +2474,12 @@ function requisitosMejora(tipo) {
     const claveConfig = tipo === 'maquina' ? 'maquinaDiagnosis' : tipo;
     const base = (ECONOMY_DATA.requisitosMejora || {})[claveConfig];
     if (!base) return { diaMin: 1, nivelMin: 1, repMin: 0, tallerMin: 1, costo: 0, max: 1 };
-    const nivelActual = tipo === 'maquina' ? (mejoras.maquinaDiagnosis ? 1 : 0) : (mejoras[tipo] || 0);
+    const nivelActual = tipo === 'maquina' ? (Number(mejoras.maquinaDiagnosis) || 0) : (mejoras[tipo] || 0);
     const minProgreso = Math.max(1, base.nivelMin || base.progresoMin || base.diaMin || 1);
     return {
         diaMin: base.diaMin || minProgreso,
         nivelMin: minProgreso,
-        repMin: base.repMin,
+        repMin: Array.isArray(base.repMin) ? (base.repMin[Math.min(nivelActual, base.repMin.length - 1)] || base.repMin[base.repMin.length - 1] || 0) : (base.repMin || 0),
         tallerMin: base.tallerMin,
         costo: base.costoBase + (nivelActual * (base.costoPorNivel || 0)),
         max: base.max
@@ -2558,7 +2511,7 @@ function notificarCompraMejoraTelefono(tipo, nombre, costo) {
 function comprarMejora(tipo) {
     const progresoOperativo = obtenerProgresoOperativoActual();
     const req = requisitosMejora(tipo);
-    const nivelActual = tipo === 'maquina' ? (mejoras.maquinaDiagnosis ? 1 : 0) : (mejoras[tipo] || 0);
+    const nivelActual = tipo === 'maquina' ? (Number(mejoras.maquinaDiagnosis) || 0) : (mejoras[tipo] || 0);
     if (nivelActual >= req.max) {
         log('Esa mejora ya llego a su limite.', 'error');
         mostrarStamp('RECHAZADO', 'error');
@@ -2616,14 +2569,17 @@ function comprarMejora(tipo) {
             if (window.TallerApp && window.TallerApp.helpers && typeof window.TallerApp.helpers.registrarGastoDia === 'function') {
                 window.TallerApp.helpers.registrarGastoDia(req.costo, 'mejoras');
             }
-            mejoras.maquinaDiagnosis = true;
-            log(`Maquina de diagnosis adquirida por RD$${req.costo}. OBD gana precision avanzada.`, 'exito');
+            mejoras.maquinaDiagnosis = Math.min(10, (Number(mejoras.maquinaDiagnosis) || 0) + 1);
+            log(`Maquina de diagnosis mejorada a nivel ${mejoras.maquinaDiagnosis} por RD$${req.costo}. OBD gana precision avanzada.`, 'exito');
             break;
     }
     // recalcularCostosTacticos();
     mostrarStamp('APROBADO', 'ok');
     consumirTurno('compra de mejora', COSTOS_TURNO.mejorar);
     notificarCompraMejoraTelefono(tipo, tipo === 'maquina' ? 'Maquina DX' : tipo, req.costo);
+    if (typeof registrarEventoNarrativo === 'function') {
+        registrarEventoNarrativo('mejora_comprada', { tipo: tipo, costo: req.costo, area: tipo === 'capacitacion' ? 'equipo' : 'taller' });
+    }
     sincronizarCompraMejoraUI();
 }
 
@@ -2697,6 +2653,11 @@ function comprarMejoraTactica(tipo) {
         }
         costo = item.costo;
         nombre = item.nombre;
+    } else if (['organizador_cola','control_calidad','fidelidad_clientes','ahorro_operativo'].includes(tipo)) {
+        var extra = { organizador_cola:['organizadorCola','Organizador de Cola',1100,350], control_calidad:['controlCalidad','Control de Calidad',1450,450], fidelidad_clientes:['fidelidadClientes','Programa de Fidelidad',1600,500], ahorro_operativo:['ahorroOperativo','Plan de Ahorro',1250,400] }[tipo];
+        var nivelExtra = Math.max(0, Math.min(10, Math.round(Number(mejorasTacticas[extra[0]]) || 0)));
+        if (nivelExtra >= 10) { log(extra[1] + ' ya esta en nivel 10.', 'error'); mostrarStamp('RECHAZADO','error'); return; }
+        costo = extra[2] + (nivelExtra * extra[3]); nombre = extra[1] + ' Nv.' + (nivelExtra + 1);
     } else {
         return;
     }
@@ -2773,6 +2734,15 @@ function comprarMejoraTactica(tipo) {
     } else if (tipo === 'flujo_reparacion') {
         mejorasTacticas.flujoReparacion = true;
         log('Flujo de reparacion activo: menos tiempo por trabajo y menos pausas por pieza.', 'exito');
+    } else if (tipo === 'organizador_cola') {
+        mejorasTacticas.organizadorCola = Math.min(10, (Number(mejorasTacticas.organizadorCola)||0) + 1); clientesEnEspera.forEach(function(c){ c.pacienciaCola = Math.min(100, (Number(c.pacienciaCola)||50) + 12 + mejorasTacticas.organizadorCola * 2); });
+        log('Organizador de Cola activo: los clientes pierden menos paciencia.', 'exito');
+    } else if (tipo === 'control_calidad') {
+        mejorasTacticas.controlCalidad = Math.min(10, (Number(mejorasTacticas.controlCalidad)||0) + 1); log('Control de Calidad nivel ' + mejorasTacticas.controlCalidad + ' activo: reduce resultados parciales en reparaciones.', 'exito');
+    } else if (tipo === 'fidelidad_clientes') {
+        mejorasTacticas.fidelidadClientes = Math.min(10, (Number(mejorasTacticas.fidelidadClientes)||0) + 1); reputacion += 4 + mejorasTacticas.fidelidadClientes; log('Programa de Fidelidad nivel ' + mejorasTacticas.fidelidadClientes + ' activo.', 'exito');
+    } else if (tipo === 'ahorro_operativo') {
+        mejorasTacticas.ahorroOperativo = Math.min(10, (Number(mejorasTacticas.ahorroOperativo)||0) + 1); log('Plan de Ahorro nivel ' + mejorasTacticas.ahorroOperativo + ' activo: reduce gastos operativos futuros.', 'exito');
     }
 
     // recalcularCostosTacticos();
@@ -2802,6 +2772,9 @@ function pagarDeuda(cantidad) {
         if (typeof registrarPagoBanco === 'function') registrarPagoBanco(montoPago);
         if (deuda <= 0 && typeof mostrarFeedbackGameplay === 'function') {
             mostrarFeedbackGameplay('Deuda bancaria saldada. Tu linea de credito vuelve a estar disponible.', 'ok');
+        }
+        if (typeof registrarEventoNarrativo === 'function') {
+            registrarEventoNarrativo('deuda_pagada', { monto: montoPago, deudaRestante: deuda });
         }
         log(`Pagaste RD$${montoPago} de deuda.`, 'exito');
         realizado = true;

@@ -3,3 +3,6 @@ lore_taller.docx
 .agents/
 node_modules/
 *.log
+
+.vercel
+.env*.local

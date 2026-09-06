@@ -49,7 +49,11 @@ window.TallerData.economy = {
         bateria: 0,
         manualHablar: false,
         scannerDx: false,
-        flujoReparacion: false
+        flujoReparacion: false,
+        organizadorCola: false,
+        controlCalidad: false,
+        fidelidadClientes: false,
+        ahorroOperativo: false
     },
     
     // Límites operativos
@@ -206,7 +210,7 @@ window.TallerData.economy = {
             tallerMin: 1, 
             costoBase: 1800, 
             costoPorNivel: 1100, 
-            max: 3 
+            max: 10
         },
         // Publicidad (4 niveles)
         publicidad: { 
@@ -216,7 +220,7 @@ window.TallerData.economy = {
             tallerMin: 1, 
             costoBase: 1400, 
             costoPorNivel: 700, 
-            max: 4 
+            max: 10
         },
         // Capacitación (4 niveles)
         capacitacion: { 
@@ -226,7 +230,7 @@ window.TallerData.economy = {
             tallerMin: 2, 
             costoBase: 1800, 
             costoPorNivel: 900, 
-            max: 4 
+            max: 10
         },
         // Máquina de diagnóstico (única)
         maquinaDiagnosis: { 
@@ -236,7 +240,7 @@ window.TallerData.economy = {
             tallerMin: 3, 
             costoBase: 4200, 
             costoPorNivel: 0, 
-            max: 1 
+            max: 10
         }
     },
     

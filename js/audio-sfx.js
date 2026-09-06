@@ -16,11 +16,13 @@ const SFX_FILES = {
   confirm: "confirm.mp3",
   reject: "reject.mp3",
   menu_open: "menu_open.mp3",
-  menu_close: "menu_close.mp3",
+  // El archivo real se llama menu_closed.mp3; evita silencio al cerrar modales.
+  menu_close: "menu_closed.mp3",
   client_arrive: "client_arrive.mp3",
   car_delivered: "car_delivered.mp3",
   bonus: "bonus.mp3",
-  warning: "warning.mp3"
+  warning: "warning.mp3",
+  money: "add_money.mp3"
 };
 
 function playSfx(name) {
@@ -28,7 +30,8 @@ function playSfx(name) {
   const file = SFX_FILES[name];
   if (!file) return;
   const audio = new Audio(SFX_PATH + file);
-  audio.volume = 0.5;
+  // Mezcla más suave para móvil: los avisos destacan sin dominar la música.
+  audio.volume = name === "click" || name === "progress" ? 0.28 : 0.44;
   var reproduccion = audio.play();
   if (reproduccion && typeof reproduccion.catch === "function") {
     reproduccion.catch(function () {
@@ -36,5 +39,17 @@ function playSfx(name) {
     });
   }
 }
+
+// Cobertura global: botones creados dinámicamente también tienen respuesta sonora.
+// Se omiten los controles que ya invocan un SFX para no duplicar el sonido.
+document.addEventListener("pointerdown", function (event) {
+  var control = event.target && event.target.closest
+    ? event.target.closest("button, summary, [role='button'], .game-nav-item")
+    : null;
+  if (!control || control.disabled) return;
+  var efecto = String(control.getAttribute("data-sfx") || "").trim().toLowerCase();
+  if (efecto === "silent") return;
+  playSfx(efecto || "click");
+}, { passive: true });
 
 window.playSfx = playSfx;

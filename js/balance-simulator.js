@@ -7,7 +7,7 @@
     var meta = Math.max(5000, Number(objetivo) || 50000);
     var caja = Number.isFinite(Number(cfg.cajaInicial)) ? Number(cfg.cajaInicial) : 2000;
     var casos = 0, exitos = 0, parciales = 0, fallos = 0, negociaciones = 0;
-    var gastoPiezas = 0, gastoComida = 0, gastoMejoras = 0, necesidades = 0;
+    var gastoPiezas = 0, gastoComida = 0, gastoMejoras = 0, ingresosTotales = 0, necesidades = 0;
     var puntos = cfg.usarMejoras === false ? 0 : 3;
     var bonusDx = 0, bonusNeg = 0, bonusEnergia = 0, hambre = 20, sueno = 20, estres = 0;
     var maxCasos = Math.max(20, Number(cfg.maxCasos) || 500);
@@ -37,6 +37,7 @@
       var ingreso = resultado === "exito" ? Math.round(pago * 0.88) : resultado === "parcial" ? Math.round(pago * 0.54) : 0;
       var comida = (casos % 8 === 0) ? 180 : 0;
       caja += ingreso - piezas - comida;
+      ingresosTotales += ingreso;
       gastoPiezas += piezas; gastoComida += comida;
       if (resultado === "exito") exitos++; else if (resultado === "parcial") parciales++; else fallos++;
       hambre += 1; sueno += 1; estres += resultado === "fallo" ? 4 : 1;
@@ -45,7 +46,10 @@
       if (cfg.registrarDetalle) detalle.push({ caso: casos, resultado: resultado, negociado: negociado, ingreso: ingreso, piezas: piezas, caja: Math.round(caja) });
       if (caja < -50000) break;
     }
-    var reporte = { objetivo: meta, cajaInicial: Number(cfg.cajaInicial) || 2000, cajaFinal: Math.round(caja), alcanzado: caja >= meta, casos: casos, exitos: exitos, parciales: parciales, fallos: fallos, negociaciones: negociaciones, gastoPiezas: gastoPiezas, gastoComida: gastoComida, gastoMejoras: gastoMejoras, necesidadesAtendidas: necesidades, mejoras: { diagnostico: bonusDx, negociacion: bonusNeg, energia: bonusEnergia }, detalle: detalle };
+    var ingresos = ingresosTotales;
+    var gastos = gastoPiezas + gastoComida + gastoMejoras;
+    var beneficioNeto = ingresos - gastos;
+    var reporte = { objetivo: meta, cajaInicial: Number(cfg.cajaInicial) || 2000, cajaFinal: Math.round(caja), alcanzado: caja >= meta, casos: casos, exitos: exitos, parciales: parciales, fallos: fallos, tasaExito: casos ? Number((exitos / casos).toFixed(4)) : 0, tasaParcial: casos ? Number((parciales / casos).toFixed(4)) : 0, tasaFallo: casos ? Number((fallos / casos).toFixed(4)) : 0, negociaciones: negociaciones, gastoPiezas: gastoPiezas, gastoComida: gastoComida, gastoMejoras: gastoMejoras, gastosTotales: gastos, ingresosEstimados: ingresos, beneficioNeto: beneficioNeto, margenNeto: ingresos ? Number((beneficioNeto / ingresos).toFixed(4)) : 0, beneficioPromedioCaso: casos ? Math.round(beneficioNeto / casos) : 0, necesidadesAtendidas: necesidades, mejoras: { diagnostico: bonusDx, negociacion: bonusNeg, energia: bonusEnergia }, detalle: detalle };
     console.table(reporte); return reporte;
   }
   window.simularBalanceTaller = simularBalanceTaller;

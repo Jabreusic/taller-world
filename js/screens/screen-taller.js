@@ -27,6 +27,13 @@ function seleccionarDiagnosticoPorNivel(nivel) {
 window.SCREEN_HTML = window.SCREEN_HTML || {};
 window.SCREEN_HTML.taller = `
 <div class="workbench-layout panel-tab active modo-cola" id="panel-taller">
+    <section class="onboarding-objective" aria-live="polite">
+        <div>
+            <span class="onboarding-kicker">SIGUIENTE ACCIÓN</span>
+            <strong id="onboarding-objective-title">Recibe tu primer cliente</strong>
+            <p id="onboarding-objective-detail">Abre la Cola y selecciona un caso para iniciar el flujo del taller.</p>
+        </div>
+    </section>
     <section class="taller-puesto-switch" aria-label="Puesto del taller">
         <div class="lane-cola-tabs taller-puesto-tabs" role="tablist" aria-label="Paneles del taller">
             <button class="lane-tab active" id="taller-tab-cola" type="button" role="tab" aria-selected="true" onclick="seleccionarPuestoTaller('cola')">Cola</button>
@@ -66,7 +73,6 @@ window.SCREEN_HTML.taller = `
         <article class="queue-box" id="queue-card">
             <div class="queue-mobile-head">
                 <strong class="queue-mobile-title">Cola de casos</strong>
-                <button class="queue-close-btn" type="button" aria-label="Cerrar cola" onclick="cerrarColaCasos()">×</button>
                 <button
                     class="queue-mobile-toggle"
                     id="queue-mobile-toggle"

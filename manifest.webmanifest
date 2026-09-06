@@ -1,5 +1,6 @@
 {
   "name": "Taller World: Cronicas",
+  "version": "0.1.0",
   "id": "./",
   "short_name": "Taller World",
   "description": "Gestiona energia, equipo y reputacion para salvar tu taller.",

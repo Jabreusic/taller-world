@@ -362,6 +362,9 @@ function obtenerHistoriaPrincipalSnapshot() {
     var introArco = normalizarTextoHistoriaPrincipal(
         (arcoObj && arcoObj.textoInicio) || ''
     );
+    if (arcoObj && typeof obtenerVarianteCapitulo === 'function') {
+        introArco = normalizarTextoHistoriaPrincipal(introArco + ' ' + obtenerVarianteCapitulo(arcoObj));
+    }
     var trama = typeof obtenerTramaDinamicaDia === 'function'
         ? normalizarTextoHistoriaPrincipal(obtenerTramaDinamicaDia())
         : '';
@@ -402,6 +405,7 @@ function obtenerHistoriaPrincipalSnapshot() {
         trama: trama,
         objetivo: objetivo,
         riesgo: riesgo,
+        misionNarrativa: typeof obtenerMisionNarrativaActual === 'function' ? obtenerMisionNarrativaActual() : null,
         casos: casos,
         meta: meta,
         etiqueta: arcoObj ? 'Arco activo' : 'Panorama actual'
@@ -1004,7 +1008,8 @@ function avanzarDia() {
     malvaviscoAcariciadoHoy = false;
     agregarClasePantallaSiExiste('pantalla-cierre', 'hidden');
     quitarClasePantallaSiExiste('game', 'modo-taller-fijo');
-    const introDia = window.TallerData.historiasInicio[dia] || `Dia ${dia}: Continua la lucha.`;
+    let introDia = window.TallerData.historiasInicio[dia] || `Dia ${dia}: Continua la lucha.`;
+    introDia = introDia.replace(/^Dia\s+\d+\s*:\s*Dia\s+\d+\s*:\s*/i, `Dia ${dia}: `);
     const trama = obtenerTramaDinamicaDia();
     historiaPrincipalIndice++;
     actualizarHtmlPantallaSiExiste('texto-historia', `${introDia}<span class="sub-historia">${trama}</span>`);
@@ -1246,6 +1251,16 @@ function operarCajaB(tipoOperacion) {
         mostrarFeedbackGameplay(txtOp, tipo === 'rescate' ? 'warn' : 'ok');
     }
 
+    if (typeof registrarEventoNarrativo === 'function') {
+        registrarEventoNarrativo('caja_b_usada', {
+            operacion: tipo,
+            ingreso: ingreso,
+            calor: cajaBCalor,
+            saldo: saldo,
+            deuda: deuda
+        });
+    }
+
     var chanceGolpe = 0.06 + (Math.max(0, cajaBCalor || 0) / 220) + (Math.max(0, (cajaB || 0) - 900) / 5000) + (tipo === 'rescate' ? 0.07 : 0);
     chanceGolpe = Math.max(0.06, Math.min(0.8, chanceGolpe));
     if (Math.random() < chanceGolpe) {
@@ -1269,6 +1284,14 @@ function operarCajaB(tipoOperacion) {
         log(txtGolpe, 'error');
         if (typeof mostrarFeedbackGameplay === 'function') {
             mostrarFeedbackGameplay(txtGolpe, 'warn');
+        }
+        if (typeof registrarEventoNarrativo === 'function') {
+            registrarEventoNarrativo('control_inspector', {
+                resultado: 'golpe',
+                decomiso: decomiso,
+                multa: multa,
+                calor: cajaBCalor
+            });
         }
     }
 

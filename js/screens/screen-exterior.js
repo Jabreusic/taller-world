@@ -271,9 +271,9 @@ window.SCREEN_HTML.exterior = `
             <div class="ext-bank-info ext-bank-tip"><small id="ext-refi-info">Refinanciacion: sin datos.</small></div>
             <div class="ext-bank-info ext-bank-tip ext-bank-tip-alert"><small id="ext-banco-recomendacion">Sin alertas bancarias.</small></div>
             <div class="ext-bank-actions">
-                <button id="ext-bank-pay-500" class="btn" onclick="pagarDeuda(500)">Pagar RD$500</button>
-                <button id="ext-bank-pay-1000" class="btn" onclick="pagarDeuda(1000)">Pagar RD$1000</button>
-                <button id="ext-bank-pay-2000" class="btn" onclick="pagarDeuda(2000)">Pagar RD$2000</button>
+                <button id="ext-bank-pay-500" class="btn" data-sfx="confirm" onclick="pagarDeuda(500)">Pagar RD$500</button>
+                <button id="ext-bank-pay-1000" class="btn" data-sfx="confirm" onclick="pagarDeuda(1000)">Pagar RD$1000</button>
+                <button id="ext-bank-pay-2000" class="btn" data-sfx="confirm" onclick="pagarDeuda(2000)">Pagar RD$2000</button>
                 <button id="ext-bank-loan-1000" class="btn btn-danger" onclick="pedirPrestamo(1000)">Prestamo +RD$1000</button>
                 <button id="ext-bank-talk" class="btn" onclick="mostrarEventoBancoModal('manual')">Hablar con el gerente</button>
                 <button id="ext-bank-refi" class="btn" onclick="mostrarEventoBancoModal('manual', construirContextoBanco('refinanciacion','manual'))">Revisar refinanciacion</button>
@@ -289,11 +289,7 @@ window.SCREEN_HTML.exterior = `
             <div class="ext-bank-info">Cupos informales: <strong id="ext-cajab-cupos">0/3</strong></div>
             <div class="ext-bank-info">Calor inspector: <strong id="ext-cajab-calor">0/100</strong></div>
             <div class="ext-bank-info"><small id="ext-cajab-meta">Cada 3 casos cerrados recuperas 1 cupo.</small></div>
-            <div class="ext-bank-actions">
-                <button id="btn-cajab-picoteo" class="btn" onclick="operarCajaB('picoteo')">Picoteo rapido (+caja, riesgo bajo)</button>
-                <button id="btn-cajab-rescate" class="btn" onclick="operarCajaB('rescate')">Rescate en calle (+caja, riesgo alto)</button>
-                <button id="btn-cajab-cuadre" class="btn" onclick="operarCajaB('cuadre')">Cuadre con equipo (-calor, +moral)</button>
-            </div>
+            <button class="btn ext-card-btn" onclick="abrirModal('cajab')">Abrir Caja B</button>
         </div>
 
         <!-- Cafetin y comida corrida -->
@@ -302,6 +298,13 @@ window.SCREEN_HTML.exterior = `
             <div class="ext-card-name">Cafetin De La Esquina</div>
             <div class="ext-card-desc">Cafe, pizza y licuados para bajar la tension del taller. Sirve para levantar el humor de los mecanicos y darle aire al dia.</div>
             <button class="btn ext-card-btn" onclick="abrirModal('comida')">Pedir para el equipo</button>
+        </div>
+
+        <div class="ext-card">
+            <div class="ext-card-icon">&#x1F69A;</div>
+            <div class="ext-card-name">Gestion de Delivery</div>
+            <div class="ext-card-desc">Contrata repartidores y mejora velocidad y capacidad de carga.</div>
+            <button class="btn ext-card-btn" onclick="abrirModal('delivery-gestion')">Ver equipo y contratar</button>
         </div>
 
         <!-- Tienda tactica -->

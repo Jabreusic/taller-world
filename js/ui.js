@@ -235,23 +235,23 @@ var bonoFocoSiguienteCaso = 0;
 var impactoHistoriaDiaAplicado = 0;
 var modPeleaImpagoEmpleadosDia = 0;
 var modFalloImpagoEmpleadosDia = 0;
-var historiaPrincipalIndice = 0;
-var arcoNarrativoActual = null;
-var arcosCumplidos = [];
+var historiaPrincipalIndice;
+var arcoNarrativoActual;
+var arcosCumplidos;
 var narrativaUltimoCasoProcesado = 0;
-var ultimoMecanicoAsignado = null;
+var ultimoMecanicoAsignado;
 var cajaBCuposDisponibles = 1;
 var cajaBUltimoHitoCasos = 0;
-var cajaBCalor = 0;
-var cajaBUltimoControlInspectorCasos = 0;
+var cajaBCalor;
+var cajaBUltimoControlInspectorCasos;
 var clandestinoTrabajosHoy = 0;
 var clandestinoUltimoTurno = -999;
-var decisionesHistoria = {};
+var decisionesHistoria;
 var misionDia = null;
 var resumenDia = null;
-var tramaEstado = null;
+var tramaEstado;
 var eventosTurnoVistos = [];
-var eventoNarrativoActivo = null;
+var eventoNarrativoActivo;
 var eventosTurnoHoy = [];
 var ultimoEventoTurno = 0;
 var ultimoEventoCasos = 0;
@@ -259,39 +259,39 @@ var cierrePagoResuelto = true;
 var cierreCostosPendientes = 0;
 var cierreFacturasPendientes = null;
 var penalizacionesDiaSiguiente = null;
-var mejorasTacticas = null;
-var mejoras = null;
+var mejorasTacticas;
+var mejoras;
 var mejorasDueno = { puntos: 3, diagnostico: 0, negociacion: 0, energia: 0 };
 var mejorasDuenoCargadas = false;
-var tallerNivel = 1;
+var tallerNivel;
 var estadoCards = null;
-var tabMovilActiva = "taller";
-var moralEquipo = 50;
-var nivelJugador = 1;
-var progresoNivel = 0;
-var progresoNivelMeta = 120;
-var ahorroAcumulado = 0;
-var saldo = 2000;
-var reputacion = 50;
-var deuda = 100000;
-var cajaB = 0;
-var exRelacion = 50;
-var clienteActual = null;
+var tabMovilActiva;
+var moralEquipo;
+var nivelJugador;
+var progresoNivel;
+var progresoNivelMeta;
+var ahorroAcumulado;
+var saldo;
+var reputacion;
+var deuda;
+var cajaB;
+var exRelacion;
+var clienteActual;
 var tiempoCliente = 0;
 var ultimoTickRealMs = 0;
-var mecanicos = [];
-var mecanicosDisponibles = [];
-var espaciosReparacionMax = 2;
-var reparacionesActivas = [];
-var repartidoresMax = 1;
-var repartidoresStats = [];
-var entregasPiezasActivas = [];
-var clientesEnEspera = [];
-var casosPendientesDiagnostico = [];
-var casosAtendidos = [];
+var mecanicos;
+var mecanicosDisponibles;
+var espaciosReparacionMax;
+var reparacionesActivas;
+var repartidoresMax;
+var repartidoresStats;
+var entregasPiezasActivas;
+var clientesEnEspera;
+var casosPendientesDiagnostico;
+var casosAtendidos;
 var experienciaVehiculoDx = {};
-var historialClientes = {};
-var inventarioPiezas = [];
+var historialClientes;
+var inventarioPiezas;
 var competenciaBarrioEstado = null;
 var dia = 1;
 var clientesHoy = 0;
@@ -1087,6 +1087,7 @@ function mejorarNivelDeliveryManual(slotIndex) {
     );
   if (typeof autoGuardarPartidaSilenciosa === "function")
     autoGuardarPartidaSilenciosa("mejora-manual-delivery");
+  if (typeof renderizarGestionDelivery === "function") renderizarGestionDelivery();
   if (typeof actualizarUI === "function") actualizarUI();
   return true;
 }
@@ -1114,6 +1115,44 @@ function abrirInfoDelivery(slotIndex) {
   } else if (typeof log === "function") {
     log(mensaje, "info");
   }
+}
+
+function renderizarGestionDelivery() {
+  var lista = document.getElementById("delivery-gestion-lista");
+  var resumen = document.getElementById("delivery-gestion-resumen");
+  if (!lista) return;
+  var total = Math.max(1, Math.round(repartidoresMax || 1));
+  if (resumen) resumen.innerText = `Repartidores: ${total}/3 · Contrata perfiles y mejora su nivel hasta 10.`;
+  var perfiles = [
+    ["Estandar", "Ritmo equilibrado · 1 pieza", "normal"],
+    ["Rayo", "Muy rapido · 1 pieza · menos resistencia", "rapido"],
+    ["Carga", "Lleva hasta 2 piezas · mas lento", "carga"]
+  ];
+  var avataresDelivery = ["img/delivery/jefry.png", "img/delivery/ludo.png", "img/delivery/bido.png"];
+  lista.innerHTML = Array.from({length: total}, function(_, i) {
+    var s = obtenerStatsRepartidor(i), p = perfiles[i % perfiles.length];
+    var xpMeta = xpSiguienteNivelDelivery(s.nivel);
+    var xpPct = Math.min(100, Math.round((s.xp / xpMeta) * 100));
+    var velocidadPct = p[2] === "rapido" ? 92 : (p[2] === "carga" ? 62 : 76);
+    var capacidadPct = p[2] === "carga" ? 100 : 50;
+    return `<div class="mecanico-ficha delivery-management-card"><div class="delivery-management-head"><img class="delivery-management-avatar" src="${avataresDelivery[i % avataresDelivery.length]}" alt="Delivery ${i+1}"><strong>Delivery ${i+1} · ${p[0]}</strong><span class="delivery-role-badge">Nv. ${s.nivel}</span></div><small>${p[1]}</small><div class="delivery-stat"><span>XP</span><div class="delivery-stat-track"><i style="width:${xpPct}%"></i></div><b>${s.xp}/${xpMeta}</b></div><div class="delivery-stat"><span>Velocidad</span><div class="delivery-stat-track speed"><i style="width:${velocidadPct}%"></i></div><b>${velocidadPct}%</b></div><div class="delivery-stat"><span>Carga</span><div class="delivery-stat-track load"><i style="width:${capacidadPct}%"></i></div><b>${p[2] === "carga" ? "2 piezas" : "1 pieza"}</b></div><button class="btn" type="button" onclick="mejorarNivelDeliveryManual(${i})">Mejorar · RD$${obtenerCostoMejoraDelivery(s.nivel)}</button></div>`;
+  }).join("");
+  if (total < 3) {
+    var puedeContratar = Number(saldo || 0) >= 1200;
+    lista.innerHTML += `<button class="btn btn-primary ${puedeContratar ? "" : "delivery-hiring-locked"}" type="button" onclick="contratarRepartidorDelivery()">${puedeContratar ? "Contratar" : "🔒 BLOQUEADO"} ${perfiles[total % perfiles.length][0]} · RD$1200</button><small class="delivery-hiring-feedback">${puedeContratar ? "Cupo disponible." : "No puedes contratar: necesitas RD$1200 en caja."}</small>`;
+  } else {
+    lista.innerHTML += `<div class="delivery-hiring-feedback delivery-hiring-max">Máximo de 3 repartidores alcanzado.</div>`;
+  }
+}
+
+function contratarRepartidorDelivery() {
+  var costo = 1200;
+  if (repartidoresMax >= 3) return mostrarFeedbackGameplay("Ya tienes el maximo de repartidores.", "info");
+  if (saldo < costo) return mostrarFeedbackGameplay("Necesitas RD$1200 para contratar un repartidor.", "warn");
+  saldo -= costo; repartidoresMax += 1; asegurarStatsRepartidores();
+  mostrarFeedbackGameplay("Nuevo repartidor contratado. Revisa su perfil en Gestion de Delivery.", "ok");
+  autoGuardarPartidaSilenciosa("contratar-delivery");
+  renderizarGestionDelivery(); actualizarUI();
 }
 
 function normalizarRutaImagenRapida(valor, tipo) {
@@ -1323,6 +1362,39 @@ function actualizarEstadoColaMovil() {
   }
 }
 
+var hudQueueAlertSnoozeUntil = 0;
+
+function abrirColaDesdeAlerta(event) {
+  if (event && event.stopPropagation) event.stopPropagation();
+  if (typeof window.navegarPantalla === "function") window.navegarPantalla("taller");
+  if (typeof window.seleccionarPuestoTaller === "function") window.seleccionarPuestoTaller("cola");
+  hudQueueAlertSnoozeUntil = Date.now() + (3 * 60 * 1000);
+  var alerta = document.getElementById("hud-queue-alert");
+  if (alerta) alerta.classList.add("hidden");
+  return false;
+}
+
+if (typeof document !== "undefined") {
+  document.addEventListener("click", function (event) {
+    var alerta = event.target && event.target.closest ? event.target.closest("#hud-queue-alert") : null;
+    if (!alerta) return;
+    abrirColaDesdeAlerta(event);
+  }, true);
+}
+
+function cerrarAlertaCola(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  var alerta = document.getElementById("hud-queue-alert");
+  if (alerta) {
+    alerta.classList.add("hidden");
+    alerta.setAttribute("aria-hidden", "true");
+  }
+  return false;
+}
+
 function toggleColaMovil() {
   if (!(typeof esInteraccionMovil === "function" && esInteraccionMovil())) {
     colaMovilContraida = false;
@@ -1460,7 +1532,7 @@ function actualizarUI() {
   mejoras.herramientas = Math.max(0, Math.round(Number(mejoras.herramientas) || 0));
   mejoras.publicidad = Math.max(0, Math.round(Number(mejoras.publicidad) || 0));
   mejoras.capacitacion = Math.max(0, Math.round(Number(mejoras.capacitacion) || 0));
-  mejoras.maquinaDiagnosis = !!mejoras.maquinaDiagnosis;
+  mejoras.maquinaDiagnosis = Math.max(0, Math.min(10, mejoras.maquinaDiagnosis === true ? 1 : Math.round(Number(mejoras.maquinaDiagnosis) || 0)));
   mejoras.autolavado = !!mejoras.autolavado;
   mejorasTacticas.bateria = Number.isFinite(Number(mejorasTacticas.bateria))
     ? Math.max(0, Math.round(Number(mejorasTacticas.bateria)))
@@ -1468,6 +1540,10 @@ function actualizarUI() {
   mejorasTacticas.manualHablar = !!mejorasTacticas.manualHablar;
   mejorasTacticas.scannerDx = !!mejorasTacticas.scannerDx;
   mejorasTacticas.flujoReparacion = !!mejorasTacticas.flujoReparacion;
+  mejorasTacticas.organizadorCola = Math.max(0, Math.min(10, Math.round(Number(mejorasTacticas.organizadorCola) || 0)));
+  mejorasTacticas.controlCalidad = Math.max(0, Math.min(10, Math.round(Number(mejorasTacticas.controlCalidad) || 0)));
+  mejorasTacticas.fidelidadClientes = Math.max(0, Math.min(10, Math.round(Number(mejorasTacticas.fidelidadClientes) || 0)));
+  mejorasTacticas.ahorroOperativo = Math.max(0, Math.min(10, Math.round(Number(mejorasTacticas.ahorroOperativo) || 0)));
   const modoSinCierre = (typeof estaModoSinCierreDia === 'function' && estaModoSinCierreDia());
   normalizarReputacionGlobal();
   asegurarNavPantallasInferior();
@@ -1635,6 +1711,7 @@ function actualizarUI() {
   var xpMetaHud = Math.max(1, Math.round(progresoNivelMeta || 1));
   var xpPctHud = Math.min(100, Math.round((xpActualHud / xpMetaHud) * 100));
   setText("hud-exp", `Nivel ${Math.max(1, Math.round(nivelJugador || 1))}`);
+  setText("hud-xp", `XP: ${xpActualHud}/${xpMetaHud}`);
   setText("hud-exp-meta", `${xpPctHud}%`);
   setText("status-xp", `${xpActualHud}/${xpMetaHud}`);
   setText("progress-overview", `Nivel ${Math.max(1, Math.round(nivelJugador || 1))} | XP ${xpActualHud}/${xpMetaHud} | Casos ${casosCompletados || 0} | Reputacion ${Math.round(reputacion || 0)} | Caja RD$${Math.round(saldo || 0)}`);
@@ -1643,8 +1720,9 @@ function actualizarUI() {
     : [];
   var alertaColaHud = document.getElementById("hud-queue-alert");
   if (alertaColaHud) {
-    alertaColaHud.classList.toggle("hidden", clientesRiesgo.length === 0);
-    alertaColaHud.innerText = clientesRiesgo.length
+    var textoAlertaCola = document.getElementById("hud-queue-alert-text");
+    alertaColaHud.classList.toggle("hidden", clientesRiesgo.length === 0 || Date.now() < hudQueueAlertSnoozeUntil);
+    if (textoAlertaCola) textoAlertaCola.innerText = clientesRiesgo.length
       ? `Alerta: ${clientesRiesgo.length} cliente(s) por marcharse. Abrir Cola`
       : "Cola estable";
   }
@@ -1826,7 +1904,7 @@ function actualizarUI() {
       0,
     );
     let btn = document.createElement("button");
-    btn.className = `mecanico-btn ${m.enojo >= 4 ? "enojo-alto" : ""}`;
+    btn.className = `mecanico-btn ${Number(m.enojo || 0) >= 4 ? "enojo-alto" : ""}`;
     if (window.mecanicoTapSeleccionado === idx)
       btn.classList.add("mecanico-selected-mobile");
     btn.dataset.mecanicoIndex = String(idx);
@@ -1873,6 +1951,8 @@ function actualizarUI() {
       0,
       Math.min(100, Math.round((enojoValor / 8) * 100)),
     );
+    const estadoNegativo = enojoValor >= 4 || humorEfectivo < 6;
+    if (estadoNegativo) btn.classList.add("mecanico-estado-negativo");
     const especialidadTxt = capitalizarRotulo(m.especialidad || "general");
     const rasgoMecanico = typeof obtenerPerfilRasgosMecanico === "function" ? obtenerPerfilRasgosMecanico(m.nombre) : null;
     const habilidadEspecialTxt = rasgoMecanico && rasgoMecanico.ventaja ? rasgoMecanico.ventaja : "Sin habilidad especial definida.";
@@ -2032,7 +2112,10 @@ function actualizarUI() {
         mostrarFeedbackGameplay(`${m.nombre} no está disponible: ${estadoLinea}.`, "warn");
         return;
       }
-      if (tensionAlta) {
+      if (estadoNegativo) {
+        if (typeof abrirModal === "function") abrirModal("mecanicos");
+        const lore = document.getElementById("mecanicos-lore");
+        if (lore) lore.insertAdjacentHTML("afterbegin", `<div class="mecanico-alerta-estado"><strong>⚠ ${m.nombre} no está en condiciones positivas</strong><br>Humor: ${humorEfectivo.toFixed(1)}/10 · Enojo: ${enojoValor}/8.<br>Ayúdalo antes de asignarle un caso.<div class="mecanico-alerta-actions"><button class="btn" type="button" onclick="comprarPizza()">🍕 Dar comida al equipo</button><button class="btn" type="button" onclick="hablarConMecanicoPanel()">💬 Hablar con el mecánico</button></div></div>`);
         mostrarFeedbackGameplay(`${m.nombre} no está disponible: tiene tensión alta. Atiende primero su estado antes de asignarle otro caso.`, "warn");
         return;
       }
@@ -2351,6 +2434,9 @@ function actualizarUI() {
   if (typeof actualizarAtajoOperacionContextual === "function") {
     actualizarAtajoOperacionContextual();
   }
+  if (typeof actualizarObjetivoOnboarding === "function") {
+    actualizarObjetivoOnboarding();
+  }
 }
 
 function renderizarWorkspaceCasoActivo() {
@@ -2515,6 +2601,11 @@ function ejecutarPruebaMiPuesto(tipo) {
         : `Evidencia ${total}/3 seleccionada. Elige ${3 - total} más.`,
       total === 3 ? "ok" : "info"
     );
+    var evidenciaNueva = Array.isArray(clienteActual.ofDxSenalesDetectadas) ? clienteActual.ofDxSenalesDetectadas[0] : "";
+    mostrarFeedbackGameplay("Evidencia obtenida: " + (evidenciaNueva || "prueba registrada") + ". Caso en analisis.", "ok");
+  } else if (typeof hayConversacionNarrativaBloqueanteActiva === "function" && hayConversacionNarrativaBloqueanteActiva()) {
+    mostrarFeedbackGameplay("Nuevo mensaje urgente: responde en Telefono para continuar el diagnostico.", "warn");
+    if (typeof pushMensajeTelefono === "function") pushMensajeTelefono("sistema", "sistema", "Nuevo mensaje urgente: responde esta interrupcion para continuar el diagnostico. Puedes volver al Taller despues de contestar.", { clave: "dx-interrupcion-" + (clienteActual.idCaso || "") });
   }
   refrescarMiPuestoDespuesAccion();
   return true;
@@ -3046,9 +3137,11 @@ function construirTarjetaCasoLista(config) {
   const economiaAccion = casoEvaluado ? evaluarEconomiaCaso(casoEvaluado) : null;
   const compensacionAccion = casoEvaluado ? obtenerCompensacionEstrategicaCaso(casoEvaluado) : "";
   const accionesHtml = config.idCaso
-    ? economiaAccion && economiaAccion.neto < 0 && !casoEvaluado.perdidaAceptada
+    ? config.origen !== 'queue' && economiaAccion && economiaAccion.neto < 0 && !casoEvaluado.perdidaAceptada
       ? `<div class="case-economic-actions"><button class="btn" type="button" onclick="event.stopPropagation(); rechazarCasoEconomico('${origenAccion}', '${esc(config.idCaso)}')">RECHAZAR CASO</button><button class="btn" type="button" onclick="event.stopPropagation(); negociarPrecioCasoEconomico('${origenAccion}', '${esc(config.idCaso)}')">NEGOCIAR PRECIO</button>${compensacionAccion ? `<button class="btn btn-primary" type="button" onclick="event.stopPropagation(); aceptarPerdidaCasoEconomico('${origenAccion}', '${esc(config.idCaso)}')">ACEPTAR PÉRDIDA</button>` : ''}</div>`
-      : `<button class="btn case-accept-btn" type="button" onclick="event.stopPropagation(); abrirCasoParaDiagnostico('${origenAccion}', '${esc(config.idCaso)}')">${accionLabel}</button>`
+      : (config.origen === 'queue'
+        ? `<div class="case-queue-actions"><button class="btn case-accept-btn" type="button" onclick="event.stopPropagation(); abrirCasoParaDiagnostico('queue', '${esc(config.idCaso)}')">DIAGNOSTICAR CASO</button><button class="btn btn-primary" type="button" onclick="event.stopPropagation(); dxRapidoCasoColaContextual('${esc(config.idCaso)}')">DX RÁPIDO</button><button class="btn btn-danger" type="button" onclick="event.stopPropagation(); rechazarCasoColaContextual('${esc(config.idCaso)}')">RECHAZAR</button></div>`
+        : `<button class="btn case-accept-btn" type="button" onclick="event.stopPropagation(); abrirCasoParaDiagnostico('${origenAccion}', '${esc(config.idCaso)}')">${accionLabel}</button>`)
     : "";
   const estadoHtml = config.etiquetaEstado
     ? `<span class="flow-case-tag ${esc(config.etiquetaEstadoClase || "info")}">${esc(config.etiquetaEstado)}</span>`
@@ -3927,7 +4020,11 @@ function abrirModalResultadoReparacion(rep) {
   }
   if (btnLavado) {
     var lavadoActivo = !!(rep.autolavadoEnCurso);
-    btnLavado.disabled = lavadoActivo || !rep.listoParaCobro;
+    var autolavadoComprado = !!(mejoras && mejoras.autolavado === true);
+    // El servicio no debe aparecer como acción hasta que se compre la mejora.
+    btnLavado.classList.toggle("hidden", !autolavadoComprado);
+    btnLavado.disabled = lavadoActivo || !rep.listoParaCobro || !autolavadoComprado;
+    btnLavado.setAttribute("aria-hidden", String(!autolavadoComprado));
     btnLavado.innerText = lavadoActivo ? "Autolavado en curso" : "Enviar a autolavado";
     btnLavado.onclick = function () { enviarCasoAutolavado(idCaso); };
   }
@@ -5832,7 +5929,10 @@ function obtenerEstadoGuardado() {
   // Parche de robustez: asegura que la variable global existe
   if (typeof clandestinoTrabajosHoy === "undefined") window.clandestinoTrabajosHoy = 0;
   if (typeof musicaFondoActiva === "undefined") window.musicaFondoActiva = true;
-  return {
+  var estadoCentral = window.TallerApp && typeof window.TallerApp.getState === "function"
+    ? window.TallerApp.getState()
+    : {};
+  return Object.assign({}, estadoCentral, {
     dia,
     saldo,
     deuda,
@@ -5966,7 +6066,7 @@ function obtenerEstadoGuardado() {
       cierre: document.getElementById("pantalla-cierre")
         ? !document.getElementById("pantalla-cierre").classList.contains("hidden") : false,
     },
-  };
+  });
 }
 
 function aplicarEstadoGuardado(data) {
@@ -6063,6 +6163,7 @@ function aplicarEstadoGuardado(data) {
     progresoNivel,
     progresoNivelMeta,
     ahorroAcumulado = 0,
+    recompensasEntregadas = {},
     estadoProyectoMuscle = { nivel: 1 },
     inventarioPiezas = [],
     competenciaBarrioEstado = null,
@@ -6076,6 +6177,26 @@ function aplicarEstadoGuardado(data) {
     telefonoNarrativaMarcadores = {},
     telefonoNarrativaPendientes = [],
   } = data);
+
+  if (window.TallerApp && typeof window.TallerApp.setState === "function") {
+    window.TallerApp.setState({
+      recompensasEntregadas: recompensasEntregadas && typeof recompensasEntregadas === "object" && !Array.isArray(recompensasEntregadas)
+        ? recompensasEntregadas
+        : {},
+      perfilNarrativo: data.perfilNarrativo && typeof data.perfilNarrativo === "object"
+        ? data.perfilNarrativo
+        : undefined,
+      memoriaNarrativa: data.memoriaNarrativa && typeof data.memoriaNarrativa === "object"
+        ? data.memoriaNarrativa
+        : undefined,
+      eventosNarrativos: Array.isArray(data.eventosNarrativos)
+        ? data.eventosNarrativos
+        : [],
+      misionNarrativa: data.misionNarrativa && typeof data.misionNarrativa === "object"
+        ? data.misionNarrativa
+        : null,
+    });
+  }
 
   // Restaurar inversionesJugador, casosDesdeUltimoRetornoInversion, historial
   window.inversionesJugador =
@@ -7887,7 +8008,9 @@ function cerrarModal() {
   [
     "modal-repuestos",
     "modal-comida",
+    "modal-cajab",
     "modal-tienda",
+    "modal-delivery-gestion",
     "modal-tienda-tactica",
     "modal-tirada",
     "modal-banco",
@@ -8180,6 +8303,18 @@ function devolverPendienteDiagnosticoACola(index) {
   return true;
 }
 
+function rechazarCasoColaContextual(idCaso) {
+  var idx = Array.isArray(clientesEnEspera) ? clientesEnEspera.findIndex(function(c){ return c && String(c.idCaso) === String(idCaso); }) : -1;
+  if (idx < 0) return false;
+  clientesEnEspera.splice(idx, 1); cerrarModal(); mostrarFeedbackGameplay("Caso " + idCaso + " retirado de la cola.", "warn"); actualizarUI(); return true;
+}
+function diagnosticarCasoColaContextual(idCaso) { cerrarModal(); return abrirCasoParaDiagnostico("queue", idCaso); }
+function dxRapidoCasoColaContextual(idCaso) {
+  var mejor = -1, score = -Infinity;
+  (mecanicos || []).forEach(function(m, i) { var activos = (reparacionesActivas || []).filter(function(r){ return r && r.mecanicoNombre === m.nombre && !r.listoParaCobro; }).length; var cap = Math.max(1, Number(m.capacidadCasosSimultaneos)||1); if (activos < cap && !(m.enfriamientoTurnos > 0) && !(m.bloqueoAyudaTurnos > 0)) { var s=(Number(m.habilidad)||0)+(Number(m.velocidad)||0)+(Number(m.eficiencia)||0); if(s>score){score=s;mejor=i;} } });
+  if (mejor < 0) { cerrarModal(); mostrarFeedbackGameplay("No hay mecanicos disponibles para DX rapido.", "warn"); return false; }
+  cerrarModal(); return intentarAsignarCasoListaAMecanico("queue", idCaso, mejor);
+}
 function renderizarColaEspera() {
   const cont = document.getElementById("lista-cola-espera") || document.getElementById("queue-list");
   if (!cont) return;
@@ -8344,7 +8479,11 @@ function renderizarColaEspera() {
         etiquetaEstadoClase: claseUrgenciaTag,
         vehiculo: vehiculo,
         metaSecundaria: `RD$${Math.max(0, Math.round(c.pago || 0))}`,
-        metaExtra: cupoCompleto ? "Sin cupo" : "Disponible",
+        metaExtra: cupoCompleto
+          ? "Sin cupo"
+          : (evaluarEconomiaCaso(c).neto < 0 && !c.perdidaAceptada
+            ? "Negociar antes de asignar"
+            : "Disponible"),
         detalleLabel: "Relato",
         detalleTexto: relato,
         nota: "Reordena la fila, abre detalle o toma el caso directo al puesto.",
@@ -8359,6 +8498,73 @@ function renderizarColaEspera() {
 // Exportar globalmente fuera de la función para evitar redefinición y asegurar disponibilidad
 if (typeof window !== 'undefined') {
   window.abrirModalDetalleCasoCola = abrirModalDetalleCasoCola;
+}
+
+var colaLongPressTimer = 0;
+var colaLongPressTarget = null;
+function abrirMenuCasoColaDesdeGesto(idCaso) {
+  var caso = Array.isArray(clientesEnEspera) ? clientesEnEspera.find(function(c){ return c && String(c.idCaso) === String(idCaso); }) : null;
+  if (!caso) return;
+  var safe = String(idCaso).replace(/'/g, "\\'");
+  mostrarModalPersonalizado(`<div class="modal-content caso-contextual-modal"><h3>ACCIONES · ${limpiarHtmlBasico(idCaso)}</h3><p><strong>${limpiarHtmlBasico(obtenerNombreVisibleCliente(caso))}</strong><br>${limpiarHtmlBasico(caso.vehiculo || "Vehiculo sin ficha")}</p><div class="caso-contextual-actions"><button class="btn btn-danger" onclick="rechazarCasoColaContextual('${safe}')">Rechazar caso</button><button class="btn" onclick="diagnosticarCasoColaContextual('${safe}')">Diagnosticar caso</button><button class="btn btn-primary" onclick="dxRapidoCasoColaContextual('${safe}')">DX rapido</button><button class="btn" onclick="cerrarModal()">Cancelar</button></div></div>`);
+}
+function rechazarCasoColaContextual(idCaso) {
+  var idx = Array.isArray(clientesEnEspera) ? clientesEnEspera.findIndex(function(c){ return c && String(c.idCaso) === String(idCaso); }) : -1;
+  if (idx < 0) return false;
+  clientesEnEspera.splice(idx, 1);
+  cerrarModal(); mostrarFeedbackGameplay("Caso " + idCaso + " rechazado y retirado de la cola.", "warn"); actualizarUI(); return true;
+}
+function diagnosticarCasoColaContextual(idCaso) {
+  cerrarModal(); return abrirCasoParaDiagnostico("queue", idCaso);
+}
+function dxRapidoCasoColaContextual(idCaso) {
+  var mejor = -1, mejorPuntaje = -Infinity;
+  (mecanicos || []).forEach(function(m, idx) {
+    var ocupado = typeof obtenerTrabajoAsignadoMecanico === "function" ? obtenerTrabajoAsignadoMecanico(m.nombre) : null;
+    var capacidad = Math.max(1, Number(m.capacidadCasosSimultaneos) || 1);
+    var activos = Array.isArray(reparacionesActivas) ? reparacionesActivas.filter(function(r){ return r && r.mecanicoNombre === m.nombre && !r.listoParaCobro; }).length : (ocupado ? 1 : 0);
+    // DX rápido solo considera mecánicos realmente aptos: sin carga, sin
+    // enfriamiento y con estado suficiente para aceptar otro diagnóstico.
+    var humorApto = typeof calcularHumorEfectivo === "function"
+      ? Number(calcularHumorEfectivo(m)) >= 6
+      : Number(m.enojo || 0) < 4;
+    if (activos >= capacidad || Number(m.enfriamientoTurnos || 0) > 0 || Number(m.bloqueoAyudaTurnos || 0) > 0 || Number(m.enojo || 0) >= 4 || !humorApto) return;
+    var puntaje = (Number(m.habilidad)||0) + (Number(m.velocidad)||0) + (Number(m.eficiencia)||0) - ((Number(m.enojo)||0)*.08);
+    if (puntaje > mejorPuntaje) { mejorPuntaje = puntaje; mejor = idx; }
+  });
+  if (mejor < 0) { cerrarModal(); mostrarFeedbackGameplay("NO HAY MECÁNICOS DISPONIBLES para DX rápido. Todos están ocupados, en enfriamiento o necesitan atención.", "warn"); return false; }
+  cerrarModal();
+  var resultado = intentarAsignarCasoListaAMecanico("queue", idCaso, mejor);
+  if (resultado) {
+    var trabajoDxRapido = (reparacionesActivas || []).find(function(r) {
+      return r && String(r.idCaso || "").trim() === String(idCaso || "").trim();
+    });
+    if (trabajoDxRapido) trabajoDxRapido.dxRapido = true;
+  }
+  if (!resultado) mostrarFeedbackGameplay("NO HAY MECÁNICOS DISPONIBLES para completar DX rápido.", "warn");
+  return resultado;
+}
+if (typeof window !== "undefined") {
+  window.abrirMenuCasoColaDesdeGesto = abrirMenuCasoColaDesdeGesto;
+  window.rechazarCasoColaContextual = rechazarCasoColaContextual;
+  window.diagnosticarCasoColaContextual = diagnosticarCasoColaContextual;
+  window.dxRapidoCasoColaContextual = dxRapidoCasoColaContextual;
+}
+
+if (typeof document !== "undefined") {
+  document.addEventListener("click", function(e) {
+    var card = e.target && e.target.closest ? e.target.closest("#lista-cola-espera .flow-case-queue") : null;
+    if (card && card.dataset.longPressed === "true") { e.preventDefault(); e.stopImmediatePropagation(); card.dataset.longPressed = "false"; }
+  }, true);
+  document.addEventListener("pointerdown", function(e) {
+    if (typeof esInteraccionMovil === "function" && !esInteraccionMovil()) return;
+    var card = e.target && e.target.closest ? e.target.closest("#lista-cola-espera .flow-case-queue") : null;
+    if (!card) return;
+    colaLongPressTarget = card; var id = card.dataset.caseId || (card.querySelector("[data-case-id]") || {}).dataset?.caseId;
+    if (!id) { var m = card.innerText.match(/CASO-\d+/i); id = m ? m[0] : ""; }
+    colaLongPressTimer = window.setTimeout(function(){ card.dataset.longPressed="true"; abrirMenuCasoColaDesdeGesto(id); }, 600);
+  }, {passive:true});
+  ["pointerup","pointercancel","pointerleave"].forEach(function(ev){ document.addEventListener(ev, function(){ if (colaLongPressTimer) window.clearTimeout(colaLongPressTimer); }); });
 }
     if (
       !Array.isArray(clientesEnEspera) ||
@@ -9917,7 +10123,9 @@ function actualizarResumenSidebarTelefono(contactosVisibles) {
 
   if (pill) pill.innerText = `${lista.length} activos`;
   if (!resumen) return;
-  resumen.innerText = `Visibles: ${lista.length} | No leidos: ${noLeidos} | Urgentes: ${urgentes} | Cobros: ${cobros}`;
+  var mision = typeof obtenerMisionNarrativaActual === "function" ? obtenerMisionNarrativaActual() : null;
+  var misionTexto = mision ? ` | Mision: ${mision.titulo}` : "";
+  resumen.innerText = `Visibles: ${lista.length} | No leidos: ${noLeidos} | Urgentes: ${urgentes} | Cobros: ${cobros}${misionTexto}`;
 }
 
 function actualizarHeaderChatTelefono(contacto) {
@@ -11074,6 +11282,13 @@ function actualizarScreenExterior() {
   set("ext-cajab-monto", "RD$ " + formatMoneda(montoCajaB));
   set("ext-cajab-cupos", cuposCajaB + "/3");
   set("ext-cajab-calor", calorCajaB + "/100");
+  set("modal-cajab-monto", "RD$ " + formatMoneda(montoCajaB));
+  set("modal-cajab-cupos", cuposCajaB + "/3");
+  set("modal-cajab-calor", calorCajaB + "/100");
+  var modalCuposFill = document.getElementById("modal-cajab-cupos-fill");
+  var modalCalorFill = document.getElementById("modal-cajab-calor-fill");
+  if (modalCuposFill) modalCuposFill.style.width = Math.round((cuposCajaB / 3) * 100) + "%";
+  if (modalCalorFill) modalCalorFill.style.width = calorCajaB + "%";
   
   var nivelCalorText = calorCajaB >= 70 ? "<span style='color:#e05050'>Alto</span>" : calorCajaB >= 40 ? "<span style='color:#e0b050'>Medio</span>" : "<span style='color:#6fcf97'>Bajo</span>";
   var metaHtml = cuposCajaB > 0
@@ -11570,12 +11785,23 @@ function actualizarScreenMapa() {
     arcoData ? arcoData.titulo.replace("Arco ", "Arco ") : "Arco 1",
   );
 
-  setHTML("mapa-zonas",
-    '<button class="mapa-zona-card" onclick="navegarPantalla(\'taller\')"><b>&#x1F527; Tu taller</b><span>Nuevos casos y reparaciones</span><strong>' + Math.round(indiceJugador) + ' índice</strong></button>' +
-    '<button class="mapa-zona-card" onclick="navegarPantalla(\'exterior\')"><b>&#x1F3EA; Corredor comercial</b><span>Banco, repuestos y cafetín</span><strong>Oportunidades de caja</strong></button>' +
-    '<button class="mapa-zona-card" onclick="navegarPantalla(\'oficina\')"><b>&#x1F3E2; Centro de gestión</b><span>Contrataciones y mejoras</span><strong>Crece tu capacidad</strong></button>' +
-    '<button class="mapa-zona-card" onclick="navegarPantalla(\'mapa\')"><b>&#x1F3C1; Zona premium</b><span>Clientes de alto valor y rivales fuertes</span><strong>Riesgo alto · cobro alto</strong></button>'
-  );
+  var zonasBarrio = (window.TallerData && Array.isArray(window.TallerData.zonasBarrio))
+    ? window.TallerData.zonasBarrio
+    : [];
+  var casosZona = Math.max(0, Math.round((resumenCasos && resumenCasos.totalCasosJugados) || 0));
+  setHTML("mapa-zonas", zonasBarrio.map(function(zona) {
+    var desbloqueada = casosZona >= (zona.requisitoCasos || 0) && nivelTaller >= (zona.requisitoNivel || 1);
+    var memoriaNarrativa = window.obtenerMemoriaNarrativa ? window.obtenerMemoriaNarrativa() : {};
+    var zonasDesbloqueadas = Array.isArray(memoriaNarrativa.zonasDesbloqueadas) ? memoriaNarrativa.zonasDesbloqueadas : [];
+    if (desbloqueada && zona.id !== 'taller' && zona.id !== 'corredor-comercial' && zona.id !== 'centro-gestion' && zonasDesbloqueadas.indexOf(zona.id) < 0 && typeof registrarEventoNarrativo === 'function') {
+      registrarEventoNarrativo('zona_desbloqueada', { zona: zona.id, nivel: nivelTaller, casos: casosZona });
+    }
+    var requisito = desbloqueada
+      ? (zona.estado || 'Disponible')
+      : 'Desbloquea con ' + (zona.requisitoCasos || 0) + ' casos y nivel ' + (zona.requisitoNivel || 1);
+    var accion = desbloqueada ? "navegarPantalla('" + zona.accion + "')" : "mostrarFeedbackGameplay('Zona bloqueada: completa el requisito indicado.', 'warn')";
+    return '<button class="mapa-zona-card' + (desbloqueada ? '' : ' is-locked') + '" onclick="' + accion + '"><b>' + zona.icono + ' ' + zona.nombre + '</b><span>' + zona.descripcion + '</span><strong>' + requisito + '</strong></button>';
+  }).join(''));
 
   // Calcular metricas del jugador para el ranking
   var miReputacion = rep;

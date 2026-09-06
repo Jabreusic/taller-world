@@ -40,7 +40,7 @@ window.SCREEN_HTML.oficina = `
           <div class="of-bio-row"><span class="of-bio-label">Nivel</span><div class="of-bio-bar"><div id="of-b-nivel" class="of-bio-fill"></div></div><span id="of-v-nivel" class="of-bio-value">-</span></div>
           <div class="of-bio-row"><span class="of-bio-label">Reput.</span><div class="of-bio-bar"><div id="of-b-reput" class="of-bio-fill"></div></div><span id="of-v-reput" class="of-bio-value">-</span></div>
           <div class="of-bio-row"><span class="of-bio-label">Moral</span><div class="of-bio-bar"><div id="of-b-moral" class="of-bio-fill"></div></div><span id="of-v-moral" class="of-bio-value">-</span></div>
-          <div id="of-estado-resumen" class="of-readout"></div><div class="of-quick-row"><button class="btn" onclick="comerDuenoDesdeOficina()">Comer · RD$180</button><button class="btn" onclick="descansarDuenoDesdeOficina()">Descansar</button></div>
+          <div id="of-estado-resumen" class="of-readout"></div><div class="of-quick-row"><button class="btn" data-sfx="confirm" onclick="comerDuenoDesdeOficina()">Comer · RD$180</button><button class="btn" data-sfx="confirm" onclick="descansarDuenoDesdeOficina()">Descansar</button></div>
         </div></div>
         <div class="of-col"><div class="of-card"><div class="of-card-head">Último caso</div><div id="of-ultimo-caso" class="of-case-profit">Aún no hay un caso cerrado.</div></div><div class="of-card"><div class="of-card-head">Alertas operativas</div><div id="of-alertas-of" class="of-readout">Sin alertas.</div></div></div>
       </div>
@@ -58,7 +58,7 @@ window.SCREEN_HTML.oficina = `
     </section>
 
     <section class="of-tab-panel" data-of-panel="mejoras">
-      <div class="of-management-grid"><button class="of-management-action" onclick="abrirModal('tienda')"><strong>MEJORAR TALLER</strong><span>Invierte para subir capacidad y precisión.</span></button><button class="of-management-action" onclick="abrirModal('proyecto-muscle')"><strong>CONTINUAR MUSCLE CAR</strong><span id="of-muscle-resumen">Consulta progreso y coste restante.</span></button></div>
+      <div class="of-management-grid"><button class="of-management-action" data-sfx="menu_open" onclick="abrirModal('tienda')"><strong>MEJORAR TALLER</strong><span>Invierte para subir capacidad y precisión.</span></button><button class="of-management-action" data-sfx="confirm" onclick="abrirModal('proyecto-muscle')"><strong>CONTINUAR MUSCLE CAR</strong><span id="of-muscle-resumen">Consulta progreso y coste restante.</span></button></div>
       <div class="of-card"><div class="of-card-head">Capacidad y desbloqueos</div><div class="of-mejoras-grid">
         <div class="of-mej-row"><div class="of-mej-head"><span>Herramientas</span><strong id="of-mej-h">-</strong></div><div class="of-mej-bar"><div id="of-mej-bar-h" class="of-mej-fill"></div></div><small id="of-mej-h-meta" class="of-mej-meta">-</small></div>
         <div class="of-mej-row"><div class="of-mej-head"><span>Nivel taller</span><strong id="of-mej-t">-</strong></div><div class="of-mej-bar"><div id="of-mej-bar-t" class="of-mej-fill"></div></div><small id="of-mej-t-meta" class="of-mej-meta">-</small></div>

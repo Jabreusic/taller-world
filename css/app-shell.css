@@ -1,3 +1,31 @@
+ .onboarding-steps,
+ .onboarding-objective {
+    border: 1px solid rgba(255, 224, 130, 0.35);
+    background: rgba(28, 39, 43, 0.82);
+    padding: 12px 14px;
+    margin: 14px 0;
+}
+
+.onboarding-steps strong,
+.onboarding-objective strong {
+    display: block;
+    color: #ffe082;
+}
+
+.onboarding-steps p,
+.onboarding-objective p {
+    margin: 6px 0 0;
+    color: #d9e1df;
+    line-height: 1.45;
+}
+
+.onboarding-kicker {
+    display: block;
+    margin-bottom: 4px;
+    color: #7dd3c7;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+}
 :root {
     --app-bg: #101516;
     --app-surface: #1a2122;
@@ -744,6 +772,13 @@ body.is-offline .app-connection-status {
 .case-patience-head { display:flex; justify-content:space-between; font-size:.72rem; }
 .case-patience-track { height:6px; margin-top:5px; overflow:hidden; border-radius:99px; background:#263b42; }
 .case-patience-track span { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,#ef5350,#fbc02d,#66bb6a); transition:width .25s ease; }
+
+/* Paleta nocturna neon: azul profundo, cian y violeta. */
+body { color:#e9edff; }
+.btn { background:linear-gradient(135deg,#263b72,#60459b) !important; color:#f4f6ff !important; border-color:rgba(142,231,255,.48) !important; }
+.btn.btn-danger { background:linear-gradient(135deg,#612f61,#8d3f58) !important; }
+.game-screen,.modal-content,.of-card,.tel-frame,.flow-case-card { background-color:#11152d; }
+.section-title,.of-card-head,.tel-sidebar-header,.resultado-rep-zone-label { color:#8ee7ff !important; }
 
 /* Tarjetas de equipo: compactas, pero sin ocultar estados ni habilidades. */
 .mecanico-habilidad-especial { display:grid; gap:2px; max-width:100%; overflow:hidden; }

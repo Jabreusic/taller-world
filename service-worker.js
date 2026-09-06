@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'tallerworld-v3-20260829-loop-fix-v21';
+const CACHE_VERSION = 'tallerworld-v0.1.0';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
 
@@ -6,9 +6,11 @@ const CORE_ASSETS = [
   './',
   './index.html',
   './manifest.webmanifest',
+  './js/app-meta.js',
   './css/styles.css',
   './css/layout-shell.css',
   './css/app-shell.css',
+  './css/mobile-shell.css',
   './css/modules/xp-hud.css',
   './css/modules/oficina-cards.css',
   './css/modules/barra-estado.css',
@@ -19,7 +21,15 @@ const CORE_ASSETS = [
   './js/data/economy-data.js',
   './js/data/custom-content.js',
   './js/data/turn-costs.js',
+  './js/data/expansion-data.js',
   './js/state.js',
+  './js/analytics/events.js',
+  './js/analytics/player-profile.js',
+  './js/analytics/narrative-director.js',
+  './js/onboarding.js',
+  './js/modules/clients-history.js',
+  './js/modules/team-parts.js',
+  './js/modules/progression.js',
   './js/screens/screen-taller.js',
   './js/screens/screen-oficina.js',
   './js/screens/screen-exterior.js',
@@ -133,8 +143,13 @@ self.addEventListener('fetch', (event) => {
   const isCodeAsset = destination === 'script' || destination === 'style' || destination === 'worker';
   const isMediaAsset = destination === 'image' || destination === 'font' || destination === 'audio' || destination === 'video';
 
-  if (isHtmlLike || isCodeAsset) {
+  if (isHtmlLike) {
     event.respondWith(networkFirst(req, RUNTIME_CACHE));
+    return;
+  }
+
+  if (isCodeAsset) {
+    event.respondWith(staleWhileRevalidate(req, RUNTIME_CACHE));
     return;
   }
 

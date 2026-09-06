@@ -1,77 +1,3 @@
-function obtenerFichaVehiculoParaRepuesto(caso) {
-    if (caso && caso.fichaVehiculo) return caso.fichaVehiculo;
-    if (typeof construirFichaVehiculoProcedural === 'function') {
-        return construirFichaVehiculoProcedural((caso && caso.vehiculo) || 'Vehiculo sin ficha');
-    }
-    return { clase: 'particular', calidadObjetivo: 'estandar' };
-}
-
-function esRepuestoCompatibleConVehiculo(pieza, caso) {
-    if (!pieza) return false;
-    const ficha = obtenerFichaVehiculoParaRepuesto(caso);
-    const calidad = pieza.calidad || 'basica';
-    // Vehículos premium y proyectos no aceptan repuesto económico: la pieza
-    // puede comprarse para stock, pero no resolverá correctamente ese trabajo.
-    if ((ficha.clase === 'premium' || ficha.clase === 'proyecto') && calidad === 'basica') return false;
-    return true;
-}
-
-function seleccionarRepuestosCompatibles(caso, especialidad, cantidad) {
-    const ficha = obtenerFichaVehiculoParaRepuesto(caso);
-    const rank = { basica: 1, estandar: 2, premium: 3 };
-    const objetivo = ficha.calidadObjetivo || 'estandar';
-    const pool = (ECONOMY_DATA.catalogoRepuestos || []).filter(function(p) {
-        return p && p.especialidad === especialidad && esRepuestoCompatibleConVehiculo(p, caso);
-    });
-    return pool.sort(function(a, b) {
-        const distanciaA = Math.abs((rank[a.calidad] || 1) - (rank[objetivo] || 2));
-        const distanciaB = Math.abs((rank[b.calidad] || 1) - (rank[objetivo] || 2));
-        return distanciaA - distanciaB || (rank[b.calidad] || 0) - (rank[a.calidad] || 0);
-    }).slice(0, Math.max(1, cantidad || 1));
-}
-
-function construirSolicitudPiezasContinuacion(rep) {
-    const pool = seleccionarRepuestosCompatibles(rep, rep.especialidadIdeal, 99);
-    if (!pool.length) {
-        return [{ id: '', nombre: `pieza de ${rep.especialidadIdeal}`, especialidad: rep.especialidadIdeal, calidad: 'estandar' }];
-    }
-
-    const umbralDosPiezas = (typeof modoNivelesActivo === 'function' && modoNivelesActivo()) ? 90 : 6;
-    const requiereDos = (rep.tiempoTotal || 0) >= umbralDosPiezas || Math.random() < 0.35;
-    const total = requiereDos ? Math.min(2, pool.length) : 1;
-    return pool.slice(0, total).map(function(p) {
-        return { id: p.id, nombre: p.nombre, especialidad: p.especialidad, calidad: p.calidad || 'estandar' };
-    });
-}
-
-function obtenerCostoCatalogoRepuesto(idRepuesto) {
-    var id = String(idRepuesto || '').trim();
-    if (!id) return 0;
-    var data = (ECONOMY_DATA.catalogoRepuestos || []).find(function(p) {
-        return p && p.id === id;
-    });
-    // Ajuste de balance: el taller compra piezas con un 10% de ahorro.
-    // El descuento evita que el coste de materiales se coma todo el margen.
-    return data ? Math.max(0, Math.round((data.costo || 0) * 0.90)) : 0;
-}
-
-function obtenerCostoPiezasReparacion(rep) {
-    if (!rep || typeof rep !== 'object') return 0;
-    var total = 0;
-    var agregar = function(p) {
-        if (!p || typeof p !== 'object') return;
-        var costo = Math.max(0, Math.round(p.costo || 0));
-        if (!costo) costo = obtenerCostoCatalogoRepuesto(p.id);
-        total += costo;
-    };
-
-    if (rep.piezaInstalada) agregar(rep.piezaInstalada);
-    if (Array.isArray(rep.piezasContinuacionEntregadas)) {
-        rep.piezasContinuacionEntregadas.forEach(agregar);
-    }
-    return Math.max(0, Math.round(total));
-}
-
 function notificarSistemaTaller(titulo, cuerpo, tag, dataExtra) {
     var appEnSegundoPlano = typeof document !== 'undefined' && document.visibilityState === 'hidden';
     if (!appEnSegundoPlano) return;
@@ -308,6 +234,13 @@ function programarEntregaPiezasReparacion(idCaso) {
     log(`Delivery solicitado para ${clave}: ${entrega.piezasTexto}. ETA ${formatearEstimadoTrabajoTiempoReal(etaBase, false)}.`, 'info');
     if (typeof mostrarFeedbackGameplay === 'function') {
         mostrarFeedbackGameplay(`Delivery en camino para ${rep.mecanicoNombre}.`, 'ok');
+    }
+    if (typeof registrarEventoNarrativo === 'function') {
+        registrarEventoNarrativo('delivery_usado', {
+            idCaso: clave,
+            piezas: requeridas.length,
+            especialidad: rep.especialidadIdeal || ''
+        });
     }
     if (typeof actualizarUI === 'function') actualizarUI();
     return true;
@@ -2158,12 +2091,25 @@ function completarDiagnosticoMecanico(rep) {
         }
     }
 
-    // El diagnostico termina aqui. Aprobacion y reparacion son fases separadas.
+    // DX rapido confirma automaticamente un dictamen correcto y deja el caso
+    // esperando la pieza; no obliga al dueño a revisar lo ya resuelto.
+    var dxRapidoContinua = !!(rep.dxRapido && resultado.resultado === 'critico' && caso);
+    if (dxRapidoContinua) {
+        caso.aprobacionCliente = true;
+        caso.aprobadoCliente = true;
+        rep.tipoTrabajo = 'pedir_piezas';
+        rep.pausadaPorPieza = true;
+        rep.pedidoPendienteDelivery = false;
+        actualizarCasoAtendido(caso, 'esperando_pieza', 'DX rapido confirmado. Pide la pieza necesaria para continuar.');
+        if (typeof mostrarFeedbackGameplay === 'function') mostrarFeedbackGameplay('DX rapido confirmado: pide la pieza necesaria para continuar.', 'ok');
+    }
+
+    // El diagnostico normal termina aqui. Aprobacion y reparacion son fases separadas.
     if (m) {
         m.ocupado = false;
         m.enfriamientoTurnos = 0;
     }
-    if (caso) {
+    if (caso && !dxRapidoContinua) {
         if (!Array.isArray(casosPendientesDiagnostico)) casosPendientesDiagnostico = [];
         casosPendientesDiagnostico = casosPendientesDiagnostico.filter(function(c) {
             return !(c && c.idCaso === caso.idCaso);
@@ -2183,7 +2129,7 @@ function completarDiagnosticoMecanico(rep) {
         if (resultado.contradiccionFallida) mostrarFeedbackGameplay('El mecanico encontro un relato contradictorio: el resultado queda parcial, pero el caso no se pierde.', 'warn');
     }
     enfoqueDiagnostico = 'general';
-    return 'diagnostico_completado';
+    return dxRapidoContinua ? 'pedir_piezas' : 'diagnostico_completado';
 }
 
 function diagnosticarConMecanico(idx, idCasoEsperado) {
@@ -2232,14 +2178,18 @@ function diagnosticarConMecanico(idx, idCasoEsperado) {
     if (m.enojo >= 5) {
         incrementarBloqueoEnojo(m);
         log(`${m.nombre} esta demasiado enojado para trabajar.`, 'error');
+        if (typeof pushMensajeTelefono === 'function') pushMensajeTelefono('mec_' + m.nombre, 'personal', `${m.nombre} no puede diagnosticar: humor demasiado bajo y tension alta. Atiende su solicitud o mejora el animo del equipo desde Exterior > Comida.`, { clave: 'bloqueo-humor-' + m.nombre + '-' + (clienteActual.idCaso || '') });
+        if (typeof mostrarFeedbackGameplay === 'function') mostrarFeedbackGameplay(`${m.nombre} no puede diagnosticar: humor ${Math.round(Number(m.humor || 0))}/10 y tension alta. Revisa su tarjeta o resuelve su solicitud en Telefono.`, 'warn');
         return false;
     }
     if ((m.enfriamientoTurnos || 0) > 0) {
         log(`${m.nombre} sigue ocupado (${formatearTiempoTrabajo(m.enfriamientoTurnos)}).`, 'error');
+        if (typeof mostrarFeedbackGameplay === 'function') mostrarFeedbackGameplay(`${m.nombre} esta en enfriamiento: espera ${formatearTiempoTrabajo(m.enfriamientoTurnos)} antes de asignarle diagnostico.`, 'info');
         return false;
     }
     if ((m.bloqueoAyudaTurnos || 0) > 0) {
         log(`${m.nombre} esta fuera resolviendo un asunto personal (${formatearBloqueoAyudaMecanico(m.bloqueoAyudaTurnos)}).`, 'error');
+        if (typeof mostrarFeedbackGameplay === 'function') mostrarFeedbackGameplay(`${m.nombre} no puede diagnosticar: esta atendiendo una necesidad personal. Abre Telefono > ${m.nombre} para resolverla.`, 'warn');
         return false;
     }
     if (!Array.isArray(reparacionesActivas)) reparacionesActivas = [];
@@ -3038,6 +2988,13 @@ function contratarMecanico(nombre) {
     }
     mecanicos.push(candidato);
     mecanicosDisponibles.splice(idx, 1);
+    if (typeof registrarEventoNarrativo === 'function') {
+        registrarEventoNarrativo('mecanico_contratado', {
+            nombre: candidato.nombre,
+            especialidad: candidato.especialidad,
+            costo: candidato.costo
+        });
+    }
     log(`Contrataste a ${nombre} por RD$${candidato.costo}.`, 'exito');
     if (String(nombre || '').toLowerCase() === 'stewart' && typeof stewartStatus !== 'undefined') {
         stewartStatus = 'contratado';
@@ -4153,7 +4110,8 @@ function procesarCobroReparacionPorWhatsApp(idCaso) {
             ? 'exitoso'
             : (rep.nivelResultado === 'parcial' ? 'parcial' : 'fallido');
         finalizarCaso(resultadoContable, rep.diagnosticoNivel || rep.nivelResultado || '', rep.idCaso || '');
-        if (resumenCasos && resumenCasos.totalCasosJugados === 1) {
+        if (resumenCasos && resumenCasos.totalCasosJugados === 1 &&
+            (typeof reservarRecompensa !== 'function' || reservarRecompensa('primer-caso'))) {
             var bonoPrimerCaso = 750;
             saldo += bonoPrimerCaso;
             reputacion = Math.min(100, reputacion + 3);

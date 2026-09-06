@@ -234,6 +234,23 @@ function finalizarCaso(resultado, diagnostico, cliente) {
     
     // Actualizar beneficio acumulado
     resumenCasos.beneficioNetoAcumulado = resumenCasos.ingresosAcumulados - resumenCasos.gastosAcumulados;
+
+    if (typeof registrarEventoNarrativo === 'function') {
+        registrarEventoNarrativo('caso_resuelto', {
+            resultado: resultado,
+            diagnostico: diagnostico,
+            cliente: typeof cliente === 'string' ? cliente : (cliente && cliente.nombre) || '',
+            especialidad: cliente && cliente.especialidadIdeal ? cliente.especialidadIdeal : '',
+            tiempo: cliente && cliente.tiempo ? cliente.tiempo : 0
+        });
+    }
+    if (typeof seleccionarContenidoNarrativo === 'function' && typeof pushMensajeTelefono === 'function') {
+        var contenidoNarrativo = seleccionarContenidoNarrativo({ evento: 'caso_resuelto', resultado: resultado });
+        pushMensajeTelefono('memoria_taller', 'memoria_taller', contenidoNarrativo.chat, {
+            clave: 'memoria-caso-' + resumenCasos.totalCasosJugados,
+            autorNombre: 'Memoria del taller'
+        });
+    }
     
     return resumenCasos.ultimoCaso;
 }
@@ -541,6 +558,59 @@ function obtenerResumenRitmoTaller() {
     };
 }
 
+function obtenerMetricasBalance() {
+    asegurarResumenCasosContable();
+    var resumen = resumenCasos || crearResumenCasosInicial();
+    var estadisticas = resumen.estadisticas || {};
+    var total = Math.max(0, Math.round(Number(resumen.totalCasosJugados) || 0));
+    var exitosos = Math.max(0, Math.round(Number(estadisticas.reparacionesExitosas) || 0));
+    var parciales = Math.max(0, Math.round(Number(estadisticas.reparacionesParciales) || 0));
+    var fallidos = Math.max(0, Math.round(Number(estadisticas.reparacionesFallidas) || 0));
+    var divisor = Math.max(1, total);
+    var ingresos = Math.max(0, Math.round(Number(resumen.ingresosAcumulados) || 0));
+    var gastos = Math.max(0, Math.round(Number(resumen.gastosAcumulados) || 0));
+    var beneficio = ingresos - gastos;
+    var recientes = Array.isArray(resumen.casosRecientes) ? resumen.casosRecientes : [];
+    var recientesExitosos = recientes.filter(function(caso) {
+        return caso && caso.resultado === 'exitoso';
+    }).length;
+    var saldoActual = Math.round(Number(saldo) || 0);
+    var deudaActual = Math.max(0, Math.round(Number(deuda) || 0));
+
+    return {
+        casos: {
+            total: total,
+            exitosos: exitosos,
+            parciales: parciales,
+            fallidos: fallidos,
+            tasaExito: Number((exitosos / divisor).toFixed(4)),
+            tasaParcial: Number((parciales / divisor).toFixed(4)),
+            tasaFallo: Number((fallidos / divisor).toFixed(4)),
+            rachaActual: obtenerRachaCasosActual(),
+            mejorRacha: Math.max(0, Math.round(Number(resumen.mejorRachaHistorica) || 0)),
+            tasaExitoReciente: Number((recientesExitosos / Math.max(1, recientes.length)).toFixed(4))
+        },
+        finanzas: {
+            ingresos: ingresos,
+            gastos: gastos,
+            beneficioNeto: beneficio,
+            ingresoPromedioCaso: Math.round(ingresos / divisor),
+            gastoPromedioCaso: Math.round(gastos / divisor),
+            beneficioPromedioCaso: Math.round(beneficio / divisor),
+            margenNeto: ingresos > 0 ? Number((beneficio / ingresos).toFixed(4)) : 0,
+            saldo: saldoActual,
+            deuda: deudaActual,
+            deudaSobreCaja: Number((deudaActual / Math.max(1, Math.abs(saldoActual))).toFixed(4))
+        },
+        operacion: {
+            clientesPerdidos: Math.max(0, Math.round(Number(estadisticas.clientesPerdidos) || 0)),
+            diagnosticosCorrectos: Math.max(0, Math.round(Number(estadisticas.diagnosticosCorrectos) || 0)),
+            negociacionesExitosas: Math.max(0, Math.round(Number(estadisticas.negociacionesExitosas) || 0))
+        },
+        generadoEn: new Date().toISOString()
+    };
+}
+
 // ============================================
 // SISTEMA DE DECISIONES E HISTORIA
 // ============================================
@@ -716,6 +786,24 @@ function crearMisionDiaInicial() {
     return crearMisionesInicial();
 }
 
+function asegurarLibroRecompensas() {
+    var state = window.TallerApp && window.TallerApp.state;
+    if (!state) return {};
+    if (!state.recompensasEntregadas || typeof state.recompensasEntregadas !== 'object' || Array.isArray(state.recompensasEntregadas)) {
+        state.recompensasEntregadas = {};
+    }
+    return state.recompensasEntregadas;
+}
+
+function reservarRecompensa(id) {
+    var clave = String(id || '').trim();
+    if (!clave) return false;
+    var libro = asegurarLibroRecompensas();
+    if (libro[clave]) return false;
+    libro[clave] = new Date().toISOString();
+    return true;
+}
+
 // ============================================
 // CÁLCULOS OPERATIVOS
 // ============================================
@@ -886,7 +974,7 @@ window.TallerApp.state = {
     espaciosReparacionMax: ECONOMY_DATA.espaciosReparacionInicial || 2,
     espaciosReparacionOcupados: 0,
     mejoras: { ...(ECONOMY_DATA.mejorasIniciales || { herramientas: 0, publicidad: 0, capacitacion: 0, maquinaDiagnosis: false, autolavado: false }) },
-    mejorasTacticas: { ...(ECONOMY_DATA.mejorasTacticasIniciales || { bateria: 0, manualHablar: false, scannerDx: false, flujoReparacion: false }) },
+    mejorasTacticas: { ...(ECONOMY_DATA.mejorasTacticasIniciales || { bateria: 0, manualHablar: false, scannerDx: false, flujoReparacion: false, organizadorCola: false, controlCalidad: false, fidelidadClientes: false, ahorroOperativo: false }) },
     
     // ===== CLIENTES =====
     clienteActual: null,
@@ -925,6 +1013,19 @@ window.TallerApp.state = {
     decisionesHistoria: crearDecisionesHistoriaInicial(),
     tramaEstado: crearTramaEstadoInicial(),
     misiones: crearMisionesInicial(),
+    recompensasEntregadas: {},
+    perfilNarrativo: {
+        tecnico: 0,
+        velocidad: 0,
+        dinero: 0,
+        social: 0,
+        riesgo: 0,
+        legalidad: 0,
+        liderazgo: 0
+    },
+    memoriaNarrativa: {},
+    eventosNarrativos: [],
+    misionNarrativa: null,
     
     // ===== JUGADOR =====
     nivelJugador: 1,
@@ -981,6 +1082,8 @@ window.TallerApp.helpers = {
     crearTramaEstadoInicial,
     crearMisionDiaInicial,
     crearMisionesInicial,
+    asegurarLibroRecompensas,
+    reservarRecompensa,
     
     // Funciones operativas
     calcularCostosOperativosPorCaso,
@@ -1003,6 +1106,14 @@ window.registrarRitmoTallerPorCierre = registrarRitmoTallerPorCierre;
 window.aplicarRitmoTallerACliente = aplicarRitmoTallerACliente;
 window.obtenerBonosRitmoTaller = obtenerBonosRitmoTaller;
 window.obtenerResumenRitmoTaller = obtenerResumenRitmoTaller;
+window.obtenerMetricasBalance = obtenerMetricasBalance;
+window.asegurarLibroRecompensas = asegurarLibroRecompensas;
+window.reservarRecompensa = reservarRecompensa;
+
+window.TallerApp.analytics = {
+    version: 1,
+    getSnapshot: obtenerMetricasBalance
+};
 
 // ============================================
 // CONFIGURACIÓN GLOBAL
@@ -1043,6 +1154,20 @@ Object.keys(window.TallerApp.state).forEach(function(key) {
         }
     });
 });
+
+window.TallerApp.getState = function() {
+    return window.TallerApp.state;
+};
+
+window.TallerApp.setState = function(patch) {
+    if (!patch || typeof patch !== 'object') return window.TallerApp.state;
+    Object.keys(patch).forEach(function(key) {
+        if (Object.prototype.hasOwnProperty.call(window.TallerApp.state, key)) {
+            window.TallerApp.state[key] = patch[key];
+        }
+    });
+    return window.TallerApp.state;
+};
 
 // ============================================
 // FUNCIONES DE NARRATIVA DINÁMICA

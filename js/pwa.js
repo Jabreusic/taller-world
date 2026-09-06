@@ -4,6 +4,8 @@
   if (protocol !== 'http:' && protocol !== 'https:') return;
 
   var refreshing = false;
+  var registration = null;
+  var updateTimer = null;
 
   function soportaNotificacionesSistema() {
     return typeof window !== 'undefined' && 'Notification' in window;
@@ -86,6 +88,7 @@
     navigator.serviceWorker
       .register('./service-worker.js', { updateViaCache: 'none' })
       .then(function(reg) {
+        registration = reg;
         activarNuevaVersion(reg);
 
         reg.addEventListener('updatefound', function() {
@@ -98,13 +101,22 @@
           });
         });
 
-        setTimeout(function() {
+        function actualizarRegistro() {
+          if (document.visibilityState === 'hidden' || !navigator.onLine) return;
           reg.update().catch(function() {});
-        }, 1500);
+        }
 
-        setInterval(function() {
-          reg.update().catch(function() {});
-        }, 120000);
+        function programarActualizaciones() {
+          if (updateTimer) clearInterval(updateTimer);
+          updateTimer = setInterval(actualizarRegistro, 120000);
+        }
+
+        setTimeout(actualizarRegistro, 1500);
+        programarActualizaciones();
+        document.addEventListener('visibilitychange', function() {
+          if (document.visibilityState === 'visible') actualizarRegistro();
+          programarActualizaciones();
+        });
 
       })
       .catch(function(err) {
