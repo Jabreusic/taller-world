@@ -4224,6 +4224,57 @@
             flex-shrink: 0;
         }
 
+        .mecanico-progress-ring {
+            --progress: 0%;
+            width: 54px;
+            height: 54px;
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 54px;
+            border-radius: 50%;
+            background: conic-gradient(#63d391 var(--progress), rgba(104, 119, 128, 0.28) 0);
+            padding: 3px;
+        }
+
+        .mecanico-progress-ring > .mecanico-avatar,
+        .mecanico-progress-ring > .mecanico-avatar-placeholder {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border-color: #182229;
+        }
+
+        .mecanico-progress-ring-value {
+            position: absolute;
+            z-index: 2;
+            bottom: -5px;
+            right: -5px;
+            min-width: 24px;
+            padding: 2px 4px;
+            border-radius: 9px;
+            background: #122018;
+            color: #a8f0bd;
+            border: 1px solid #63d391;
+            font: 600 0.62rem/1 var(--garage-mono);
+            text-align: center;
+        }
+
+        .mecanico-progress-ring-office {
+            width: 70px;
+            height: 70px;
+            flex-basis: 70px;
+        }
+
+        .mecanico-progress-ring-office > .equipo-of-foto,
+        .mecanico-progress-ring-office > .equipo-of-foto-ph {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            border-color: #182229;
+        }
+
         .mecanico-card-head-info {
             flex: 1;
             min-width: 0;

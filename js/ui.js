@@ -1894,6 +1894,9 @@ function actualizarUI() {
     const capacidadMecanico = Math.max(1, Number(m.capacidadCasosSimultaneos) || 1);
     const trabajosMecanicoCount = trabajosMecanico.length;
     const ocupadoEnCasoActivo = trabajosMecanicoCount >= capacidadMecanico;
+    const progresoTrabajoMecanico = trabajoActivoMecanico
+      ? Math.max(0, Math.min(100, trabajoActivoMecanico.listoParaCobro ? 100 : Math.round((1 - (obtenerSegundosRestantesReparacion(trabajoActivoMecanico) / Math.max(1, Number(trabajoActivoMecanico.segundosTotalesReal || trabajoActivoMecanico.duracionRealSeg || trabajoActivoMecanico.tiempoTotal || 1)))) * 100)))
+      : 0;
     const enfriamientoTurnos = normalizarStatMecanico(
       m.enfriamientoTurnos,
       0,
@@ -2046,8 +2049,11 @@ function actualizarUI() {
       "mecanico-avatar-placeholder",
     );
 
+    const avatarConProgreso = trabajoActivoMecanico
+      ? `<span class="mecanico-progress-ring" style="--progress:${progresoTrabajoMecanico}%;" title="Progreso del trabajo: ${progresoTrabajoMecanico}%"><span class="mecanico-progress-ring-value">${progresoTrabajoMecanico}%</span>${fotoCard}</span>`
+      : fotoCard;
     btn.innerHTML = `<div class="mecanico-card-head">
-            ${fotoCard}
+            ${avatarConProgreso}
             <div class="mecanico-card-head-info">
                 <strong class="mecanico-nombre">${m.nombre}</strong>
                 <div class="mecanico-especialidad ${

@@ -2064,6 +2064,9 @@ function renderizarEquipoOficina() {
             : `<div class="equipo-of-foto-ph">${m.nombre.charAt(0)}</div>`;
 
         const repActiva = (reparacionesActivas || []).find(function(r) { return r && r.mecanicoNombre === m.nombre; });
+        const progresoRep = repActiva
+            ? Math.max(0, Math.min(100, repActiva.listoParaCobro ? 100 : Math.round((1 - (obtenerSegundosRestantesReparacion(repActiva) / Math.max(1, Number(repActiva.segundosTotalesReal || repActiva.duracionRealSeg || repActiva.tiempoTotal || 1)))) * 100)))
+            : 0;
         const enfriamientoTxt = (typeof formatearTiempoTrabajo === 'function')
             ? formatearTiempoTrabajo(m.enfriamientoTurnos || 0)
             : `${(m.enfriamientoTurnos || 0) * 10} min`;
@@ -2165,9 +2168,12 @@ function renderizarEquipoOficina() {
         const humorColor = humorPct <= 30 ? 'anger' : (humorPct <= 60 ? 'mood' : 'skill');
         const humorMotivo = fueraNecesidad > 0 ? 'Asunto personal pendiente' : (necesidadPendiente ? 'Necesidad sin atender' : (m.enojo >= 4 ? 'Tensión alta' : 'Estable'));
 
+        const fotoConProgreso = repActiva
+            ? `<span class="mecanico-progress-ring mecanico-progress-ring-office" style="--progress:${progresoRep}%;" title="Progreso del trabajo: ${progresoRep}%"><span class="mecanico-progress-ring-value">${progresoRep}%</span>${foto}</span>`
+            : foto;
         return `<div class="equipo-of-card" id="equipo-of-card-${idx}">
             <div class="equipo-of-card-top">
-                ${foto}
+                ${fotoConProgreso}
                 <div class="equipo-of-card-info">
                     <div class="equipo-of-name">${m.nombre}</div>
                     <div class="equipo-of-spec">${capitalizarRotulo(m.especialidad || 'general')}</div>
