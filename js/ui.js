@@ -1885,7 +1885,8 @@ function actualizarUI() {
     return numero;
   };
   grid.innerHTML = "";
-  mecanicos.forEach((m, idx) => {
+  const mecanicosEstadoActual = Array.isArray(window.mecanicos) ? window.mecanicos : mecanicos;
+  mecanicosEstadoActual.forEach((m, idx) => {
     mecanicosVisibles += 1;
     recursosVisibles += 1;
     const trabajosMecanico = trabajosActivosPorMecanico.get(m.nombre) || [];
@@ -1929,15 +1930,19 @@ function actualizarUI() {
       0,
       1,
     );
+    const humorCanonico = window.mecanicos && window.mecanicos[idx]
+      ? Number(window.mecanicos[idx].humor)
+      : Number(m.humor);
+    const humorBase = Number.isFinite(humorCanonico) ? humorCanonico : 7;
+    const enojoValor = Math.round(normalizarStatMecanico(m.enojo, 0, 0, 8));
     const humorEfectivo = normalizarStatMecanico(
       typeof calcularHumorEfectivo === "function"
         ? calcularHumorEfectivo(m)
-        : m.humor,
-      7,
-      0,
+        : humorBase - (enojoValor * 1.2) - (Math.max(0, (Number(m.trabajosHoy) || 0) - 3) * 0.5),
+      humorBase,
+      1,
       10,
     );
-    const enojoValor = Math.round(normalizarStatMecanico(m.enojo, 0, 0, 8));
     const habilidadValor = Math.round(habilidadBase * 100);
     const habilidadFill = Math.max(0, Math.min(100, habilidadValor));
     const velocidadValor = Math.round(velocidadBase * 100);
@@ -2114,9 +2119,10 @@ function actualizarUI() {
         return;
       }
       if (estadoNegativo) {
+        window.mecanicoPanelSeleccionadoIdx = idx;
         if (typeof abrirModal === "function") abrirModal("mecanicos");
         const lore = document.getElementById("mecanicos-lore");
-        if (lore) lore.insertAdjacentHTML("afterbegin", `<div class="mecanico-alerta-estado"><strong>⚠ ${m.nombre} no está en condiciones positivas</strong><br>Humor: ${humorEfectivo.toFixed(1)}/10 · Enojo: ${enojoValor}/8.<br>Ayúdalo antes de asignarle un caso.<div class="mecanico-alerta-actions"><button class="btn" type="button" onclick="comprarPizza()">🍕 Dar comida al equipo</button><button class="btn" type="button" onclick="hablarConMecanicoPanel()">💬 Hablar con el mecánico</button></div></div>`);
+        if (lore) lore.insertAdjacentHTML("afterbegin", `<div class="mecanico-alerta-estado"><strong>⚠ ${m.nombre} no está en condiciones positivas</strong><br>Humor: ${humorEfectivo.toFixed(1)}/10 · Enojo: ${enojoValor}/8.<br>Ayúdalo antes de asignarle un caso.<div class="mecanico-alerta-actions"><button class="btn" type="button" onclick="comprarPizza()">🍕 Dar comida al equipo</button><button class="btn" type="button" onclick="apoyarMecanicoDesdePanel()">🤝 Dar apoyo · RD$180</button><button class="btn" type="button" onclick="enviarMecanicoADescansarDesdePanel()">🛌 Dar descanso</button><button class="btn" type="button" onclick="hablarConMecanicoPanel()">💬 Hablar con el mecánico</button></div></div>`);
         mostrarFeedbackGameplay(`${m.nombre} no está disponible: tiene tensión alta. Atiende primero su estado antes de asignarle otro caso.`, "warn");
         return;
       }
@@ -11359,6 +11365,12 @@ function actualizarScreenExterior() {
   if (btnCuadre) btnCuadre.disabled = cuposCajaB <= 0 || montoCajaB < 210;
 }
 
+function actualizarIndicadoresCajaBUI() {
+  if (typeof actualizarScreenExterior === "function") {
+    actualizarScreenExterior();
+  }
+}
+
 function limitarValorMapa(valor, minimo, maximo) {
   var numero = Number(valor);
   if (!Number.isFinite(numero)) numero = minimo;
@@ -15864,6 +15876,11 @@ function resolverAccionWhatsAppBanco(accion) {
       deuda = Math.max(0, deudaActual - cuotaPago);
       if (typeof registrarPagoBanco === "function")
         registrarPagoBanco(cuotaPago);
+      if (deuda <= 0) {
+        bancoCasosSinPago = 0;
+        bancoMorasAplicadas = 0;
+        bancoCreditoUsado = 0;
+      }
       if (
         window.TallerApp &&
         window.TallerApp.helpers &&
@@ -15872,6 +15889,7 @@ function resolverAccionWhatsAppBanco(accion) {
         window.TallerApp.helpers.registrarGastoDia(cuotaPago, "banco");
       }
       if (typeof actualizarUI === "function") actualizarUI();
+      if (typeof actualizarIndicadoresBancoUI === "function") actualizarIndicadoresBancoUI();
       return (
         "Pago de RD$" +
         Math.round(cuotaPago) +

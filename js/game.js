@@ -1437,6 +1437,7 @@ function resolverAccionModalBanco(accion) {
     }
     if (typeof actualizarIndicadoresBancoUI === 'function') actualizarIndicadoresBancoUI();
     if (typeof actualizarScreenExterior === 'function') actualizarScreenExterior();
+    if (typeof actualizarUI === 'function') actualizarUI();
     if (typeof autoGuardarPartidaSilenciosa === 'function') autoGuardarPartidaSilenciosa('evento-banco-modal');
 }
 
