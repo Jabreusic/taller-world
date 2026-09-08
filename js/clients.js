@@ -585,6 +585,25 @@ function obtenerTonoSocialCliente(cliente) {
     return mapa[social.emocion] || '';
 }
 
+function renderizarModalEstadoCliente(cliente) {
+    if (!cliente) return false;
+    var social = cliente.estadoSocial || crearEstadoSocialCliente(cliente.personalidad, cliente.miniHistoriaTipo);
+    cliente.estadoSocial = social;
+    var textoEl = document.getElementById('cliente-explicacion-texto');
+    var metaEl = document.getElementById('cliente-explicacion-meta');
+    var personalidad = String(cliente.personalidad || 'confiado').toUpperCase();
+    var emocion = String(social.emocion || 'neutral');
+    var confianza = Math.max(0, Math.min(100, Math.round(Number(social.confianza) || 0)));
+    var paciencia = Math.max(0, Math.min(100, Math.round(Number(social.paciencia) || 0)));
+    var entrevistas = Math.max(0, Math.min(2, Math.round(Number(cliente.entrevistasHechas) || 0)));
+    if (textoEl) textoEl.textContent = String(cliente.declaracionCliente || 'El cliente no ha agregado detalles.');
+    if (metaEl) {
+        metaEl.textContent = 'Personalidad: ' + personalidad + ' | Humor: ' + emocion +
+            ' | Confianza: ' + confianza + '% | Paciencia: ' + paciencia + '% | Entrevistas: ' + entrevistas + '/2';
+    }
+    return social;
+}
+
 function obtenerHistoriaCliente() {
     const arquetiposHistoriaCliente = (window.TallerData && window.TallerData.arquetiposHistoriaCliente) || [];
     if (!Array.isArray(arquetiposHistoriaCliente) || !arquetiposHistoriaCliente.length) {
@@ -1293,15 +1312,13 @@ function hablarConCliente(mostrarModalCliente = true) {
         return;
     }
     if (clienteActual.entrevistasHechas >= 2) {
-        document.getElementById('cliente-explicacion-texto').innerText = clienteActual.declaracionCliente;
-        document.getElementById('cliente-explicacion-meta').innerText = `Personalidad: ${clienteActual.personalidad.toUpperCase()} | Entrevistas: 2/2`;
+        renderizarModalEstadoCliente(clienteActual);
         if (mostrarModalCliente) abrirModal('cliente');
         return;
     }
 
     const segunda = clienteActual.entrevistasHechas === 1;
     if (!consumirFoco('hablarCliente')) return;
-    if (segunda && !consumirFoco('hablarCliente')) return;
 
     clienteActual.habloConCliente = true;
     clienteActual.entrevistasHechas += 1;
@@ -1330,8 +1347,7 @@ function hablarConCliente(mostrarModalCliente = true) {
     }
 
     const socialEntrevista = ajustarEstadoSocialCliente(clienteActual, 'escucha');
-    document.getElementById('cliente-explicacion-texto').innerText = `${clienteActual.declaracionCliente} ${obtenerTonoSocialCliente(clienteActual)}`;
-    document.getElementById('cliente-explicacion-meta').innerText = `Personalidad: ${clienteActual.personalidad.toUpperCase()} | Emocion: ${(socialEntrevista && socialEntrevista.emocion) || 'neutral'} | Confianza: ${(socialEntrevista && socialEntrevista.confianza) || 0}% | Entrevistas: ${clienteActual.entrevistasHechas}/2`;
+    renderizarModalEstadoCliente(clienteActual);
     if (mostrarModalCliente) abrirModal('cliente');
 }
 
