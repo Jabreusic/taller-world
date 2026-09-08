@@ -1798,7 +1798,11 @@ function renderizarLoreMecanicos() {
     const listaCasos = !casos.length
         ? '<div class="mecanico-ficha">No hay casos aprobados para asignar.</div>'
         : casos.map(function(caso) {
-            return `<div class="mecanico-ficha"><strong>${caso.idCaso}</strong> | ${caso.nombre}<br><em>${caso.nota}</em></div>`;
+            const casoId = JSON.stringify(String(caso.idCaso || ''));
+            const accion = caso.asignable
+                ? `<button class="btn" type="button" onclick='asignarCasoAprobadoDesdePanel(${casoId})'>Asignar a ${m.nombre}</button>`
+                : '<span class="creator-help">No disponible todavía</span>';
+            return `<div class="mecanico-ficha"><strong>${caso.idCaso}</strong> | ${caso.nombre}<br><em>${caso.nota}</em><div style="margin-top:6px;">${accion}</div></div>`;
         }).join('');
 
     const problemaNarrativo = m.bloqueoAyudaTurnos > 0
@@ -1829,6 +1833,9 @@ function renderizarLoreMecanicos() {
             <div style="margin-top:8px;"><strong>Ultimo dialogo:</strong> ${ultimoDialogo}</div>
             <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;">
                 <button class="btn" onclick="hablarConMecanicoPanel()">Hablar con el</button>
+                <button class="btn" onclick="apoyarMecanicoDesdePanel()">Dar apoyo · RD$180</button>
+                <button class="btn" onclick="enviarMecanicoADescansarDesdePanel()">Dar descanso</button>
+                ${m.preguntaPendiente ? '<button class="btn btn-primary" onclick="atenderSolicitudMecanicoDesdePanel()">Atender solicitud</button>' : ''}
                 <button class="btn" onclick="verMecanicoPanel()">Ver mecanico</button>
                 <button class="btn btn-danger" onclick="despedirMecanico('${m.nombre}')">Despedir</button>
             </div>
@@ -1839,6 +1846,55 @@ function renderizarLoreMecanicos() {
         </div>
         ${listaCasos}
     `;
+}
+
+function apoyarMecanicoDesdePanel() {
+    const idx = window.mecanicoPanelSeleccionadoIdx;
+    const m = (typeof idx === 'number' && mecanicos) ? mecanicos[idx] : null;
+    const costo = 180;
+    if (!m) return;
+    if ((m.enfriamientoTurnos || 0) > 0 || (m.bloqueoAyudaTurnos || 0) > 0) {
+        return mostrarFeedbackGameplay('No puedes apoyar a un mecánico que está fuera del taller. Espera a que regrese.', 'warn');
+    }
+    if (saldo < costo) return mostrarFeedbackGameplay('Necesitas RD$180 para preparar apoyo al mecánico.', 'warn');
+    if (!consumirFoco('apoyoMecanico')) return;
+    saldo -= costo;
+    m.enojo = Math.max(0, Math.round(m.enojo || 0) - 2);
+    m.lealtad = Math.min(100, Math.round((m.lealtad || 0) + 2));
+    if (window.TallerApp && window.TallerApp.helpers && typeof window.TallerApp.helpers.registrarGastoDia === 'function') window.TallerApp.helpers.registrarGastoDia(costo, 'equipo');
+    if (typeof consumirTurno === 'function') consumirTurno('apoyo individual a mecanico', COSTOS_TURNO.decisionHistoria || 1);
+    log(`Apoyaste a ${m.nombre}: enojo -2 y lealtad +2.`, 'exito');
+    mostrarFeedbackGameplay(`${m.nombre} recibió apoyo. Su humor y compromiso mejoraron.`, 'ok');
+    renderizarLoreMecanicos();
+    actualizarUI();
+}
+
+function enviarMecanicoADescansarDesdePanel() {
+    const idx = window.mecanicoPanelSeleccionadoIdx;
+    const m = (typeof idx === 'number' && mecanicos) ? mecanicos[idx] : null;
+    if (!m) return;
+    if ((m.enfriamientoTurnos || 0) > 0 || (m.bloqueoAyudaTurnos || 0) > 0) return mostrarFeedbackGameplay(`${m.nombre} ya está fuera del taller.`, 'info');
+    if ((reparacionesActivas || []).some(function(r) { return r && r.mecanicoNombre === m.nombre; })) return mostrarFeedbackGameplay(`${m.nombre} está trabajando y no puede descansar ahora.`, 'warn');
+    m.enfriamientoTurnos = Math.max(2, Math.round(m.enfriamientoTurnos || 0));
+    m.ocupado = true;
+    m.enojo = Math.max(0, Math.round(m.enojo || 0) - 1);
+    if (typeof consumirTurno === 'function') consumirTurno('descanso de mecanico', COSTOS_TURNO.espera || 1);
+    log(`${m.nombre} tomó un descanso programado.`, 'info');
+    mostrarFeedbackGameplay(`${m.nombre} descansará y volverá en ${formatearTiempoTrabajo(m.enfriamientoTurnos)}.`, 'ok');
+    renderizarLoreMecanicos();
+    actualizarUI();
+}
+
+function atenderSolicitudMecanicoDesdePanel() {
+    const idx = window.mecanicoPanelSeleccionadoIdx;
+    const m = (typeof idx === 'number' && mecanicos) ? mecanicos[idx] : null;
+    if (!m || !m.preguntaPendiente) return mostrarFeedbackGameplay('Este mecánico no tiene una solicitud pendiente.', 'info');
+    cerrarModal();
+    if (typeof abrirTelefonoMecanico === 'function') abrirTelefonoMecanico(m.nombre);
+    else if (typeof pushMensajeTelefono === 'function') {
+        pushMensajeTelefono('mec_' + m.nombre, 'personal', 'Tienes una solicitud pendiente. Revísala para recuperar el humor del equipo.', { clave: 'solicitud-panel-' + m.nombre });
+        navegarPantalla('telefono');
+    }
 }
 
 function obtenerCasosAprobadosPanelMecanico() {
