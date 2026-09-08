@@ -20,26 +20,16 @@ function verificarDesbloqueoArcoNarrativo() {
     arcoNarrativoActual = arcoActivo.id;
     if (!yaNotificado) {
         arcosCumplidos = (arcosCumplidos || []).concat([arcoActivo.id]);
-        if (typeof pushMensajeTelefono === 'function') {
-            pushMensajeTelefono(
-                'cronica_barrio', 'cronica_barrio',
-                '\u{1F4D6} ' + arcoActivo.titulo + '\n' + arcoActivo.descripcion,
-                {
-                    clave: 'arco-unlock-' + arcoActivo.id,
-                    bloqueante: true,
-                    autorNombre: 'Cronica Del Barrio',
-                    metaNarrativa: {
-                        tipo: 'arco_narrativo',
-                        eventoId: String(arcoActivo.id || ''),
-                        fase: 'desbloqueo',
-                        dia: (typeof dia === 'number' ? dia : 1),
-                        participantes: ['Cronica Del Barrio', 'Jefe']
-                    }
-                }
-            );
+        if (typeof mostrarNotificacionCapitulo === 'function') {
+            mostrarNotificacionCapitulo({
+                tipo: 'arco_narrativo',
+                id: arcoActivo.id,
+                titulo: arcoActivo.titulo,
+                texto: arcoActivo.descripcion,
+                meta: 'Capítulo desbloqueado · ' + (typeof dia === 'number' ? 'Día ' + dia : 'Nueva etapa')
+            });
         }
         log('Nuevo capitulo desbloqueado: ' + arcoActivo.titulo, 'exito');
-        if (typeof mostrarHistoriaPrincipalModal === 'function') mostrarHistoriaPrincipalModal();
         return true;
     }
     return false;
@@ -59,23 +49,14 @@ function verificarHitosNarrativos(maxActivaciones) {
         if (total < (h.casosMin || 0)) continue;
         activados.push(h.id);
         try { h.resolver(); } catch(e) { /* silencio */ }
-        if (typeof pushMensajeTelefono === 'function') {
-            pushMensajeTelefono(
-                'cronica_barrio', 'cronica_barrio',
-                '\u26A1 ' + h.texto,
-                {
-                    clave: 'hito-' + h.id,
-                    bloqueante: true,
-                    autorNombre: 'Cronica Del Barrio',
-                    metaNarrativa: {
-                        tipo: 'hito_narrativo',
-                        eventoId: String(h.id || ''),
-                        fase: 'activado',
-                        dia: (typeof dia === 'number' ? dia : 1),
-                        participantes: ['Cronica Del Barrio', 'Jefe']
-                    }
-                }
-            );
+        if (typeof mostrarNotificacionCapitulo === 'function') {
+            mostrarNotificacionCapitulo({
+                tipo: 'hito_narrativo',
+                id: h.id,
+                titulo: 'Nuevo hito de la crónica',
+                texto: h.texto,
+                meta: 'Entrada del diario · Caso ' + total
+            });
         }
         log('[Narrativa] ' + h.texto, 'info');
         activaciones += 1;

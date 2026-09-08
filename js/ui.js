@@ -252,6 +252,7 @@ var resumenDia = null;
 var tramaEstado;
 var eventosTurnoVistos = [];
 var eventoNarrativoActivo;
+var capituloNotificacionPendiente = null;
 var eventosTurnoHoy = [];
 var ultimoEventoTurno = 0;
 var ultimoEventoCasos = 0;
@@ -8006,6 +8007,7 @@ function cerrarModal() {
   if (typeof actualizarFondoJuego === "function") actualizarFondoJuego();
 
   [
+    "modal-notificacion-capitulo",
     "modal-repuestos",
     "modal-comida",
     "modal-cajab",
@@ -8543,6 +8545,49 @@ function dxRapidoCasoColaContextual(idCaso) {
   }
   if (!resultado) mostrarFeedbackGameplay("NO HAY MECÁNICOS DISPONIBLES para completar DX rápido.", "warn");
   return resultado;
+}
+
+function mostrarNotificacionCapitulo(entrada) {
+  var data = entrada && typeof entrada === 'object' ? entrada : {};
+  capituloNotificacionPendiente = {
+    tipo: String(data.tipo || 'capitulo'),
+    id: String(data.id || 'entrada-' + Date.now()),
+    titulo: String(data.titulo || 'Nueva entrada del diario'),
+    texto: String(data.texto || 'El taller acaba de entrar en una nueva etapa.'),
+    meta: String(data.meta || 'Diario del taller')
+  };
+  var titulo = document.getElementById('capitulo-notificacion-titulo');
+  var meta = document.getElementById('capitulo-notificacion-meta');
+  var texto = document.getElementById('capitulo-notificacion-texto');
+  if (titulo) titulo.textContent = capituloNotificacionPendiente.titulo;
+  if (meta) meta.textContent = capituloNotificacionPendiente.meta;
+  if (texto) texto.textContent = capituloNotificacionPendiente.texto;
+  var modal = document.getElementById('modal-notificacion-capitulo');
+  if (modal) modal.classList.remove('hidden');
+  if (typeof sincronizarPausaJuego === 'function') sincronizarPausaJuego();
+  return true;
+}
+
+function aceptarCapituloNotificacion() {
+  var entrada = capituloNotificacionPendiente;
+  if (!entrada) return false;
+  if (typeof tramaEstado === 'object' && tramaEstado) {
+    if (!Array.isArray(tramaEstado.capitulosAsumidos)) tramaEstado.capitulosAsumidos = [];
+    if (tramaEstado.capitulosAsumidos.indexOf(entrada.id) < 0) tramaEstado.capitulosAsumidos.push(entrada.id);
+  }
+  var modal = document.getElementById('modal-notificacion-capitulo');
+  if (modal) modal.classList.add('hidden');
+  capituloNotificacionPendiente = null;
+  if (typeof log === 'function') log('Capítulo asumido: ' + entrada.titulo, 'info');
+  if (typeof mostrarFeedbackGameplay === 'function') mostrarFeedbackGameplay('Capítulo asumido. Sus consecuencias quedan activas en el taller.', 'ok');
+  if (typeof autoGuardarPartidaSilenciosa === 'function') autoGuardarPartidaSilenciosa('capitulo-asumido');
+  if (typeof sincronizarPausaJuego === 'function') sincronizarPausaJuego();
+  return true;
+}
+
+if (typeof window !== "undefined") {
+  window.mostrarNotificacionCapitulo = mostrarNotificacionCapitulo;
+  window.aceptarCapituloNotificacion = aceptarCapituloNotificacion;
 }
 if (typeof window !== "undefined") {
   window.abrirMenuCasoColaDesdeGesto = abrirMenuCasoColaDesdeGesto;
