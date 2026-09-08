@@ -587,12 +587,26 @@ window.TallerData.hitosNarrativos = [
                 if (typeof resumenDia !== 'undefined' && Array.isArray(resumenDia.ramificaciones))
                     resumenDia.ramificaciones.push('Amenaza legal respondida. Abogados pagados: -RD$' + costo + '.');
                 log('[Hito] Trampa legal respondida. -RD$' + costo + '. El expediente queda en tu favor.', 'info');
+                if (typeof tramaEstado !== 'undefined' && tramaEstado) {
+                    tramaEstado.exEventosAtendidos = Math.max(0, Math.round(tramaEstado.exEventosAtendidos || 0)) + 1;
+                    tramaEstado.exPresionLegal = Math.max(0, Math.round(tramaEstado.exPresionLegal || 0) - 2);
+                    tramaEstado.exRelacion = Math.min(100, Math.max(0, Math.round(tramaEstado.exRelacion || 50) + 6));
+                    if (typeof exRelacion !== 'undefined') exRelacion = tramaEstado.exRelacion;
+                    if (typeof pushMensajeTelefono === 'function') pushMensajeTelefono('valeria', 'valeria', 'La respuesta legal quedo registrada. Valeria baja la presion, pero ahora espera una propuesta concreta.', { clave: 'valeria-trampa-legal-atendida', autorNombre: 'Valeria' });
+                }
             } else {
                 deuda = (typeof deuda !== 'undefined' ? deuda : 0) + costo;
                 reputacion = Math.max(0, (typeof reputacion !== 'undefined' ? reputacion : 50) - 3);
                 if (typeof resumenDia !== 'undefined' && Array.isArray(resumenDia.ramificaciones))
                     resumenDia.ramificaciones.push('Sin fondos para los abogados. Deuda +RD$' + costo + ', reputacion -3.');
                 log('[Hito] Sin fondos para abogados. +RD$' + costo + ' deuda, -3 reputacion.', 'error');
+                if (typeof tramaEstado !== 'undefined' && tramaEstado) {
+                    tramaEstado.exEventosIgnorados = Math.max(0, Math.round(tramaEstado.exEventosIgnorados || 0)) + 1;
+                    tramaEstado.exPresionLegal = Math.min(100, Math.round(tramaEstado.exPresionLegal || 0) + 5);
+                    tramaEstado.exRelacion = Math.max(0, Math.round(tramaEstado.exRelacion || 50) - 8);
+                    if (typeof exRelacion !== 'undefined') exRelacion = tramaEstado.exRelacion;
+                    if (typeof pushMensajeTelefono === 'function') pushMensajeTelefono('valeria', 'valeria', 'La falta de fondos fortalece el expediente. Valeria aumenta la presion y el siguiente aviso sera mas costoso.', { clave: 'valeria-trampa-legal-ignorada', autorNombre: 'Valeria' });
+                }
             }
         }
     },

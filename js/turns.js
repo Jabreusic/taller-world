@@ -598,6 +598,14 @@ function aplicarPenalizacionesPendientesDia() {
         log('Penalizacion: nomina impaga, el equipo arranca tenso.', 'error');
     }
     if (p.banco) {
+        // Una deuda ya saldada no debe generar mora ni penalizacion residual.
+        if (Math.max(0, Math.round(deuda || 0)) <= 0) {
+            p.banco = false;
+            bancoCasosSinPago = 0;
+            bancoMorasAplicadas = 0;
+        }
+    }
+    if (p.banco && Math.max(0, Math.round(deuda || 0)) > 0) {
         const mora = calcularMoraBancoPendiente(deuda || 0, dia || 1);
         deuda += mora;
         reputacion = Math.max(0, reputacion - 1);
@@ -1296,8 +1304,13 @@ function operarCajaB(tipoOperacion) {
     }
 
     avanzarRelojTaller(op.turnos, tipo === 'rescate' ? 'rescate en calle sin factura' : 'picoteo rapido sin factura');
+    if (typeof actualizarIndicadoresCajaBUI === 'function') actualizarIndicadoresCajaBUI();
+    if (typeof actualizarUI === 'function') actualizarUI();
     return true;
 }
+
+// Exponer explícitamente la acción para botones inline y controles dinámicos.
+if (typeof window !== 'undefined') window.operarCajaB = operarCajaB;
 
 function hacerTrabajoPorDetras() {
     return operarCajaB('picoteo');

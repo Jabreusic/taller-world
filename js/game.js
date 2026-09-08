@@ -1305,6 +1305,11 @@ function pagarDeudaBancoSinFoco(montoObjetivo) {
     saldo -= pago;
     deuda = Math.max(0, deudaActual - pago);
     if (typeof registrarPagoBanco === 'function') registrarPagoBanco(pago);
+    if (deuda <= 0) {
+        bancoCasosSinPago = 0;
+        bancoMorasAplicadas = 0;
+        bancoCreditoUsado = 0;
+    }
     if (deuda <= 0 && typeof mostrarFeedbackGameplay === 'function') {
         mostrarFeedbackGameplay('Deuda bancaria saldada. El banco reconoce tu historial limpio y libera la linea completa de credito.', 'ok');
     }
@@ -1408,6 +1413,11 @@ function resolverAccionModalBanco(accion) {
         contexto.expresion = rescate.ok ? 'negociador' : 'preocupado';
     }
 
+    // Tras saldar, el banco debe cambiar de cobranza a una oferta de credito nueva.
+    if (deuda <= 0) {
+        contexto = construirContextoBanco('manual', 'manual');
+        contexto.expresion = 'sonrisa_confiada';
+    }
     window.bancoModalContexto = contexto;
     actualizarAvatarGerenteBanco(contexto.expresion || 'neutral');
 
@@ -1415,7 +1425,11 @@ function resolverAccionModalBanco(accion) {
     if (texto) texto.innerText = respuesta;
     var deudaEl = document.getElementById('banco-deuda');
     if (deudaEl) deudaEl.innerText = formatoDineroBanco(deuda || 0);
-    renderizarInfoModalBanco(contexto);
+    if (deuda <= 0) {
+        renderizarModalBanco(contexto);
+    } else {
+        renderizarInfoModalBanco(contexto);
+    }
 
     log('[Banco] ' + respuesta, 'info');
     if (typeof mostrarFeedbackGameplay === 'function') {
@@ -2770,6 +2784,11 @@ function pagarDeuda(cantidad) {
         }
         deuda = Math.max(0, deuda - montoPago);
         if (typeof registrarPagoBanco === 'function') registrarPagoBanco(montoPago);
+        if (deuda <= 0) {
+            bancoCasosSinPago = 0;
+            bancoMorasAplicadas = 0;
+            bancoCreditoUsado = 0;
+        }
         if (deuda <= 0 && typeof mostrarFeedbackGameplay === 'function') {
             mostrarFeedbackGameplay('Deuda bancaria saldada. Tu linea de credito vuelve a estar disponible.', 'ok');
         }
