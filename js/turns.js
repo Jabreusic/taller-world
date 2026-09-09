@@ -243,8 +243,8 @@ function procesarArcosTrilogiaPorCaso(casosTotales) {
         t.rival.activo = true;
         t.rival.amenaza = 2;
         ajustarPulsoAutoFixEnMapa(8, 5);
-        if (typeof upsertContactoTelefono === 'function') upsertContactoTelefono({ id: 'autofix', nombre: 'AutoFix Express', avatar: '⚡', tipo: 'personal' });
-        if (typeof pushMensajeTelefono === 'function') pushMensajeTelefono('autofix', 'autofix', 'Abrimos con agenda rápida y precios de lanzamiento. Nos vemos en la calle.', { clave: 'autofix-apertura-chat', autorNombre: 'AutoFix Express' });
+        if (typeof upsertContactoTelefono === 'function') upsertContactoTelefono({ id: 'autofix', nombre: 'Sr. Trinidad', avatar: 'img/personajes/Sr-trinidad-jefetallerrival', tipo: 'personal' });
+        if (typeof pushMensajeTelefono === 'function') pushMensajeTelefono('autofix', 'autofix', 'Abrimos con agenda rápida y precios de lanzamiento. Nos vemos en la calle.', { clave: 'autofix-apertura-chat', autorNombre: 'Sr. Trinidad' });
         notificarTrilogia('AutoFix Express abre', 'El avatar de AutoFix Express lanza precios agresivos. Gana 3 cierres críticos para recuperar la conversación del barrio.', 'arco-rival-inicio');
     }
     var contratado = String(stewartStatus || '') === 'contratado' || String(stewartStatus || '') === 'aliado';

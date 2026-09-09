@@ -47,6 +47,7 @@ window.TallerData.economy = {
     },
     mejorasTacticasIniciales: {
         bateria: 0,
+        recuperacionEquipo: 0,
         manualHablar: false,
         scannerDx: false,
         flujoReparacion: false,
@@ -262,6 +263,13 @@ window.TallerData.economy = {
             nombre: 'Batería de energía',
             descripcion: 'Aumenta el foco máximo en +5 por nivel',
             bonusFocoMax: 5
+        },
+        recuperacion_equipo: {
+            costoBase: 800,
+            costoPorNivel: 500,
+            max: 3,
+            nombre: 'Área de descanso del equipo',
+            descripcion: 'Reduce 12% la fatiga por nivel y acelera la recuperación posterior a cada caso'
         },
         // Manual de entrevista (mejora negociación)
         manual_hablar: { 

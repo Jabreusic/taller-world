@@ -100,7 +100,7 @@
     </section>
 
     <div class="creator-actions menu-launch-actions">
-        <button id="menu-btn-nueva-partida" class="btn" type="button" onclick="iniciarDesdeMenu()">Nueva Partida</button>
+        <button id="menu-btn-nueva-partida" class="btn" type="button" onclick="abrirConfiguracionNuevaPartida()">Nueva Partida</button>
         <button id="menu-btn-continuar" class="btn" type="button" onclick="cargarPartidaDesdeMenu()" disabled>Continuar</button>
         <button id="menu-btn-editor" class="btn" type="button" onclick="abrirEditorPersonajes()">Editor de Personajes</button>
         <button id="pwa-install-btn" class="btn app-install-btn hidden" type="button">Instalar App</button>
@@ -110,6 +110,34 @@
         <p id="menu-save-hint" class="creator-help">No hay una partida válida guardada en este navegador.</p>
         <span id="app-connection-status" class="app-connection-status" role="status">En línea</span>
     </div>
+</div>
+
+<div id="modal-configurar-partida" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="configurar-partida-titulo">
+    <section class="modal-content modal-configurar-partida">
+        <h2 id="configurar-partida-titulo">TU PRIMER TALLER</h2>
+        <p class="configurar-partida-lead">Define quién dirige el taller. Tienes 4 puntos para repartir; la especialidad marca tu enfoque inicial.</p>
+        <label for="nueva-partida-dueno">Nombre del dueño</label>
+        <input id="nueva-partida-dueno" type="text" maxlength="30" value="Dueño" autocomplete="name">
+        <label for="nueva-partida-taller">Nombre del taller</label>
+        <input id="nueva-partida-taller" type="text" maxlength="40" value="Taller World">
+        <label for="nueva-partida-especialidad">Especialidad del dueño</label>
+        <select id="nueva-partida-especialidad" onchange="actualizarConfiguracionNuevaPartida()">
+            <option value="diagnostico">Diagnóstico · más precisión al evaluar</option>
+            <option value="negociacion">Negociación · más éxito al cerrar acuerdos</option>
+            <option value="energia">Gestión de energía · menos fatiga por acción</option>
+        </select>
+        <div class="configurar-partida-puntos">
+            <div class="configurar-partida-puntos-head"><strong>Habilidades</strong><span id="nueva-partida-puntos-restantes">4 puntos por repartir</span></div>
+            <label>Diagnóstico <input id="nueva-partida-diagnostico" type="number" min="0" max="4" value="0" inputmode="numeric" oninput="actualizarConfiguracionNuevaPartida()"></label>
+            <label>Negociación <input id="nueva-partida-negociacion" type="number" min="0" max="4" value="0" inputmode="numeric" oninput="actualizarConfiguracionNuevaPartida()"></label>
+            <label>Gestión de energía <input id="nueva-partida-energia" type="number" min="0" max="4" value="0" inputmode="numeric" oninput="actualizarConfiguracionNuevaPartida()"></label>
+        </div>
+        <p id="nueva-partida-resumen" class="creator-help"></p>
+        <div class="creator-actions">
+            <button class="btn" type="button" onclick="confirmarConfiguracionNuevaPartida()">Abrir taller</button>
+            <button class="btn btn-danger" type="button" onclick="cerrarConfiguracionNuevaPartida()">Cancelar</button>
+        </div>
+    </section>
 </div>
 
 
@@ -354,6 +382,7 @@
         <p id="tienda-tactica-estado" style="font-size:0.86rem; color:#d8cfb9; margin-top:0;">Mejoras para eficiencia en casos.</p>
         <div style="display:grid; gap:10px;">
             <button id="btn-tactica-bateria" class="btn" onclick="comprarMejoraTactica('bateria')">Batería de Energía</button>
+            <button id="btn-tactica-recuperacion-equipo" class="btn" onclick="comprarMejoraTactica('recuperacion_equipo')">Área de descanso del equipo</button>
             <button id="btn-tactica-manual" class="btn" onclick="comprarMejoraTactica('manual_hablar')">Manual de Entrevista</button>
             <button id="btn-tactica-scanner" class="btn" onclick="comprarMejoraTactica('scanner_dx')">Scanner OBD</button>
             <button id="btn-tactica-flujo" class="btn" onclick="comprarMejoraTactica('flujo_reparacion')">Flujo de Reparación</button>

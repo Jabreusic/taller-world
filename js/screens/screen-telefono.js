@@ -4,7 +4,23 @@
    ============================================================= */
 window.SCREEN_HTML = window.SCREEN_HTML || {};
 window.SCREEN_HTML.telefono = `
-<div class="tel-frame">
+<div class="tel-phone-shell">
+    <header class="tel-device-header"><span>▣ TALLER OS</span><span id="tel-device-status">● En línea</span></header>
+    <section id="tel-app-home" class="tel-app-home">
+        <div class="tel-home-copy"><small>TELÉFONO DEL TALLER</small><strong>Herramientas de calle</strong><span id="tel-home-resumen">Conecta con clientes y controla el pulso del barrio.</span></div>
+        <div class="tel-app-grid">
+            <button class="tel-app-icon app-enlace" type="button" onclick="abrirAppTelefono('enlace')"><b>◌</b><span>Enlace</span><em id="tel-app-badge-enlace" class="hidden">0</em></button>
+            <button class="tel-app-icon app-resenas" type="button" onclick="abrirAppTelefono('resenas')"><b>★</b><span>RepuTaller</span></button>
+            <button class="tel-app-icon app-marcador" type="button" onclick="abrirAppTelefono('marcador')"><b>⌕</b><span>Marcador</span></button>
+            <button class="tel-app-icon app-agenda" type="button" onclick="abrirAppTelefono('agenda')"><b>▤</b><span>Agenda</span></button>
+            <button class="tel-app-icon app-radio" type="button" onclick="abrirAppTelefono('radio')"><b>♫</b><span>Radio Taller</span></button>
+        </div>
+        <p class="tel-home-tip">Enlace concentra conversaciones, decisiones y avisos narrativos. Las demás apps convierten la información del taller en acciones rápidas.</p>
+    </section>
+    <section id="tel-app-workspace" class="tel-app-workspace hidden">
+        <div class="tel-app-bar"><button class="tel-home-btn" type="button" onclick="volverInicioTelefono()">← Apps</button><strong id="tel-app-title">Enlace</strong></div>
+        <div id="tel-app-dynamic" class="tel-app-dynamic hidden"></div>
+        <div id="tel-app-enlace" class="tel-frame">
     <div class="tel-sidebar">
         <div class="tel-sidebar-header">
             <span>&#x1F4F1; Mensajes</span>
@@ -42,5 +58,7 @@ window.SCREEN_HTML.telefono = `
             <div class="tel-empty">Selecciona un contacto para ver respuestas.</div>
         </div>
     </div>
+</div>
+</section>
 </div>
 `;

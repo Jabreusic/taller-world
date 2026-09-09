@@ -59,7 +59,7 @@ window.RIVALES_BARRIO = [
         icono: '&#x26A1;',
         avatar: 'img/personajes/Sr-trinidad-jefetallerrival',
         especialidad: 'Velocidad — Motor y frenos',
-        descripcion: 'Nuevo en el barrio. Precios bajos, equipo moderno pero sin experiencia de calle. Su punto debil es la calidad a largo plazo.',
+        descripcion: 'Dueño de AutoFix Express. Precios bajos, equipo moderno pero sin experiencia de calle. Su punto débil es la calidad a largo plazo.',
         nivelBase: 1,
         crecimientoPorDia: 0.4,
         reputacionBase: 38,

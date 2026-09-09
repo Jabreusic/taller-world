@@ -152,7 +152,7 @@ window.TallerData.mecanicosDisponiblesBase = [
         salarioBase: 1100
     },
     { 
-        nombre: 'Morenai', 
+        nombre: 'Cristofer',
         enojo: 0, 
         habilidad: 0.67, 
         velocidad: 0.61, 
@@ -253,11 +253,11 @@ window.TallerData.rivalidades = {
     Frandy: ['Ridalvi', 'Miguel'],
     Maicol: ['Edwin', 'Jeral', 'Miguel'],
     Ridalvi: ['Frandy', 'Stewart'],
-    Jeral: ['Maicol', 'Miguel', 'Morenai'],
+    Jeral: ['Maicol', 'Miguel', 'Cristofer'],
     Edwin: ['Maicol', 'Miguel', 'Stewart'],
     Stewart: ['Maicol', 'Miguel', 'Edwin'],
-    Morenai: ['Jeral', 'Martin'],
-    Martin: ['Morenai', 'Miguel'],
+    Cristofer: ['Jeral', 'Martin'],
+    Martin: ['Cristofer', 'Miguel'],
     Miguel: ['Frandy', 'Maicol', 'Jeral', 'Edwin', 'Stewart', 'Martin'],
     Diego: ['Edwin', 'Maicol']
 };
@@ -395,11 +395,11 @@ window.TallerData.biografiasMecanicos = {
         fraseCelebre: 'En carrera no hay tiempo para segundas oportunidades.',
         foto: 'img/mecanicos/stewart.png'
     },
-    Morenai: {
+    Cristofer: {
         historia: 'Sereno y consistente. Prefiere cerrar casos limpios sin improvisar. Los clientes lo piden porque explica bien las reparaciones.',
         habilidadTexto: 'Electricidad y control de calidad final. +10% satisfacción cliente.',
         rivalidad: 'Discute con Jeral por los tiempos de entrega cuando hay mucha cola. Ella prioriza calidad, él velocidad.',
-        necesidad: 'Apoya a su familia y busca bonos estables cada semana. Es madre soltera.',
+        necesidad: 'Apoya a su familia y busca bonos estables cada semana. Es padre soltero.',
         fraseCelebre: 'Un trabajo limpio es un trabajo que no regresa.',
         foto: 'img/mecanicos/morenai.png'
     },
@@ -437,7 +437,7 @@ window.TallerData.compatibilidad = {
     sinergias: [
         ['Frandy', 'Maicol'],      // Motor + Electricidad = diagnóstico completo
         ['Jeral', 'Martin'],        // Paciencia + Todero = estabilidad
-        ['Morenai', 'Edwin'],       // Calidad + Transmisión = perfección
+        ['Cristofer', 'Edwin'],     // Calidad + Transmisión = perfección
         ['Stewart', 'Miguel']       // Alto rendimiento + Velocidad = casos rápidos
     ],
     // Bonos por sinergia

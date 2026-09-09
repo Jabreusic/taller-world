@@ -1007,7 +1007,7 @@ function escogerItemAleatorioEquipo(lista) {
 
 function esMecanicoVapeador(nombre) {
     var key = String(nombre || '').toLowerCase();
-    return key === 'frandy' || key === 'miguel' || key === 'morenai' || key === 'moreni' || key === 'martin';
+    return key === 'frandy' || key === 'miguel' || key === 'cristofer' || key === 'morenai' || key === 'moreni' || key === 'martin';
 }
 
 function obtenerTiempoBloqueoAyudaMecanico(m) {
@@ -1192,7 +1192,7 @@ function lanzarMensajesAutonomosMecanicos(hitoCasoForzado) {
         Jeral:   'Jefe, si el cliente del caso de suspension llama y pregunta, dile que yo lo revise directamente. Hay un detalle de garantia que quiero manejar.',
         Edwin:   'Jefe, el proveedor del barrio me debe un favor en piezas. Dejame gestionar esa compra y te consigo descuento, pero la diferencia queda entre nosotros.',
         Stewart: 'Jefe, llego un poco tarde esta manana por algo importante. Si alguien pregunta di que estaba en entrega.',
-        Morenai: 'Jefe, tengo un caso afuera esta tarde. Son 2 horas nada mas. Si llaman di que estoy en recepcion de vehiculo.',
+        Cristofer: 'Jefe, tengo un caso afuera esta tarde. Son 2 horas nada mas. Si llaman di que estoy en recepcion de vehiculo.',
         Martin:  'Jefe, hay un vecino del barrio que me encargo trabajo en su casa. Puedo ir rapido si me cubres con el siguiente en cola?',
         Miguel:  'Jefe, me salio un trabajo flash de calle para hoy. Si me cubres una vuelta, vuelvo prendido para cerrar cola.'
     };
@@ -1204,7 +1204,7 @@ function lanzarMensajesAutonomosMecanicos(hitoCasoForzado) {
         Jeral:   'Jefe, hoy no puedo. Problemas con el arrendador. Estoy resolviendo. Manana estoy fijo.',
         Edwin:   'Jefe, el mecanico del Riva me cito de urgencia. Hoy llego a mediodia como mucho.',
         Stewart: 'Jefe, hoy no cuenten conmigo. Tengo asunto importante y no me es posible estar.',
-        Morenai: 'Jefe, situacion familiar, hoy no llego. Te aviso cuando pueda resolver.',
+        Cristofer: 'Jefe, situacion familiar, hoy no llego. Te aviso cuando pueda resolver.',
         Martin:  'Jefe, hoy no voy. Prometo ponerme al dia manana con doble esfuerzo.',
         Miguel:  'Jefe, hoy no llego temprano. Si el ambiente sigue caliente, mejor entro luego para no explotar con nadie.'
     };
@@ -1339,7 +1339,9 @@ function normalizarStatsMecanico(m) {
 function aplicarFatigaMecanico(m, costo) {
     if (!m) return;
     normalizarStatsMecanico(m);
-    const fatiga = Math.max(0, Math.round(Number(costo) || 0));
+    const nivelDescanso = Math.max(0, Math.min(3, Math.round(Number(mejorasTacticas && mejorasTacticas.recuperacionEquipo) || 0)));
+    const fatigaBase = Math.max(0, Math.round(Number(costo) || 0));
+    const fatiga = Math.max(1, Math.round(fatigaBase * (1 - nivelDescanso * 0.12)));
     m.energia = Math.max(0, m.energia - fatiga);
 }
 
@@ -1853,7 +1855,7 @@ function gestionarMecanico(idx, idCasoEsperado, asignacionDirecta) {
 
 function obtenerPerfilRasgosMecanico(nombre) {
     const key = String(nombre || '').toLowerCase();
-    const perfilMoreni = {
+    const perfilCristofer = {
         ventaja: 'Consistente: evita fallos totales y deja mejor cobro.',
         desventaja: 'Ritmo normal, sin picos fuertes de velocidad.',
         bonusProbEstable: 0.04,
@@ -1924,8 +1926,9 @@ function obtenerPerfilRasgosMecanico(nombre) {
             enfriamientoBasePostTrabajo: 2,
             enfriamientoExtraPostTrabajo: 3
         },
-        morenai: perfilMoreni,
-        moreni: perfilMoreni,
+        cristofer: perfilCristofer,
+        morenai: perfilCristofer,
+        moreni: perfilCristofer,
         miguel: {
             ventaja: 'Comodin rapido: puede entrar casi en cualquier tipo de caso y acelerar cierre.',
             desventaja: 'Temperamental: en clima tenso tiene mas riesgo de pelea de piso.',
@@ -2374,10 +2377,9 @@ function obtenerTrabajoAsignadoMecanico(nombreMecanico) {
     var trabajos = reparacionesActivas.filter(function(rep) {
         return rep && String(rep.mecanicoNombre || '').trim() === clave;
     });
-    var perfil = Array.isArray(mecanicos) ? mecanicos.find(function(m) { return m && String(m.nombre || '').trim() === clave; }) : null;
-    var capacidad = Math.max(1, Math.round((perfil && perfil.capacidadCasosSimultaneos) || 1));
     var activos = trabajos.filter(function(rep) { return !rep.listoParaCobro; });
-    return activos.length >= capacidad ? (activos[0] || null) : null;
+    // Las bahías permiten paralelismo entre personas, no duplicar al mismo mecánico.
+    return activos[0] || null;
 }
 
 function asignarMecanico(idx, idCasoEsperado) {
@@ -2625,7 +2627,7 @@ function asignarMecanico(idx, idCasoEsperado) {
                 log(`Martin toma el caso de ${clienteActual.especialidadIdeal} como comodin. Sin penalizacion.`, 'info');
             }
         }
-    } else if (m.nombre === 'Morenai' || m.nombre === 'Moreni') {
+    } else if (m.nombre === 'Cristofer' || m.nombre === 'Morenai' || m.nombre === 'Moreni') {
         modProbRasgo += (rasgosMecanico.bonusProbEstable || 0);
         modGananciaRasgo += Math.max(-0.2, Number(rasgosMecanico.bonusGananciaPct || 0));
     }
@@ -4266,8 +4268,16 @@ function procesarCobroReparacionPorWhatsApp(idCaso) {
     }
 
     if (mec) {
-        mec.ocupado = false;
-        mec.enfriamientoTurnos = 0;
+        normalizarStatsMecanico(mec);
+        var nivelDescanso = Math.max(0, Math.min(3, Math.round(Number(mejorasTacticas && mejorasTacticas.recuperacionEquipo) || 0)));
+        var turnosRecuperacion = Math.max(1, 3 - nivelDescanso);
+        var energiaInicio = Math.max(0, Math.round(mec.energia || 0));
+        mec.ocupado = true;
+        mec.enfriamientoTurnos = turnosRecuperacion;
+        mec.descansoEnergiaInicio = energiaInicio;
+        mec.descansoEnergiaTotal = turnosRecuperacion;
+        mec.descansoEnergiaObjetivo = Math.min(100, energiaInicio + 20 + (nivelDescanso * 8));
+        if (typeof mostrarFeedbackGameplay === 'function') mostrarFeedbackGameplay(mec.nombre + ' entra en recuperación: ' + turnosRecuperacion + ' turno(s), energía en aumento.', 'info');
     }
     rep.cobroProcesado = true;
     clientesHoy += 1;

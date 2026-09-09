@@ -161,6 +161,10 @@ function actualizarEstadoMenuInicio() {
 if (typeof window !== "undefined") {
   window.abrirPerfilDueno = abrirPerfilDueno;
   window.comprarMejoraDueno = comprarMejoraDueno;
+  window.abrirConfiguracionNuevaPartida = abrirConfiguracionNuevaPartida;
+  window.cerrarConfiguracionNuevaPartida = cerrarConfiguracionNuevaPartida;
+  window.actualizarConfiguracionNuevaPartida = actualizarConfiguracionNuevaPartida;
+  window.confirmarConfiguracionNuevaPartida = confirmarConfiguracionNuevaPartida;
   window.obtenerMenuInicioEl = obtenerMenuInicioEl;
   window.actualizarEstadoMenuInicio = actualizarEstadoMenuInicio;
 }
@@ -1482,7 +1486,7 @@ function abrirPerfilDueno() {
     : 0;
   set("dueno-modal-casos", Math.round(casosDueno || 0));
   var nivelDueno = Math.max(1, Math.round(nivelJugador || 1));
-  var puntosGanados = Math.max(3, nivelDueno + 2);
+  var puntosGanados = Math.max(3, nivelDueno + 2) + Math.max(0, Math.round(Number(mejorasDueno.bonoInicial) || 0));
   mejorasDueno.puntos = Math.max(0, puntosGanados - mejorasDueno.diagnostico - mejorasDueno.negociacion - mejorasDueno.energia);
   set("dueno-modal-puntos", mejorasDueno.puntos);
   var skills = document.getElementById("dueno-modal-skills");
@@ -1539,6 +1543,7 @@ function actualizarUI() {
   mejorasTacticas.bateria = Number.isFinite(Number(mejorasTacticas.bateria))
     ? Math.max(0, Math.round(Number(mejorasTacticas.bateria)))
     : 0;
+  mejorasTacticas.recuperacionEquipo = Math.max(0, Math.min(3, Math.round(Number(mejorasTacticas.recuperacionEquipo) || 0)));
   mejorasTacticas.manualHablar = !!mejorasTacticas.manualHablar;
   mejorasTacticas.scannerDx = !!mejorasTacticas.scannerDx;
   mejorasTacticas.flujoReparacion = !!mejorasTacticas.flujoReparacion;
@@ -3895,10 +3900,18 @@ function abrirModalResultadoReparacion(rep) {
     var mecanicoNombre = rep.mecanicoNombre || "Mecanico";
     var vehiculo = rep.vehiculo ? ` | ${rep.vehiculo}` : "";
     var precioNegociado = !!(rep.negociado || rep.precioNegociado || (rep.casoRef && (rep.casoRef.negociado || rep.casoRef.precioNegociado)));
+    var duracionCasoSeg = Math.max(
+      0,
+      Math.round(
+        Number(
+          rep.segundosTotalesReal || rep.duracionRealSeg || rep.tiempoTotal || 0,
+        ) || 0,
+      ),
+    );
     var tiempoTxt =
       typeof formatearDuracionSegundos === "function"
-        ? formatearDuracionSegundos(obtenerSegundosRestantesReparacion(rep))
-        : `${Math.max(0, Math.round(rep.tiempoTotal || rep.tiempoRestante || 0))} min`;
+        ? formatearDuracionSegundos(duracionCasoSeg)
+        : `${duracionCasoSeg} s`;
     var piezasCount = Array.isArray(rep.piezasContinuacionEntregadas)
       ? rep.piezasContinuacionEntregadas.length
       : Array.isArray(rep.piezasContinuacionRequeridas)
@@ -3908,6 +3921,16 @@ function abrirModalResultadoReparacion(rep) {
     var pagoAcordado = Math.max(0, Math.round(rep.pagoAcordado || 0));
     var cobroTotal =
       tipo === "fallo" ? 0 : Math.max(0, Math.round(rep.ganancia || 0));
+    var mecLiquidacion = Array.isArray(mecanicos)
+      ? mecanicos.find(function (m) { return m && m.nombre === mecanicoNombre; })
+      : null;
+    var liquidacionPreview = tipo === "fallo" || !mecLiquidacion || typeof calcularLiquidacionMecanicoPorCaso !== "function"
+      ? null
+      : calcularLiquidacionMecanicoPorCaso(mecLiquidacion, rep);
+    var salarioBruto = liquidacionPreview ? Math.max(0, Math.round(liquidacionPreview.bruto || 0)) : 0;
+    var abonoPrestamo = liquidacionPreview ? Math.max(0, Math.round(liquidacionPreview.cuota || 0)) : 0;
+    var salarioNeto = liquidacionPreview ? Math.max(0, Math.round(liquidacionPreview.neto || 0)) : 0;
+    var cajaNeta = tipo === "fallo" ? -Math.max(0, Math.round(rep.perdida || 0)) : Math.max(0, cobroTotal - salarioNeto);
     var reputacionImpacto =
       tipo === "critico" ? 2 : tipo === "parcial" ? 0 : -3;
     if (rep.diagnosticoRiesgoAlto) {
@@ -3990,7 +4013,8 @@ function abrirModalResultadoReparacion(rep) {
           : String(rep.diagnosticoNivel || "general");
       var xpMec = Math.max(0, Math.round(rep.xpMecanicoGanada || 0));
       var xpDel = Math.max(0, Math.round(rep.xpDeliveryGanada || 0));
-      mecanicaExtra.innerText = `Dx ${dxTxt} | Tiempo ${tiempoTxt} | Piezas ${piezasCount} | ${reputacionTxt} | XP Mec +${xpMec}${xpDel > 0 ? ` | XP Del +${xpDel}` : ""}`;
+      var xpMecVisible = xpMec || (tipo === "critico" ? 3 : tipo === "parcial" ? 2 : 1);
+      mecanicaExtra.innerText = `Dx ${dxTxt} | Duración ${tiempoTxt} | Piezas ${piezasCount} | ${reputacionTxt} | XP Mec +${xpMecVisible}${xpDel > 0 ? ` | XP Del +${xpDel}` : ""}`;
     }
 
     if (money) {
@@ -4000,20 +4024,20 @@ function abrirModalResultadoReparacion(rep) {
         money.innerText = `Impacto: -RD$${Math.round(rep.perdida || 0)}`;
       } else {
         money.classList.add("is-gain");
-        money.innerText = `Cobro: RD$${cobroTotal}`;
+        money.innerText = `Caja neta: RD$${cajaNeta}`;
       }
     }
     if (breakdown) {
       breakdown.innerText =
         tipo === "fallo"
           ? `Costo de piezas asumido: RD$${costoPiezas}`
-          : `Pieza RD$${costoPiezas} + margen pieza RD$${margenPieza} + servicio/pluses RD$${servicioAplicado} = RD$${cobroTotal}`;
+          : `Cobro RD$${cobroTotal} − nómina neta RD$${salarioNeto} = caja RD$${cajaNeta}`;
     }
     if (moneyExtra) {
       if (tipo === "fallo") {
         moneyExtra.innerText = `Pago acordado RD$${pagoAcordado} | Costo de piezas RD$${costoPiezas} | Cobro RD$0 | ${reputacionTxt}.`;
       } else {
-        moneyExtra.innerText = `Pago acordado RD$${pagoAcordado} | Servicio base RD$${servicioAplicado} | Margen pieza RD$${margenPieza} | ${reputacionTxt}.`;
+        moneyExtra.innerText = `Pago acordado RD$${pagoAcordado} | Piezas RD$${costoPiezas} | Servicio RD$${servicioAplicado} | Salario RD$${salarioBruto}${abonoPrestamo > 0 ? ` | Abono préstamo RD$${abonoPrestamo} | Pago al mecánico RD$${salarioNeto}` : ""} | ${reputacionTxt}.`;
       }
     }
     if (estado) {
@@ -5268,6 +5292,77 @@ function iniciarDesdeMenu() {
   var menuInicioEl = document.getElementById("menu-inicio");
   if (menuInicioEl) menuInicioEl.classList.add("hidden");
   location.reload();
+}
+
+function leerNumeroConfiguracionPartida(id) {
+  var input = document.getElementById(id);
+  return Math.max(0, Math.min(4, Math.round(Number(input && input.value) || 0)));
+}
+
+function actualizarConfiguracionNuevaPartida() {
+  var ids = ["nueva-partida-diagnostico", "nueva-partida-negociacion", "nueva-partida-energia"];
+  var valores = ids.map(leerNumeroConfiguracionPartida);
+  var total = valores.reduce(function(suma, valor) { return suma + valor; }, 0);
+  var restantes = 4 - total;
+  var aviso = document.getElementById("nueva-partida-puntos-restantes");
+  var resumen = document.getElementById("nueva-partida-resumen");
+  var especialidadEl = document.getElementById("nueva-partida-especialidad");
+  var especialidad = especialidadEl ? especialidadEl.options[especialidadEl.selectedIndex].text.split(" ·")[0] : "Diagnóstico";
+  if (aviso) {
+    aviso.innerText = restantes === 0 ? "4 puntos asignados" : restantes < 0 ? "Excediste los 4 puntos" : restantes + " puntos por repartir";
+    aviso.style.color = restantes < 0 ? "#ff8f8f" : "";
+  }
+  if (resumen) resumen.innerText = "Especialidad inicial: " + especialidad + ". Puedes seguir mejorando estas habilidades al subir de nivel.";
+  return restantes === 0;
+}
+
+function abrirConfiguracionNuevaPartida() {
+  var modal = document.getElementById("modal-configurar-partida");
+  if (!modal) return iniciarDesdeMenu();
+  modal.classList.remove("hidden");
+  actualizarConfiguracionNuevaPartida();
+  var nombre = document.getElementById("nueva-partida-dueno");
+  if (nombre) nombre.focus();
+}
+
+function cerrarConfiguracionNuevaPartida() {
+  var modal = document.getElementById("modal-configurar-partida");
+  if (modal) modal.classList.add("hidden");
+}
+
+function confirmarConfiguracionNuevaPartida() {
+  if (!actualizarConfiguracionNuevaPartida()) {
+    alert("Reparte exactamente los 4 puntos de habilidad antes de abrir el taller.");
+    return false;
+  }
+  var nombre = String(document.getElementById("nueva-partida-dueno")?.value || "").trim().slice(0, 30) || "Dueño";
+  var taller = String(document.getElementById("nueva-partida-taller")?.value || "").trim().slice(0, 40) || "Taller World";
+  var especialidad = String(document.getElementById("nueva-partida-especialidad")?.value || "diagnostico");
+  var habilidades = {
+    diagnostico: leerNumeroConfiguracionPartida("nueva-partida-diagnostico"),
+    negociacion: leerNumeroConfiguracionPartida("nueva-partida-negociacion"),
+    energia: leerNumeroConfiguracionPartida("nueva-partida-energia"),
+    puntos: 0,
+    bonoInicial: 1,
+    especialidadInicial: especialidad
+  };
+  try {
+    var clavePerfil = (window.TallerApp && window.TallerApp.storage && window.TallerApp.storage.keys && window.TallerApp.storage.keys.creatorProfile) || "tw_character_studio_v2";
+    var perfilAnterior = JSON.parse(localStorage.getItem(clavePerfil) || "{}");
+    var perfil = Object.assign({}, perfilAnterior, {
+      player: Object.assign({}, perfilAnterior.player || {}, { nombre: nombre, tallerNombre: taller }),
+      ownerSetup: { especialidad: especialidad, habilidades: habilidades }
+    });
+    localStorage.setItem(clavePerfil, JSON.stringify(perfil));
+    localStorage.setItem("taller_world_mejoras_dueno", JSON.stringify(habilidades));
+    if (window.TallerData) window.TallerData.perfilPersonalizado = perfil;
+  } catch (e) {
+    alert("No se pudo guardar el perfil inicial. Revisa el almacenamiento del navegador.");
+    return false;
+  }
+  cerrarConfiguracionNuevaPartida();
+  iniciarDesdeMenu();
+  return true;
 }
 
 function sincronizarPausaJuego() {
@@ -6671,7 +6766,7 @@ function aplicarEstadoGuardado(data) {
   const normalizarNombreMecanicoGuardado = function (nombre) {
     const txt = String(nombre || "").trim();
     if (!txt) return txt;
-    return txt.toLowerCase() === "moreni" ? "Morenai" : txt;
+    return ["moreni", "morenai", "cristofer"].includes(txt.toLowerCase()) ? "Cristofer" : txt;
   };
   const normalizarListaMecanicosGuardado = function (lista) {
     return (Array.isArray(lista) ? lista : [])
@@ -8875,6 +8970,7 @@ let telefonoContactos = [];
 let telefonoFiltroActivo = "todos";
 let telefonoBusquedaTexto = "";
 let telefonoVista = "lista";
+let telefonoAppActiva = "inicio";
 const LIMITE_CHAT_CLIENTE_DIA = 4;
 const TEL_CONTACTO_CRONICA_ID = "cronica_barrio";
 const TEL_CONTACTO_GRUPO_PREFIJO = "grupo_historia_";
@@ -8892,6 +8988,82 @@ function obtenerHoraMensajeTelefono() {
   if (typeof obtenerHoraDelDiaTexto === "function")
     return obtenerHoraDelDiaTexto();
   return "09:00";
+}
+
+function actualizarAppsTelefono() {
+  var home = document.getElementById("tel-app-home"), workspace = document.getElementById("tel-app-workspace"), dynamic = document.getElementById("tel-app-dynamic"), title = document.getElementById("tel-app-title"), resumen = document.getElementById("tel-home-resumen"), badge = document.getElementById("tel-app-badge-enlace");
+  var noLeidos = Object.keys(telefonoMensajes || {}).reduce(function(total, id) { return total + contarNoLeidosContactoTelefono(id); }, 0);
+  if (badge) { badge.innerText = noLeidos > 99 ? "99+" : String(noLeidos); badge.classList.toggle("hidden", noLeidos <= 0); }
+  if (resumen) resumen.innerText = noLeidos > 0 ? "Tienes " + noLeidos + " aviso(s) esperando en Enlace." : "Sin avisos pendientes. El taller está conectado.";
+  if (!home || !workspace || !dynamic) return;
+  var enInicio = telefonoAppActiva === "inicio";
+  home.classList.toggle("hidden", !enInicio); workspace.classList.toggle("hidden", enInicio);
+  if (enInicio) return;
+  var titulos = { enlace: "Enlace", resenas: "RepuTaller", marcador: "Marcador", agenda: "Agenda", radio: "Radio Taller" };
+  if (title) title.innerText = titulos[telefonoAppActiva] || "Teléfono";
+  dynamic.classList.toggle("hidden", telefonoAppActiva === "enlace");
+  if (telefonoAppActiva !== "enlace") renderizarAppTelefonoActual();
+}
+
+function abrirAppTelefono(app) {
+  telefonoAppActiva = ["enlace", "resenas", "marcador", "agenda", "radio"].indexOf(app) >= 0 ? app : "inicio";
+  if (telefonoAppActiva === "enlace") { inicializarTelefono(); renderizarContactosTelefono(); if (telefonoContactoActivo) { renderizarMensajesTelefono(telefonoContactoActivo); renderizarOpcionesRespuestaTelefono(telefonoContactoActivo); } }
+  actualizarAppsTelefono();
+  if (typeof sfxClick === "function") sfxClick();
+}
+
+function volverInicioTelefono() { telefonoAppActiva = "inicio"; telefonoVista = "lista"; actualizarAppsTelefono(); }
+
+function renderizarAppTelefonoActual() {
+  var panel = document.getElementById("tel-app-dynamic");
+  if (!panel) return;
+  var escapar = typeof escaparTextoTelefono === "function" ? escaparTextoTelefono : function(valor) { return String(valor || ""); };
+  if (telefonoAppActiva === "resenas") {
+    var resenas = (telefonoMensajes.resenas || []).slice().reverse();
+    var totalEstrellas = resenas.reduce(function(total, item) { return total + ((String(item.texto || "").match(/⭐/g) || []).length); }, 0), promedio = resenas.length ? (totalEstrellas / resenas.length).toFixed(1) : "—";
+    panel.innerHTML = '<div class="tel-app-card"><h3>Reputación pública</h3><p>Opiniones automáticas de clientes al cerrar cada caso. Úsalas para leer qué está sintiendo el barrio.</p><div class="tel-kpis"><div class="tel-kpi"><small>Promedio</small><strong>' + promedio + ' ★</strong></div><div class="tel-kpi"><small>Reseñas</small><strong>' + resenas.length + '</strong></div><div class="tel-kpi"><small>Reputación</small><strong>' + Math.round(Number(reputacion) || 0) + '%</strong></div></div>' + (resenas.length ? resenas.slice(0, 12).map(function(r) { return '<article class="tel-review"><small>' + escapar(r.hora || "Hoy") + '</small><div>' + escapar(r.texto || "") + '</div></article>'; }).join("") : '<div class="tel-review">Aún no hay reseñas. Cierra un caso para recibir la primera opinión.</div>') + '</div>';
+    return;
+  }
+  if (telefonoAppActiva === "agenda") {
+    var cola = Array.isArray(clientesEnEspera) ? clientesEnEspera.length : 0, dx = Array.isArray(casosPendientesDiagnostico) ? casosPendientesDiagnostico.length : 0, activos = Array.isArray(reparacionesActivas) ? reparacionesActivas.filter(function(r) { return r && !r.listoParaCobro; }) : [];
+    var lista = activos.length ? activos.map(function(r) { return '<article class="tel-review"><small>' + escapar(r.mecanicoNombre || "Equipo") + '</small><div>' + escapar(r.personaNombre || r.clienteNombre || "Caso en curso") + ' · ' + escapar(r.vehiculo || "Vehículo") + '</div></article>'; }).join("") : '<div class="tel-review">No hay reparaciones activas. Revisa la cola para asignar el próximo caso.</div>';
+    panel.innerHTML = '<div class="tel-app-card"><h3>Agenda operativa</h3><p>Vista rápida de carga. Esta app no adelanta el tiempo: te deja decidir dónde intervenir.</p><div class="tel-kpis"><div class="tel-kpi"><small>En cola</small><strong>' + cola + '</strong></div><div class="tel-kpi"><small>Pendientes DX</small><strong>' + dx + '</strong></div><div class="tel-kpi"><small>En reparación</small><strong>' + activos.length + '</strong></div></div>' + lista + '<button class="tel-radio-control" type="button" onclick="navegarPantalla(\'taller\')">Ir al taller</button></div>';
+    return;
+  }
+  if (telefonoAppActiva === "marcador") {
+    var destinos = [{ id: "banco", nombre: "101 · Banco Confianza", detalle: "Consultar deuda, cuotas y nuevas ofertas." }, { id: "proveedor", nombre: "202 · Proveedor", detalle: "Piezas, delivery y mejoras tácticas." }, { id: "abogado", nombre: "303 · Oficina legal", detalle: "Estado del caso con Valeria." }];
+    if (telefonoContactos.some(function(c) { return c && c.id === "autofix"; })) destinos.push({ id: "autofix", nombre: "808 · Sr. Trinidad", detalle: "Línea del dueño de AutoFix Express." });
+    panel.innerHTML = '<div class="tel-app-card"><h3>Marcador del barrio</h3><p>Líneas útiles del taller. Escribe un código o usa un contacto rápido.</p><div class="tel-dial-row"><input id="tel-dial-input" inputmode="numeric" maxlength="3" placeholder="101"><button type="button" onclick="marcarNumeroTelefono()">Marcar</button></div>' + destinos.map(function(d) { return '<article class="tel-call"><span><strong>' + d.nombre + '</strong><small>' + d.detalle + '</small></span><button type="button" onclick="llamarDesdeTelefono(\'' + d.id + '\')">Llamar</button></article>'; }).join("") + '</div>';
+    return;
+  }
+  if (telefonoAppActiva === "radio") {
+    var temas = window.TallerAudio && typeof window.TallerAudio.getMusicSources === "function" ? window.TallerAudio.getMusicSources().length : 0;
+    panel.innerHTML = '<div class="tel-app-card"><h3>Radio Taller</h3><p>Ambiente de trabajo. La reproducción empieza al tocar el control, como exige el navegador.</p><div class="tel-kpis"><div class="tel-kpi"><small>Estado</small><strong>' + (musicaFondoActiva ? "Activa" : "Pausada") + '</strong></div><div class="tel-kpi"><small>Temas</small><strong>' + temas + '</strong></div><div class="tel-kpi"><small>Volumen</small><strong>12%</strong></div></div><button class="tel-radio-control" type="button" onclick="alternarRadioTelefono()">' + (musicaFondoActiva ? "Pausar radio" : "Reproducir radio") + '</button></div>';
+  }
+}
+
+function llamarDesdeTelefono(contactoId) { telefonoAppActiva = "enlace"; abrirChatTelefono(contactoId); actualizarAppsTelefono(); mostrarFeedbackGameplay("Llamada conectada con " + ((telefonoContactos.find(function(c) { return c && c.id === contactoId; }) || {}).nombre || "contacto") + ".", "ok"); }
+
+function marcarNumeroTelefono() {
+  var input = document.getElementById("tel-dial-input");
+  var numero = String(input && input.value || "").replace(/\D/g, "");
+  var agenda = { "101": "banco", "202": "proveedor", "303": "abogado", "808": "autofix" };
+  if (numero === "404") {
+    mostrarFeedbackGameplay("Línea 404: el viejo radio del barrio solo responde con estática. Quizá otro día tenga un secreto.", "info");
+    return;
+  }
+  if (!agenda[numero] || !telefonoContactos.some(function(c) { return c && c.id === agenda[numero]; })) {
+    mostrarFeedbackGameplay("Número no disponible. Prueba 101, 202, 303 o los contactos desbloqueados.", "warn");
+    return;
+  }
+  llamarDesdeTelefono(agenda[numero]);
+}
+
+function alternarRadioTelefono() {
+  musicaFondoActiva = !musicaFondoActiva;
+  if (window.TallerAudio) { if (typeof window.TallerAudio.setMusicEnabled === "function") window.TallerAudio.setMusicEnabled(musicaFondoActiva); if (musicaFondoActiva && typeof window.TallerAudio.startMusic === "function") window.TallerAudio.startMusic(); }
+  if (typeof autoGuardarPartidaSilenciosa === "function") autoGuardarPartidaSilenciosa("radio-telefono");
+  renderizarAppTelefonoActual();
 }
 
 function normalizarTextoNarrativaTelefono(texto, limite) {
@@ -10104,7 +10276,7 @@ function obtenerContactosBaseTelefono() {
     },
   ];
   var casosNarrativos = typeof obtenerCasosCompletadosNarrativa === "function" ? obtenerCasosCompletadosNarrativa() : 0;
-  if (casosNarrativos >= 8) contactos.push({ id: "autofix", nombre: "AutoFix Express", avatar: "⚡", tipo: "personal" });
+  if (casosNarrativos >= 8) contactos.push({ id: "autofix", nombre: "Sr. Trinidad", avatar: "img/personajes/Sr-trinidad-jefetallerrival", tipo: "personal" });
   return contactos;
 }
 
@@ -10553,6 +10725,7 @@ function navegarPantalla(pantalla) {
       renderizarOpcionesRespuestaTelefono(telefonoContactoActivo);
     }
     actualizarVistaTelefono();
+    actualizarAppsTelefono();
   }
   if (typeof sincronizarPausaJuego === "function") sincronizarPausaJuego();
 }
@@ -14635,9 +14808,8 @@ function inicializarTelefono() {
     ];
   }
   if (!telefonoMensajes["autofix"] && (typeof obtenerCasosCompletadosNarrativa === "function" && obtenerCasosCompletadosNarrativa() >= 8)) {
-    telefonoMensajes["autofix"] = [{ autor: "autofix", texto: "AutoFix Express informa: abrimos con agenda rápida, diagnóstico digital y precios de entrada.", hora: "10:20", leido: false }];
+    telefonoMensajes["autofix"] = [{ autor: "autofix", texto: "Sr. Trinidad, dueño de AutoFix Express, informa: abrimos con agenda rápida, diagnóstico digital y precios de entrada.", hora: "10:20", leido: false }];
   }
-  if (telefonoMensajes["resenas"]) delete telefonoMensajes["resenas"];
   if (!telefonoMensajes["inspector"]) {
     telefonoMensajes["inspector"] = [
       {
@@ -14786,6 +14958,7 @@ function abrirChatTelefono(contactoId) {
   if (!contacto) return;
   telefonoContactoActivo = contactoId;
   telefonoVista = "chat";
+  telefonoAppActiva = "enlace";
 
   // Marcar mensajes como leidos
   var msgs = telefonoMensajes[contactoId] || [];
@@ -14799,6 +14972,7 @@ function abrirChatTelefono(contactoId) {
   renderizarOpcionesRespuestaTelefono(contactoId);
   renderizarContactosTelefono();
   actualizarVistaTelefono();
+  actualizarAppsTelefono();
   enfocarCabeceraChatTelefonoMovil();
 }
 
@@ -14942,7 +15116,7 @@ function construirOpcionesMecanicoWhatsApp(mec) {
       { texto: "Dame un ETA de carrera sin saltarte el checklist.", accion: "mec_estado" },
       { texto: "Avísame cuánto capital te falta para tu box.", accion: "mec_estado" },
     ],
-    morenai: [
+    cristofer: [
       { texto: "Te apoyo con un bono estable si mantienes calidad.", accion: "mec_bono" },
       { texto: "Dame estado del caso y del próximo pago.", accion: "mec_estado" },
       { texto: "Trabaja con calma y cierra limpio.", accion: "mec_calidad" },
@@ -16227,11 +16401,14 @@ function obtenerOpcionesRespuestaTelefono(contactoId) {
       : { costo: 4200, nivelMin: 4, repMin: 68, tallerMin: 3 };
     var tiendaTac = (ECONOMY_DATA && ECONOMY_DATA.tiendaTactica) || {};
     var bateriaCfg = tiendaTac.bateria || { costoBase: 600, costoPorNivel: 250, max: 3 };
+    var descansoCfg = tiendaTac.recuperacion_equipo || { costoBase: 800, costoPorNivel: 500, max: 3 };
     var nivelBateria = Math.max(0, Math.round(Number((mejorasTacticas && mejorasTacticas.bateria) || 0)));
     var maxBateria = typeof obtenerMaxBateriaDinamica === "function"
       ? obtenerMaxBateriaDinamica()
       : bateriaCfg.max;
     var costoBateria = bateriaCfg.costoBase + nivelBateria * bateriaCfg.costoPorNivel;
+    var nivelDescanso = Math.max(0, Math.min(descansoCfg.max, Math.round(Number((mejorasTacticas && mejorasTacticas.recuperacionEquipo) || 0))));
+    var costoDescanso = descansoCfg.costoBase + nivelDescanso * descansoCfg.costoPorNivel;
     var progresoActual = typeof obtenerProgresoOperativoActual === "function"
       ? obtenerProgresoOperativoActual()
       : Math.max(1, Math.round(nivelJugador || 1));
@@ -16252,6 +16429,12 @@ function obtenerOpcionesRespuestaTelefono(contactoId) {
         accion: "proveedor_estabilizador",
         bloqueada: nivelBateria >= maxBateria || saldo < costoBateria,
         motivoBloqueo: nivelBateria >= maxBateria ? "Nivel maximo instalado" : "Caja insuficiente"
+      },
+      {
+        texto: "Área de descanso " + nivelDescanso + "/" + descansoCfg.max + " | RD$" + costoDescanso + " | -12% fatiga",
+        accion: "proveedor_descanso_equipo",
+        bloqueada: nivelDescanso >= descansoCfg.max || saldo < costoDescanso,
+        motivoBloqueo: nivelDescanso >= descansoCfg.max ? "Nivel maximo instalado" : "Caja insuficiente"
       },
       { texto: "Explicame para que sirven", accion: "proveedor_info" }
     ], false);
@@ -16584,6 +16767,11 @@ function enviarMensajeTelefono(
       respuestaProveedor = saldo < saldoAntesProveedor
         ? "Estabilizador instalado. Ferreteria, Oficina, Exterior y HUD ya comparten el nuevo saldo."
         : "No pude completar la compra. Revisa caja y nivel actual del estabilizador.";
+    } else if (accionProveedor === "proveedor_descanso_equipo" && typeof comprarMejoraTactica === "function") {
+      comprarMejoraTactica("recuperacion_equipo");
+      respuestaProveedor = saldo < saldoAntesProveedor
+        ? "Área de descanso instalada. Cada nivel reduce 12% la fatiga y acorta la recuperación tras un caso."
+        : "No pude completar la mejora. Revisa caja y nivel actual del área de descanso.";
     }
     pushMensajeTelefono("proveedor", "proveedor", respuestaProveedor, {
       clave: "respuesta-proveedor-" + Date.now()

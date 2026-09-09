@@ -1640,6 +1640,7 @@ function renderizarTiendasMejoras() {
 
     const btnRec = document.getElementById('btn-tactica-recarga');
     const btnBat = document.getElementById('btn-tactica-bateria');
+    const btnRecEquipo = document.getElementById('btn-tactica-recuperacion-equipo');
     const btnMan = document.getElementById('btn-tactica-manual');
     const btnScn = document.getElementById('btn-tactica-scanner');
     const btnFlu = document.getElementById('btn-tactica-flujo');
@@ -1651,6 +1652,9 @@ function renderizarTiendasMejoras() {
     const bateriaItem = tienda.bateria || { costoBase: 600, costoPorNivel: 250, max: 3 };
     const bateriaMax = obtenerMaxBateriaDinamica();
     const bateriaCosto = bateriaItem.costoBase + ((mejorasTacticas.bateria || 0) * bateriaItem.costoPorNivel);
+    const descansoItem = tienda.recuperacion_equipo || { costoBase: 800, costoPorNivel: 500, max: 3 };
+    const descansoNivel = Math.max(0, Math.min(descansoItem.max, Math.round(Number(mejorasTacticas.recuperacionEquipo) || 0)));
+    const descansoCosto = descansoItem.costoBase + (descansoNivel * descansoItem.costoPorNivel);
     const manualCosto = (tienda.manual_hablar && tienda.manual_hablar.costo) || 850;
     const scannerCosto = (tienda.scanner_dx && tienda.scanner_dx.costo) || 1200;
     const flujoCosto = (tienda.flujo_reparacion && tienda.flujo_reparacion.costo) || 1650;
@@ -1665,6 +1669,11 @@ function renderizarTiendasMejoras() {
         btnBat.innerText = `ESTABILIZADOR | Nivel ${mejorasTacticas.bateria}/${bateriaMax} | RD$${bateriaCosto} | Mejora estabilidad de lectura`;
         btnBat.disabled = (mejorasTacticas.bateria >= bateriaMax) || saldo < bateriaCosto;
         btnBat.title = mejorasTacticas.bateria >= bateriaMax ? 'Nivel máximo alcanzado.' : (saldo < bateriaCosto ? 'Necesitas RD$' + bateriaCosto + '.' : 'Disponible.');
+    }
+    if (btnRecEquipo) {
+        btnRecEquipo.innerText = `ÁREA DE DESCANSO | Nivel ${descansoNivel}/${descansoItem.max} | RD$${descansoCosto} | -${descansoNivel * 12}% fatiga`;
+        btnRecEquipo.disabled = descansoNivel >= descansoItem.max || saldo < descansoCosto;
+        btnRecEquipo.title = descansoNivel >= descansoItem.max ? 'Nivel máximo alcanzado.' : (saldo < descansoCosto ? 'Necesitas RD$' + descansoCosto + '.' : 'Reduce el gasto de energía de los mecánicos.');
     }
     if (btnMan) {
         btnMan.innerText = `MANUAL | RD$${manualCosto} | Entrevistas dan mas bonus real`;
@@ -2420,7 +2429,7 @@ function lanzarSolicitudMecanico() {
 
     const esVapeador = function(nombre) {
         var key = String(nombre || '').toLowerCase();
-        return key === 'frandy' || key === 'miguel' || key === 'morenai' || key === 'moreni' || key === 'martin';
+        return key === 'frandy' || key === 'miguel' || key === 'cristofer' || key === 'morenai' || key === 'moreni' || key === 'martin';
     };
     const vapeadores = (mecanicos || []).filter(function(mx) {
         return mx && mx.nombre && esVapeador(mx.nombre);
@@ -2653,6 +2662,9 @@ function comprarMejoraTactica(tipo) {
     mejorasTacticas.bateria = Number.isFinite(Number(mejorasTacticas.bateria))
         ? Math.max(0, Math.round(Number(mejorasTacticas.bateria)))
         : 0;
+    mejorasTacticas.recuperacionEquipo = Number.isFinite(Number(mejorasTacticas.recuperacionEquipo))
+        ? Math.max(0, Math.min(3, Math.round(Number(mejorasTacticas.recuperacionEquipo))))
+        : 0;
     const tienda = ECONOMY_DATA.tiendaTactica || {};
     const modoNiveles = modoNivelesProgresionActiva();
     const progresoOperativo = obtenerProgresoOperativoActual();
@@ -2679,6 +2691,15 @@ function comprarMejoraTactica(tipo) {
             return;
         }
         costo = item.costoBase + (mejorasTacticas.bateria * item.costoPorNivel);
+        nombre = item.nombre;
+    } else if (tipo === 'recuperacion_equipo') {
+        const item = tienda.recuperacion_equipo || { costoBase: 800, costoPorNivel: 500, max: 3, nombre: 'Área de descanso del equipo' };
+        if (mejorasTacticas.recuperacionEquipo >= item.max) {
+            log('El área de descanso ya está al máximo.', 'error');
+            mostrarStamp('RECHAZADO', 'error');
+            return;
+        }
+        costo = item.costoBase + (mejorasTacticas.recuperacionEquipo * item.costoPorNivel);
         nombre = item.nombre;
     } else if (tipo === 'manual_hablar') {
         const item = tienda.manual_hablar || { costo: 850, nombre: 'Manual de entrevista' };
@@ -2739,7 +2760,7 @@ function comprarMejoraTactica(tipo) {
         mostrarStamp('RECHAZADO', 'error');
         return;
     }
-    const requiereFocoCompra = !modoNiveles && (tipo !== 'recarga_foco' && tipo !== 'bateria');
+    const requiereFocoCompra = !modoNiveles && (tipo !== 'recarga_foco' && tipo !== 'bateria' && tipo !== 'recuperacion_equipo');
     if (requiereFocoCompra && !consumirFoco('mejorar')) return;
 
     saldo -= costo;
@@ -2789,6 +2810,10 @@ function comprarMejoraTactica(tipo) {
             log(`Estabilizador instalado: capacidad operativa ${focoMaxAntes} -> ${focoDiaMax}.`, 'exito');
             mostrarFeedbackGameplay(`Estabilizador tecnico mejorado a nivel ${mejorasTacticas.bateria}.`, 'ok');
         }
+    } else if (tipo === 'recuperacion_equipo') {
+        mejorasTacticas.recuperacionEquipo += 1;
+        log(`Área de descanso mejorada a nivel ${mejorasTacticas.recuperacionEquipo}: la fatiga de mecánicos baja 12% por nivel.`, 'exito');
+        mostrarFeedbackGameplay(`Área de descanso nivel ${mejorasTacticas.recuperacionEquipo}: menor gasto de energía y recuperación más rápida.`, 'ok');
     } else if (tipo === 'manual_hablar') {
         mejorasTacticas.manualHablar = true;
         log('Manual de entrevista activo: hablar con cliente da mas precision.', 'exito');

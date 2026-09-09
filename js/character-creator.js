@@ -14,7 +14,7 @@
         { id: 'Jeral', nombre: 'Jeral', especialidad: 'Suspensión' },
         { id: 'Edwin', nombre: 'Edwin', especialidad: 'Transmisión' },
         { id: 'Stewart', nombre: 'Stewart', especialidad: 'Alto Rendimiento' },
-        { id: 'Morenai', nombre: 'Morenai', especialidad: 'Electricidad' },
+        { id: 'Cristofer', nombre: 'Cristofer', especialidad: 'Electricidad' },
         { id: 'Martin', nombre: 'Martin', especialidad: 'General' },
         { id: 'Miguel', nombre: 'Miguel', especialidad: 'Comodín' }
     ];
@@ -91,7 +91,17 @@
             const raw = localStorage.getItem(CREATOR_KEY);
             if (!raw) return null;
             const parsed = JSON.parse(raw);
-            return (parsed && typeof parsed === 'object') ? parsed : null;
+            if (!parsed || typeof parsed !== 'object') return null;
+            if (Array.isArray(parsed.mechanics)) {
+                parsed.mechanics = parsed.mechanics.map(function(m) {
+                    if (!m || typeof m !== 'object') return m;
+                    const copia = { ...m };
+                    if (String(copia.id || '').toLowerCase() === 'morenai' || String(copia.id || '').toLowerCase() === 'moreni') copia.id = 'Cristofer';
+                    if (String(copia.nombre || '').toLowerCase() === 'morenai' || String(copia.nombre || '').toLowerCase() === 'moreni') copia.nombre = 'Cristofer';
+                    return copia;
+                });
+            }
+            return parsed;
         } catch (e) {
             console.error('Error leyendo perfil:', e);
             return null;
@@ -346,6 +356,9 @@
         // Actualizar nombre del dueño en HUD
         const hudNombre = document.getElementById('hud-dueno-nombre');
         if (hudNombre) hudNombre.innerText = limpiarTexto(player.nombre, 30) || 'Dueño';
+
+        const hudTaller = document.getElementById('hud-taller-nombre');
+        if (hudTaller) hudTaller.innerText = limpiarTexto(player.tallerNombre, 40) || 'Taller World';
 
         const ownerName = document.getElementById('owner-boss-name');
         if (ownerName) ownerName.innerText = limpiarTexto(player.nombre, 30) || 'Dueño';

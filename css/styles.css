@@ -1905,6 +1905,66 @@
             padding: 20px;
             box-shadow: 0 12px 24px rgba(0,0,0,0.35);
         }
+
+.modal-configurar-partida {
+            max-width: 560px;
+            display: grid;
+            gap: 10px;
+        }
+        .modal-configurar-partida label {
+            display: grid;
+            gap: 5px;
+            color: #f2d28a;
+            font-weight: 700;
+        }
+        .modal-configurar-partida input,
+        .modal-configurar-partida select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 9px 10px;
+            border: 1px solid #718996;
+            border-radius: 8px;
+            background: #132127;
+            color: #edf6f7;
+            font: inherit;
+        }
+        .configurar-partida-lead { margin: 0; color: #c7d8dc; }
+        .configurar-partida-puntos { display: grid; gap: 7px; padding: 10px; border: 1px solid #496671; border-radius: 10px; background: rgba(8, 20, 24, .62); }
+        .configurar-partida-puntos-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; color: #f2d28a; }
+        .configurar-partida-puntos-head span { font-size: .82rem; color: #a9c7cf; }
+        .configurar-partida-puntos label { grid-template-columns: 1fr 75px; align-items: center; }
+        .configurar-partida-puntos input { text-align: center; }
+
+        .tel-phone-shell { height: 100%; min-height: 0; display: flex; flex-direction: column; background: radial-gradient(circle at 18% 0, rgba(51,119,135,.22), transparent 35%), #081217; color: #e6f1f2; overflow: hidden; }
+        .tel-device-header, .tel-app-bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid #29434c; background: rgba(7,20,25,.94); font-size: .72rem; letter-spacing: .08em; }
+        #tel-device-status { color: #86dfa9; font-size: .62rem; }
+        .tel-app-home { flex: 1; overflow: auto; padding: 18px; }
+        .tel-home-copy { display: grid; gap: 5px; margin-bottom: 20px; }
+        .tel-home-copy small { color: #75baca; letter-spacing: .12em; font-size: .65rem; }
+        .tel-home-copy strong { color: #f4cd78; font-size: 1.35rem; }
+        .tel-home-copy span, .tel-home-tip { color: #a9c2c8; font-size: .78rem; line-height: 1.45; }
+        .tel-app-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 130px)); gap: 14px; }
+        .tel-app-icon { position: relative; min-height: 104px; display: grid; place-items: center; align-content: center; gap: 7px; border: 1px solid #385761; border-radius: 15px; color: #effafa; background: #12242b; cursor: pointer; font: inherit; font-size: .72rem; }
+        .tel-app-icon b { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 13px; color: #071116; background: #78cbdb; font-size: 1.55rem; }
+        .tel-app-icon.app-resenas b { background: #e8b95b; } .tel-app-icon.app-marcador b { background: #9fcde0; } .tel-app-icon.app-agenda b { background: #a9d995; } .tel-app-icon.app-radio b { background: #ce9be5; }
+        .tel-app-icon:hover { transform: translateY(-2px); border-color: #a7e5ee; }
+        .tel-app-icon em { position: absolute; top: 7px; right: 8px; min-width: 17px; padding: 2px 5px; border-radius: 20px; background: #e75c66; color: white; font-style: normal; font-size: .63rem; }
+        .tel-home-tip { max-width: 520px; margin-top: 20px; padding-top: 13px; border-top: 1px solid #29434c; }
+        .tel-app-workspace { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+        .tel-home-btn { border: 0; color: #9edbe8; background: transparent; cursor: pointer; font: inherit; font-size: .76rem; }
+        .tel-app-dynamic { flex: 1; overflow: auto; padding: 16px; }
+        .tel-app-dynamic:not(.hidden) + .tel-frame { display: none; }
+        .tel-app-workspace .tel-frame { flex: 1; min-height: 0; }
+        .tel-app-card { display: grid; gap: 10px; max-width: 760px; margin: 0 auto; }
+        .tel-app-card h3, .tel-app-card p { margin: 0; }
+        .tel-kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .tel-kpi, .tel-review, .tel-call { padding: 11px; border: 1px solid #34545f; border-radius: 10px; background: #102229; }
+        .tel-kpi small { display: block; color: #9bb5bb; font-size: .65rem; } .tel-kpi strong { color: #f3cc76; font-size: 1.05rem; }
+        .tel-review { border-left: 3px solid #e7ba58; } .tel-review small { color: #85a5ad; }
+        .tel-call { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        .tel-call button, .tel-radio-control { border: 1px solid #5b9cac; border-radius: 8px; padding: 7px 10px; color: #eafafa; background: #1a3b45; cursor: pointer; font: inherit; }
+        .tel-dial-row { display: flex; gap: 8px; } .tel-dial-row input { min-width: 0; flex: 1; padding: 9px 11px; border: 1px solid #4b7681; border-radius: 8px; color: #edfafa; background: #0b1a20; font: inherit; } .tel-dial-row button { border: 1px solid #6bacbb; border-radius: 8px; padding: 8px 14px; color: #effafa; background: #1a3b45; cursor: pointer; font: inherit; }
+        @media (max-width: 640px) { .tel-app-home { padding: 12px; } .tel-app-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; } .tel-app-icon { min-height: 87px; font-size: .62rem; } .tel-app-icon b { width: 35px; height: 35px; font-size: 1.2rem; } .tel-kpis { grid-template-columns: 1fr; } }
         .tirada-footer.tirada-result-ok {
             color: #9fe1b6;
             border-color: #4f8d67;
