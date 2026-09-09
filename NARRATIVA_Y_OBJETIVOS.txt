@@ -1,0 +1,188 @@
+TALLER WORLD — NARRATIVA Y OBJETIVOS
+Versión de diseño: Trilogía principal
+
+PREMISA
+
+El jugador sostiene un taller de barrio mientras intenta convertirlo en un
+negocio estable. Cada reparación no solo produce dinero: crea reputación,
+pruebas, clientes que vuelven y razones para que el equipo permanezca unido.
+
+La campaña se organiza como tres conflictos. El primero es personal y legal;
+el segundo es profesional; el tercero pone en peligro lo que el jugador ya
+construyó. La idea central es que el taller no se salva pagando una cifra
+aislada, sino demostrando calidad bajo presión.
+
+
+ARCO 1 — VALERIA: EL EXPEDIENTE
+
+Rol narrativo
+
+Valeria es la antagonista del primer arco. No es una fuente infinita de
+cobros: usa reclamos, rumores y presión legal para fijar la narrativa de que
+el taller depende de ella o funciona de forma irresponsable.
+
+Lo que busca Valeria
+
+- Recuperar control sobre la historia y los recursos vinculados al taller.
+- Convertir la desorganización del jugador en evidencia a su favor.
+- Forzar decisiones rápidas: pagar, negociar o dejar que un reclamo escale.
+
+Lo que busca el jugador
+
+- Separar los reclamos válidos de los dudosos o falsos.
+- Construir un expediente real: recibos, conversaciones y cierres de casos.
+- Probar que el taller genera valor por sí mismo y no depende de Valeria.
+
+Mecánica jugable
+
+- Valeria activa reclamos por chat cada cierto número de casos.
+- Se puede pagar el reclamo, negociar una parte o ignorarlo.
+- El jugador puede pagar RD$450 para trabajar con el abogado y reunir una
+  prueba. Esto reduce presión legal y produce evidencia utilizable.
+- Con una prueba se puede rebatir el reclamo activo: no se paga, baja la
+  presión legal y sube la reputación.
+- Tras tres reclamos refutados, Valeria retira los reclamos recurrentes y el
+  frente legal principal queda resuelto.
+
+Riesgo
+
+Ignorar no es una respuesta gratis: aumenta deuda, estrés y presión legal.
+Pagar mantiene paz temporal, pero no resuelve el patrón. Rebatir requiere
+preparación, por lo que el jugador debe decidir cuándo proteger caja y cuándo
+invertir en evidencia.
+
+Resolución
+
+La victoria no consiste en destruir a Valeria. Consiste en desmontar la versión
+de los hechos que ella intenta imponer y conseguir independencia narrativa y
+económica para el taller.
+
+
+ARCO 2 — AUTOFIX EXPRESS: LA COMPETENCIA DEL BARRIO
+
+Rol narrativo
+
+AutoFix Express abre a tres cuadras con un dueño/avatar visible, equipo moderno
+y precios de apertura. El rival no necesita ser malvado: representa la amenaza
+de un negocio que parece más rápido, más nuevo y mejor financiado.
+
+Lo que busca AutoFix Express
+
+- Ganar los clientes que priorizan precio y rapidez.
+- Instalar la idea de que el taller del jugador se quedó atrás.
+- Aprovechar fallos, demoras o tensión de equipo para competir por confianza.
+
+Lo que busca el jugador
+
+- Defender al barrio con calidad, no con descuentos destructivos.
+- Convertir reparaciones críticas en recomendaciones reales.
+- Usar especialidades, energía del equipo y decisiones de calidad para que la
+  diferencia sea visible para los clientes.
+
+Mecánica jugable
+
+- El arco se activa desde el caso 8 y usa el rival ya mostrado en el mapa.
+- Tres cierres críticos ganados durante la competencia resuelven el arco.
+- Un cierre crítico reduce la amenaza del rival y suma una victoria propia.
+- Un fallo aumenta la amenaza rival y reduce reputación: el rival aprovecha la
+  conversación del barrio.
+- El mapa permite investigar rivales para descubrir oportunidades y riesgos.
+
+Riesgo
+
+AutoFix no se vence con un botón. Se vence atendiendo mejor los casos difíciles,
+evitando fallos y manteniendo al equipo disponible. Si el jugador sacrifica
+calidad por velocidad, el rival obtiene el material que necesita.
+
+Resolución
+
+Tras tres cierres críticos, AutoFix pierde su discurso de apertura. No
+desaparece del mapa: se convierte en un rival estable, pero el barrio reconoce
+que el taller del jugador es la referencia confiable.
+
+
+ARCO 3 — LA RUPTURA DE STEWART
+
+Condición narrativa
+
+Este arco solo se activa si Stewart fue contratado o se volvió aliado. Eso hace
+que la crisis sea consecuencia de una relación previa y no de una tirada de
+azar.
+
+Rol narrativo
+
+Stewart conoce clientes, rutas de trabajo, rutinas internas y el valor de las
+mejoras instaladas. Cuando se va, no destruye el taller: prueba si el negocio
+es una estructura real o si dependía de una sola persona.
+
+Lo que busca Stewart
+
+- Salir del papel de empleado y construir una ventaja propia.
+- Llevarse clientes y contactos antes de que el taller consolide su posición.
+- Demostrar que parte del éxito del jugador se apoyaba en él.
+
+Lo que busca el jugador
+
+- Recuperar la confianza del equipo y de los clientes.
+- Recalibrar las mejoras comprometidas por el conocimiento de Stewart.
+- Mostrar que el método del taller sigue funcionando aun sin él.
+
+Mecánica jugable
+
+- Desde el caso 16, si Stewart está contratado, aparece una alerta narrativa.
+- Dos casos después ocurre la ruptura de forma determinista.
+- Stewart se va con dos clientes, baja reputación y aumenta tensión del equipo.
+- Dos mejoras quedan comprometidas: las reparaciones tienen una reducción
+  temporal de ganancia mientras el arco esté activo.
+- El jugador debe conseguir tres cierres críticos para recuperar operaciones.
+- Cada cierre crítico cuenta como una recuperación; al llegar a tres, las
+  mejoras quedan recalibradas y la reputación sube.
+
+Riesgo
+
+La dificultad no es solo dinero. El jugador puede seguir trabajando, pero cada
+reparación representa una demostración pública de si el taller puede sostener
+calidad sin Stewart. Los fallos prolongan indirectamente la ventaja del rival.
+
+Resolución
+
+La salida de Stewart no se revierte automáticamente. El triunfo es reconstruir
+el taller, recuperar tres cierres críticos y establecer que el equipo y los
+procesos pesan más que una sola figura.
+
+
+PROGRESIÓN DE LA CAMPAÑA
+
+Caso 0 a 7
+  Valeria domina el conflicto. La prioridad es caja, documentación y pruebas.
+
+Caso 8 a 15
+  AutoFix Express abre el frente profesional. La prioridad es calidad,
+  especialidad y reputación del barrio.
+
+Caso 16 en adelante
+  Si Stewart está contratado, la historia se vuelve una crisis de equipo. La
+  prioridad es resistir la pérdida de clientes, restaurar mejoras y producir
+  cierres críticos bajo presión.
+
+
+PRINCIPIOS DE DISEÑO
+
+- Las amenazas deben tener respuesta jugable, no solo castigo.
+- El dinero es una consecuencia, no el único lenguaje del conflicto.
+- La calidad de reparación conecta economía, reputación y narrativa.
+- Los personajes reaccionan a decisiones previas del jugador.
+- Los arcos dejan secuelas: Valeria cambia la relación con la evidencia,
+  AutoFix sigue como rival del mapa y Stewart deja una cicatriz operativa.
+
+
+PREGUNTAS ABIERTAS PARA REVISIÓN
+
+1. ¿Valeria debe poder volver como aliada secundaria después del arco o debe
+   quedar como contacto legal hostil?
+2. ¿El dueño de AutoFix debe tener nombre, personalidad y chat propio, o basta
+   con que sea visible en el mapa y a través de la Crónica del Barrio?
+3. ¿Stewart debe tener una ruta de reconciliación muy difícil, una competencia
+   pública final o convertirse en rival permanente?
+4. ¿La campaña debe terminar al resolver los tres arcos o abrir una fase de
+   expansión donde el taller compite a nivel de ciudad?

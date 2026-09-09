@@ -294,7 +294,7 @@
             <div><span>Casos cerrados</span><strong id="dueno-modal-casos">0</strong></div>
         </div>
         <div class="dueno-profile-section"><strong>Habilidades y estado</strong><p id="dueno-modal-habilidades">Diagnóstico, negociación y gestión del taller.</p><div id="dueno-modal-necesidades"></div></div>
-        <div class="dueno-owner-actions"><button class="btn" type="button" onclick="comerDuenoDesdeOficina(); abrirPerfilDueno();">Comer · RD$180</button><button class="btn" type="button" onclick="descansarDuenoDesdeOficina(); abrirPerfilDueno();">Descansar</button></div>
+        <div class="dueno-owner-actions"><button class="btn" type="button" data-cuidado-accion="comer" onclick="comerDuenoDesdeOficina(); abrirPerfilDueno();">Comer · RD$180</button><button class="btn" type="button" data-cuidado-accion="descansar" onclick="descansarDuenoDesdeOficina(); abrirPerfilDueno();">Descansar</button></div>
         <div class="dueno-profile-section"><strong>Mejoras activas</strong><p id="dueno-modal-mejoras">Cargando mejoras...</p></div>
         <div class="dueno-profile-section"><strong>Puntos de mejora: <span id="dueno-modal-puntos">3</span></strong><div id="dueno-modal-skills"></div></div>
         <button class="btn btn-danger" onclick="cerrarModal()">Cerrar</button>
@@ -453,9 +453,9 @@
         <h3>CAFETÍN DE LA ESQUINA</h3>
         <p class="creator-help">Pide algo rápido para mejorar el humor del equipo.</p>
         <div style="display:grid; gap:10px;">
-            <button class="btn" onclick="comprarCafe()">Café para todos | RD$150 | +1 humor equipo</button>
-            <button class="btn" onclick="comprarPizza()">Pizza | RD$320 | +2 humor, recupera energía</button>
-            <button class="btn" onclick="comprarLicuado()">Licuado | RD$180 | +1 humor, reduce enojo</button>
+            <button class="btn" data-cuidado-accion="cafe" onclick="comprarCafe()">Café para todos | RD$150 | +1 humor equipo</button>
+            <button class="btn" data-cuidado-accion="pizza" onclick="comprarPizza()">Pizza | RD$320 | +2 humor, recupera energía</button>
+            <button class="btn" data-cuidado-accion="licuado" onclick="comprarLicuado()">Licuado | RD$180 | +1 humor, reduce enojo</button>
             <button class="btn btn-danger" onclick="cerrarModal()">Cerrar</button>
         </div>
     </div>

@@ -3,7 +3,7 @@
 
     window.TallerApp.meta = {
         name: 'Taller World: Cronicas del Taller',
-        version: '0.1.0',
+        version: '0.1.1',
         source: 'index.html'
     };
 })();

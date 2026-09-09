@@ -496,7 +496,7 @@
 }
 
 @media (max-width: 700px) {
-  #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-btn { height:auto !important; min-height:105px !important; max-height:105px !important; overflow:hidden !important; flex-basis:109px !important; width:109px !important; min-width:109px !important; padding:3px !important; gap:1px !important; }
+  #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-btn { height:auto !important; min-height:114px !important; max-height:114px !important; overflow:hidden !important; flex-basis:109px !important; width:109px !important; min-width:109px !important; padding:3px !important; gap:1px !important; }
   /* El candado del mecánico es una insignia sobre el avatar, no contenido que agranda la tarjeta. */
   #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-btn[aria-disabled="true"]::before,
   #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-btn[aria-disabled="true"]::after { content:none !important; display:none !important; }

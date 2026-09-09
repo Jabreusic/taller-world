@@ -1517,6 +1517,7 @@ function comprarMejoraDueno(tipo) {
 }
 
 function actualizarUI() {
+  if (typeof refrescarBotonesCuidado === "function") refrescarBotonesCuidado();
   if (!mejorasDuenoCargadas) {
     mejorasDuenoCargadas = true;
     try { var guardadas = JSON.parse(localStorage.getItem('taller_world_mejoras_dueno') || 'null'); if (guardadas) mejorasDueno = Object.assign(mejorasDueno, guardadas); } catch (e) {}
@@ -1952,6 +1953,11 @@ function actualizarUI() {
     const velocidadFill = Math.max(0, Math.min(100, velocidadValor));
     const eficienciaValor = Math.round(eficienciaBase * 100);
     const eficienciaFill = Math.max(0, Math.min(100, eficienciaValor));
+    const energiaBase = Number.isFinite(Number(m.energia))
+      ? Number(m.energia)
+      : Math.max(45, 100 - (Math.max(0, Number(m.trabajosHoy) || 0) * 16));
+    const energiaValor = Math.max(0, Math.min(100, Math.round(energiaBase)));
+    const descansando = Number(m.descansoEnergiaTotal || 0) > 0 && enfriamientoTurnos > 0;
     const humorFill = Math.max(
       0,
       Math.min(100, Math.round((humorEfectivo / 10) * 100)),
@@ -2025,9 +2031,11 @@ function actualizarUI() {
         estadoIcono = "&#x1F527;";
       }
     } else if (enfriamientoTurnos > 0) {
-      estadoLinea = `Enfria ${formatearDuracionSegundos(enfriamientoSegundos)}`;
+      estadoLinea = descansando
+        ? `Recuperando energía · ${energiaValor}%`
+        : `Enfría ${formatearDuracionSegundos(enfriamientoSegundos)}`;
       estadoClase = "cooldown";
-      estadoIcono = "&#x23F3;";
+      estadoIcono = descansando ? "&#x1F50B;" : "&#x23F3;";
     } else if (bloqueoAyudaTurnos > 0) {
       estadoLinea = `Fuera ${formatearBloqueoAyudaMecanico(bloqueoAyudaTurnos)}`;
       estadoClase = "locked";
@@ -2108,6 +2116,11 @@ function actualizarUI() {
             <div class="mecanico-meter-track"><div class="mecanico-meter-fill skill" style="width:${eficienciaFill}%;background:#81c784;"></div></div>
             <span class="mecanico-meter-value">${eficienciaValor}%</span>
         </div>
+        <div class="mecanico-meter mecanico-meter-energia" title="${descansando ? 'Recuperando energía durante el descanso' : 'Energía disponible'}">
+            <span class="mecanico-meter-label" aria-hidden="true">&#x1F50B;</span>
+            <div class="mecanico-meter-track"><div class="mecanico-meter-fill" style="width:${energiaValor}%;background:${descansando ? '#72d8ff' : '#9cdb78'};"></div></div>
+            <span class="mecanico-meter-value">${descansando ? 'REC.' : energiaValor + '%'}</span>
+        </div>
         <div class="mecanico-meter mecanico-meter-animo" title="${estadoAnimoDetalle}">
             <span class="mecanico-meter-label" aria-hidden="true">${estadoAnimoIcono}</span>
             <div class="mecanico-meter-track"><div class="mecanico-meter-fill" style="width:${estadoAnimoFill}%;background:${estadoAnimoColor};"></div></div>
@@ -2118,6 +2131,7 @@ function actualizarUI() {
     if (ocupadoEnCasoActivo || enfriamientoTurnos > 0) {
       btn.classList.add("mecanico-enfriamiento");
     }
+    if (descansando) btn.classList.add("mecanico-descansando");
     if (recursoBloqueado) {
       btn.classList.add("mecanico-no-disponible");
     }
@@ -5116,8 +5130,21 @@ function procesarEnfriamientoMecanicos() {
       m.bloqueadoHastaDia = 0;
     }
     if ((m.enfriamientoTurnos || 0) > 0) {
-      m.enfriamientoTurnos -= 1;
-      if (m.enfriamientoTurnos < 0) m.enfriamientoTurnos = 0;
+      var turnosAntes = Math.max(0, Math.round(Number(m.enfriamientoTurnos) || 0));
+      var descansoTotal = Math.max(0, Math.round(Number(m.descansoEnergiaTotal) || 0));
+      if (descansoTotal > 0) {
+        var energiaInicio = Math.max(0, Math.min(100, Number(m.descansoEnergiaInicio) || 0));
+        var energiaObjetivo = Math.max(energiaInicio, Math.min(100, Number(m.descansoEnergiaObjetivo) || energiaInicio));
+        var avanceDescanso = Math.max(0, Math.min(1, (descansoTotal - turnosAntes + 1) / descansoTotal));
+        m.energia = Math.round(energiaInicio + ((energiaObjetivo - energiaInicio) * avanceDescanso));
+      }
+      m.enfriamientoTurnos = Math.max(0, turnosAntes - 1);
+      if (m.enfriamientoTurnos === 0 && descansoTotal > 0) {
+        m.energia = Math.max(0, Math.min(100, Math.round(Number(m.descansoEnergiaObjetivo) || m.energia || 0)));
+        delete m.descansoEnergiaInicio;
+        delete m.descansoEnergiaObjetivo;
+        delete m.descansoEnergiaTotal;
+      }
     }
     if ((m.bloqueoAyudaTurnos || 0) > 0) {
       m.bloqueoAyudaTurnos -= 1;
@@ -5132,6 +5159,7 @@ function procesarEnfriamientoMecanicos() {
     }
     m.ocupado = (m.enfriamientoTurnos || 0) > 0;
   });
+  if (typeof avanzarEnfriamientosCuidado === "function") avanzarEnfriamientosCuidado();
 }
 
 function actualizarTurnoActivoUI() {
@@ -6292,6 +6320,16 @@ function aplicarEstadoGuardado(data) {
     tramaEstado.exEventosIgnorados = 0;
   if (typeof tramaEstado.exPresionLegal !== "number")
     tramaEstado.exPresionLegal = 0;
+  if (!Array.isArray(tramaEstado.exPruebasDetalle)) tramaEstado.exPruebasDetalle = [];
+  if (typeof tramaEstado.exPruebas !== "number") tramaEstado.exPruebas = tramaEstado.exPruebasDetalle.length;
+  if (tramaEstado.exPruebasDetalle.length < tramaEstado.exPruebas) {
+    while (tramaEstado.exPruebasDetalle.length < tramaEstado.exPruebas) {
+      tramaEstado.exPruebasDetalle.push({ id: "prueba-legado-" + tramaEstado.exPruebasDetalle.length, origen: "Archivo anterior", caso: null });
+    }
+  }
+  tramaEstado.exPruebas = tramaEstado.exPruebasDetalle.length;
+  if (typeof tramaEstado.exReclamosRefutados !== "number") tramaEstado.exReclamosRefutados = 0;
+  if (typeof tramaEstado.exArcoResuelto !== "boolean") tramaEstado.exArcoResuelto = false;
   if (
     !tramaEstado.exEventoPendiente ||
     typeof tramaEstado.exEventoPendiente !== "object"
@@ -10042,7 +10080,7 @@ function asegurarContactoCasoTelefono(cliente, forzarMensajeApertura) {
 }
 
 function obtenerContactosBaseTelefono() {
-  return [
+  var contactos = [
     {
       id: TEL_CONTACTO_CRONICA_ID,
       nombre: "Cronica Del Barrio",
@@ -10065,6 +10103,9 @@ function obtenerContactosBaseTelefono() {
       tipo: "personal",
     },
   ];
+  var casosNarrativos = typeof obtenerCasosCompletadosNarrativa === "function" ? obtenerCasosCompletadosNarrativa() : 0;
+  if (casosNarrativos >= 8) contactos.push({ id: "autofix", nombre: "AutoFix Express", avatar: "⚡", tipo: "personal" });
+  return contactos;
 }
 
 function upsertContactoTelefono(contacto) {
@@ -10256,10 +10297,17 @@ function actualizarPuenteLoopTelefono(contacto) {
   if (mecanico) {
     var deudaMecanico = Math.max(0, Math.round(Number(mecanico.deudaConTaller) || 0));
     var salarioMecanico = Math.max(0, Math.round(Number(mecanico.salarioBase) || 0));
+    var planMecanico = typeof obtenerPlanDeudaMecanico === "function"
+      ? obtenerPlanDeudaMecanico(mecanico)
+      : { etiqueta: "Estándar", tasa: 0.20 };
+    var cuotaMecanico = Math.min(deudaMecanico, Math.max(0, Math.round(salarioMecanico * planMecanico.tasa)));
+    var casosDeudaMecanico = typeof estimarCasosParaSaldarDeudaMecanico === "function"
+      ? estimarCasosParaSaldarDeudaMecanico(mecanico)
+      : 0;
     var estadoMecanico = mecanico.preguntaPendiente
       ? "Solicitud pendiente: responde en este chat"
       : (deudaMecanico > 0
-        ? "Deuda pendiente: RD$" + deudaMecanico + " | Pago por caso: RD$" + salarioMecanico
+        ? "Deuda: RD$" + deudaMecanico + " | " + planMecanico.etiqueta + " " + Math.round(planMecanico.tasa * 100) + "% | Próximo abono ~RD$" + cuotaMecanico + " | ~" + casosDeudaMecanico + " caso(s)"
         : "Sin deuda interna | Pago por caso: RD$" + salarioMecanico);
     var indiceMecanico = (Array.isArray(mecanicos) ? mecanicos : []).indexOf(mecanico);
     puente.innerHTML =
@@ -12076,12 +12124,22 @@ function actualizarScreenMapa() {
 
   // Mostrar arco activo con descripcion
   var arcoHTML = "";
+  var misionTrilogia = typeof obtenerMisionTrilogiaActual === "function"
+    ? obtenerMisionTrilogiaActual()
+    : null;
+  if (misionTrilogia) {
+    var pctMision = Math.max(0, Math.min(100, Math.round((misionTrilogia.progreso / Math.max(1, misionTrilogia.meta)) * 100)));
+    arcoHTML += '<div class="mapa-arco-titulo">Misión: ' + escaparTextoTelefono(misionTrilogia.titulo) + '</div>';
+    arcoHTML += '<div class="mapa-arco-desc">' + escaparTextoTelefono(misionTrilogia.objetivo) + '</div>';
+    arcoHTML += '<div class="mapa-arco-rango">Progreso ' + misionTrilogia.progreso + '/' + misionTrilogia.meta + ' · ' + escaparTextoTelefono(misionTrilogia.detalle) + '</div>';
+    arcoHTML += '<div class="mapa-arco-progress"><span style="width:' + pctMision + '%"></span></div>';
+  }
   if (arcoData) {
     var casosArco = obtenerCantidadCasosCompetenciaBarrio();
     var siguienteArco = arcos.find(function(item) {
       return item && Number(item.casosMin || 0) > casosArco;
     });
-    arcoHTML = '<div class="mapa-arco-titulo">' + arcoData.titulo + "</div>";
+    arcoHTML += '<div class="mapa-arco-titulo">' + arcoData.titulo + "</div>";
     arcoHTML +=
       '<div class="mapa-arco-desc">' + arcoData.descripcion + "</div>";
     arcoHTML +=
@@ -12098,7 +12156,7 @@ function actualizarScreenMapa() {
       return item && Number(item.casosMin || 0) > casosCerradosMapa;
     }) || null;
     if (arcoPendiente && miNivel < arcoPendiente.nivelMin) {
-      arcoHTML =
+      arcoHTML +=
         '<div class="mapa-arco-titulo">&#x1F512; ' +
         arcoPendiente.titulo +
         "</div>";
@@ -12107,7 +12165,7 @@ function actualizarScreenMapa() {
         arcoPendiente.nivelMin +
         " para desbloquear este capitulo.</div>";
     } else {
-      arcoHTML =
+      arcoHTML +=
         '<div class="mapa-arco-desc">La historia se esta desarrollando. Cierra mas casos para abrir el siguiente capitulo.</div>';
     }
   }
@@ -14576,6 +14634,9 @@ function inicializarTelefono() {
       },
     ];
   }
+  if (!telefonoMensajes["autofix"] && (typeof obtenerCasosCompletadosNarrativa === "function" && obtenerCasosCompletadosNarrativa() >= 8)) {
+    telefonoMensajes["autofix"] = [{ autor: "autofix", texto: "AutoFix Express informa: abrimos con agenda rápida, diagnóstico digital y precios de entrada.", hora: "10:20", leido: false }];
+  }
   if (telefonoMensajes["resenas"]) delete telefonoMensajes["resenas"];
   if (!telefonoMensajes["inspector"]) {
     telefonoMensajes["inspector"] = [
@@ -14910,6 +14971,15 @@ function construirOpcionesMecanicoWhatsApp(mec) {
 
   var opciones = [];
 
+  var crisisStewart = typeof asegurarTrilogiaNarrativa === "function" ? asegurarTrilogiaNarrativa().stewart : null;
+  if (key === "stewart" && crisisStewart && (crisisStewart.fase === "alerta" || crisisStewart.fase === "alerta_contenida")) {
+    return aplicarEstadoOpcionesTelefono(contactoId, [
+      { texto: "Formalizar continuidad y bono de retención (RD$700)", accion: "stewart_contrato", bloqueada: saldo < 700, motivoBloqueo: "Necesitas RD$700 en caja" },
+      { texto: "Auditar accesos y reasignar su cartera", accion: "stewart_auditar" },
+      { texto: "Habla claro: ¿qué necesitas para quedarte?", accion: "stewart_hablar" }
+    ], false);
+  }
+
   if (repActiva) {
     var casoRef = repActiva.idCaso || "CASO-0000";
     opciones.push(
@@ -15016,6 +15086,26 @@ function resolverAccionWhatsAppMecanico(accion, contactoId) {
       },
     ) || null;
   var key = String(mec.nombre || "").toLowerCase();
+
+  if (key === "stewart" && (accion === "stewart_contrato" || accion === "stewart_auditar" || accion === "stewart_hablar")) {
+    var crisis = typeof asegurarTrilogiaNarrativa === "function" ? asegurarTrilogiaNarrativa().stewart : null;
+    if (!crisis || (crisis.fase !== "alerta" && crisis.fase !== "alerta_contenida")) return "Ese tema ya no puede resolverse por chat.";
+    if (accion === "stewart_contrato") {
+      if (saldo < 700) return "Sin RD$700 no puedo aceptar un acuerdo serio.";
+      saldo -= 700;
+      crisis.proteccion = "contrato";
+      crisis.fase = "alerta_contenida";
+      mec.enojo = Math.max(0, (mec.enojo || 0) - 2);
+      return "Firmemos. No te prometo quedarme para siempre, pero no voy a llevarme tu cartera ni tus accesos.";
+    }
+    if (accion === "stewart_auditar") {
+      crisis.proteccion = "auditoria";
+      crisis.fase = "alerta_contenida";
+      mec.enojo = Math.min(8, (mec.enojo || 0) + 1);
+      return "Entiendo la auditoría. No me gusta, pero separa mi acceso de los clientes y protege al taller.";
+    }
+    return "Necesito claridad: un camino para crecer sin tener que construirlo a escondidas. Decide antes de dos casos.";
+  }
 
   if (accion === "mec_recordatorio") {
     mec.recordatorioTrabajoDia = dia;
@@ -15613,6 +15703,8 @@ function crearEventoExPorCasos(hitoCasoActual) {
     montoPago: montoPago,
     montoNegociado: montoNegociado,
     multaIgnorar: multaIgnorar,
+    pruebaNecesaria: 1,
+    evidencia: "documentos que contradicen el cargo",
     mensaje: mensaje,
     motivoPago: modelo.motivo,
     motivoNegociado: `${modelo.motivo} (pago parcial)`,
@@ -15729,6 +15821,19 @@ function resolverDecisionEventoEx(decision, porSilencio) {
     tramaEstado.exEventosAtendidos =
       Math.max(0, Math.round(tramaEstado.exEventosAtendidos || 0)) + 1;
     respuesta = `${pendiente.respuestas.negociar || "Lo tomo por esta vez."} Entraron RD$${negociado} de forma parcial.`;
+  } else if (decision === "rebatir") {
+    if (Math.max(0, Math.round(tramaEstado.exPruebas || 0)) < 1) return { ok: false, texto: "Aún no tienes pruebas suficientes. Reúne documentos con el abogado." };
+    if (Array.isArray(tramaEstado.exPruebasDetalle) && tramaEstado.exPruebasDetalle.length) tramaEstado.exPruebasDetalle.shift();
+    tramaEstado.exPruebas = Array.isArray(tramaEstado.exPruebasDetalle) ? tramaEstado.exPruebasDetalle.length : Math.max(0, Math.round(tramaEstado.exPruebas || 0) - 1);
+    tramaEstado.exReclamosRefutados = Math.max(0, Math.round(tramaEstado.exReclamosRefutados || 0) + 1);
+    tramaEstado.exPresionLegal = Math.max(0, Math.round(tramaEstado.exPresionLegal || 0) - 2);
+    reputacion = Math.min(100, Math.round(reputacion || 0) + 3);
+    respuesta = `Adjuntaste ${pendiente.evidencia || "documentos válidos"}. El reclamo queda sin sustento: presión legal -2 y reputación +3.`;
+    if (tramaEstado.exReclamosRefutados >= 3) {
+      tramaEstado.exArcoResuelto = true;
+      tramaEstado.exPresionLegal = 0;
+      respuesta += " Valeria retira los reclamos recurrentes: ganaste este frente legal.";
+    }
   } else {
     var recargo = aplicarEscaladaLegalEx(pendiente, !!porSilencio);
     respuesta = porSilencio
@@ -15762,6 +15867,7 @@ function resolverEventoExPendientePorSilencio(hitoCasoActual) {
 function dispararEventoExPorCasos(hitoCasoForzado) {
   if (typeof pushMensajeTelefono !== "function") return false;
   normalizarEstadoNarrativaEx();
+  if (tramaEstado.exArcoResuelto) return false;
 
   var casosTotales =
     typeof obtenerCasosCompletadosNarrativa === "function"
@@ -15824,6 +15930,8 @@ function construirOpcionesExWhatsApp() {
     return [
       { texto: pendiente.accionPagarTexto, accion: "ex_pagar" },
       { texto: pendiente.accionNegociarTexto, accion: "ex_negociar" },
+      { texto: `Rebatir con pruebas (${Math.round(tramaEstado.exPruebas || 0)}/1)`, accion: "ex_rebatir", bloqueada: Math.round(tramaEstado.exPruebas || 0) < 1, motivoBloqueo: "Reúne prueba con el abogado" },
+      { texto: "Ver expediente de pruebas", accion: "ex_expediente" },
       { texto: pendiente.accionIgnorarTexto, accion: "ex_ignorar" },
     ];
   }
@@ -15831,6 +15939,7 @@ function construirOpcionesExWhatsApp() {
     { texto: "Como va ese reclamo ahora mismo?", accion: "ex_estado" },
     { texto: "Mandame soporte del ultimo cargo.", accion: "ex_soporte" },
     { texto: "Reunir documentos y consultar al abogado — RD$450", accion: "ex_defensa" },
+    { texto: "Ver expediente de pruebas", accion: "ex_expediente" },
     { texto: "No voy a discutir por chat.", accion: "ex_cerrar" },
   ];
 }
@@ -15853,6 +15962,12 @@ function resolverAccionWhatsAppEx(accion) {
     return `Te mande el soporte: ${pendiente.motivoPago}. Total RD$${pendiente.montoPago}. Si quieres evitar abogado, resuelvelo en este mismo chat.`;
   }
 
+  if (accion === "ex_expediente") {
+    var pruebas = Array.isArray(tramaEstado.exPruebasDetalle) ? tramaEstado.exPruebasDetalle : [];
+    if (!pruebas.length) return "Expediente vacío. Un cierre crítico documentado o la consulta con el abogado añade una prueba utilizable.";
+    return "EXPEDIENTE VALERIA · " + pruebas.length + " prueba(s): " + pruebas.map(function(p, i) { return (i + 1) + ". " + (p.origen || "Documento") + (p.caso ? " · " + p.caso : ""); }).join(" | ");
+  }
+
   if (accion === "ex_defensa") {
     var costoDefensa = 450;
     if (Math.max(0, Math.round(saldo || 0)) < costoDefensa) {
@@ -15863,6 +15978,9 @@ function resolverAccionWhatsAppEx(accion) {
       window.TallerApp.helpers.registrarGastoDia(costoDefensa, "eventos");
     }
     tramaEstado.exPresionLegal = Math.max(0, presion - 1);
+    if (!Array.isArray(tramaEstado.exPruebasDetalle)) tramaEstado.exPruebasDetalle = [];
+    if (tramaEstado.exPruebasDetalle.length < 3) tramaEstado.exPruebasDetalle.push({ id: 'abogado-' + Date.now(), origen: 'Abogado', caso: null, detalle: 'Documentación verificada por defensa.' });
+    tramaEstado.exPruebas = tramaEstado.exPruebasDetalle.length;
     exRelacion = Math.max(0, Math.round(exRelacion || 0) - 1);
     reputacion = Math.min(100, Math.round((reputacion || 0) + 1));
     if (resumenDia && Array.isArray(resumenDia.ramificaciones)) resumenDia.ramificaciones.push("Defensa documental contra Valeria: -RD$450, presion legal -1.");
@@ -15882,6 +16000,7 @@ function resolverAccionWhatsAppEx(accion) {
   if (
     accion === "ex_pagar" ||
     accion === "ex_negociar" ||
+    accion === "ex_rebatir" ||
     accion === "ex_ignorar"
   ) {
     var decision =
@@ -15889,7 +16008,7 @@ function resolverAccionWhatsAppEx(accion) {
         ? "pagar"
         : accion === "ex_negociar"
           ? "negociar"
-          : "ignorar";
+          : accion === "ex_rebatir" ? "rebatir" : "ignorar";
     var resultado = resolverDecisionEventoEx(decision, false);
     return resultado.texto;
   }
@@ -16138,6 +16257,11 @@ function obtenerOpcionesRespuestaTelefono(contactoId) {
     ], false);
   }
   var mapa = {
+    autofix: [
+      { texto: "¿Cuál es su oferta real?", accion: "autofix_oferta" },
+      { texto: "El barrio decide por calidad, no por anuncios.", accion: "autofix_reto" },
+      { texto: "Ver pulso competitivo.", accion: "autofix_estado" }
+    ],
     banco: deudaBancoActual <= 0
       ? [
           { texto: "Linea disponible.", accion: "banco_estado" },
@@ -16468,6 +16592,21 @@ function enviarMensajeTelefono(
     renderizarContactosTelefono();
     renderizarOpcionesRespuestaTelefono("proveedor");
     if (typeof actualizarUI === "function") actualizarUI();
+    return;
+  }
+
+  if (telefonoContactoActivo === "autofix") {
+    var estadoAutoFix = typeof asegurarCompetenciaBarrioEstado === "function" ? asegurarCompetenciaBarrioEstado().rivales.autofix : null;
+    var accionAutoFix = (accionValidada && accionValidada.accion) || accionForzada || "autofix_estado";
+    var respuestaAutoFix = accionAutoFix === "autofix_oferta"
+      ? "Paquetes de apertura, diagnóstico digital y entrega rápida. Lo que el cliente quiere es certeza, no discursos."
+      : accionAutoFix === "autofix_reto"
+        ? "Entonces demuéstralo en cada cierre. Nosotros ya estamos ganando la conversación de la calle."
+        : "Pulso actual: presión " + Math.round((estadoAutoFix && estadoAutoFix.presion) || 0) + "/30. Cada cierre crítico tuyo nos frena; cada fallo nos da aire.";
+    telefonoMensajes["autofix"].push({ autor: "autofix", texto: respuestaAutoFix, hora: hora, leido: true });
+    renderizarMensajesTelefono("autofix");
+    renderizarContactosTelefono();
+    renderizarOpcionesRespuestaTelefono("autofix");
     return;
   }
 

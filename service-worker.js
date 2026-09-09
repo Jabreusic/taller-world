@@ -1,4 +1,5 @@
-const CACHE_VERSION = 'tallerworld-v0.1.0';
+// Marcador de publicación: al cambiarlo, las instalaciones reciben un cache nuevo.
+const CACHE_VERSION = 'tallerworld-v0.1.1';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
 

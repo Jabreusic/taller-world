@@ -67,6 +67,9 @@ function verificarHitosNarrativos(maxActivaciones) {
 }
 
 function evaluarArcoStewartPorCasos() {
+    // La antigua tirada aleatoria fue sustituida por el arco jugable de ruptura.
+    return false;
+    /*
     if (!(typeof modoNivelesActivo === 'function' && modoNivelesActivo())) return false;
     if (String(stewartStatus || 'ninguno') !== 'contratado') return false;
     if (!tramaEstado || typeof tramaEstado !== 'object') return false;
@@ -167,6 +170,122 @@ function evaluarArcoStewartPorCasos() {
         return true;
     }
     return false;
+    */
+}
+
+function asegurarTrilogiaNarrativa() {
+    if (!tramaEstado || typeof tramaEstado !== 'object') tramaEstado = {};
+    if (!tramaEstado.trilogia || typeof tramaEstado.trilogia !== 'object') tramaEstado.trilogia = {};
+    var t = tramaEstado.trilogia;
+    if (!t.rival || typeof t.rival !== 'object') t.rival = { activo: false, resuelto: false, victorias: 0, amenaza: 0 };
+    if (!t.stewart || typeof t.stewart !== 'object') t.stewart = { fase: 'latente', resuelto: false, recuperaciones: 0, mejorasComprometidas: 0, clientesPerdidos: 0, proteccion: '' };
+    return t;
+}
+
+function notificarTrilogia(titulo, texto, clave) {
+    if (typeof pushMensajeTelefono === 'function') pushMensajeTelefono('cronica_barrio', 'cronica_barrio', texto, { clave: clave, autorNombre: 'Crónica del Barrio', bloqueante: true });
+    if (typeof mostrarNotificacionCapitulo === 'function') mostrarNotificacionCapitulo({ tipo: 'arco_narrativo', id: clave, titulo: titulo, texto: texto, meta: 'Misión activa' });
+    log('[Arco] ' + texto, 'info');
+}
+
+function ajustarPulsoAutoFixEnMapa(deltaReputacion, deltaPresion) {
+    if (typeof asegurarCompetenciaBarrioEstado !== 'function') return;
+    var estado = asegurarCompetenciaBarrioEstado();
+    if (!estado || !estado.rivales) return;
+    var rival = estado.rivales.autofix || {};
+    rival.repExtra = Math.max(-20, Math.min(45, Number(rival.repExtra || 0) + Number(deltaReputacion || 0)));
+    rival.presion = Math.max(0, Math.min(30, Number(rival.presion || 0) + Number(deltaPresion || 0)));
+    rival.forma = Math.max(-4.5, Math.min(6.5, Number(rival.forma || 0) + (Number(deltaReputacion || 0) * 0.12)));
+    estado.rivales.autofix = rival;
+}
+
+function robarClientesEnEsperaPorStewart(t, maximo) {
+    if (!Array.isArray(clientesEnEspera)) return [];
+    var intentos = 0;
+    var objetivo = Math.max(0, Math.min(2, Math.round(maximo || 2)));
+    while (clientesEnEspera.length < objetivo && intentos < objetivo && typeof generarClienteEnCola === 'function') {
+        if (!generarClienteEnCola()) break;
+        intentos += 1;
+    }
+    var robados = clientesEnEspera.splice(0, Math.min(objetivo, clientesEnEspera.length));
+    t.stewart.clientesRobados = robados.map(function(caso) {
+        return { idCaso: caso && caso.idCaso || null, nombre: caso && (caso.nombre || caso.nombreCliente) || 'Cliente sin identificar' };
+    });
+    t.stewart.clientesPerdidos = t.stewart.clientesRobados.length;
+    return t.stewart.clientesRobados;
+}
+
+function registrarPruebaExDesdeCaso(rep) {
+    if (!tramaEstado || tramaEstado.exArcoResuelto || !rep || rep.nivelResultado !== 'critico') return false;
+    if (!Array.isArray(tramaEstado.exPruebasDetalle)) tramaEstado.exPruebasDetalle = [];
+    if (tramaEstado.exPruebasDetalle.length >= 3) return false;
+    tramaEstado.exPruebasDetalle.push({ id: 'expediente-caso-' + String(rep.idCaso || Date.now()), origen: 'Cierre crítico de expediente', caso: rep.idCaso || null, detalle: 'Orden de trabajo, fotos y firma del cliente.' });
+    tramaEstado.exPruebas = tramaEstado.exPruebasDetalle.length;
+    if (typeof mostrarFeedbackGameplay === 'function') mostrarFeedbackGameplay('Prueba archivada: cierre crítico documentado para el caso Valeria.', 'ok');
+    return true;
+}
+
+function obtenerMisionTrilogiaActual() {
+    var t = asegurarTrilogiaNarrativa();
+    var total = Math.max(0, Math.round((tramaEstado.casosCriticosResueltos || 0) + (tramaEstado.casosParciales || 0)));
+    if (total < 8 && !tramaEstado.exArcoResuelto) return { titulo: 'Valeria: el expediente', objetivo: 'Rebate reclamos con pruebas documentadas.', progreso: Math.max(0, Math.round(tramaEstado.exReclamosRefutados || 0)), meta: 3, detalle: Math.max(0, Math.round(tramaEstado.exPruebas || 0)) + ' prueba(s) disponible(s)' };
+    if (total < 16 && t.rival.activo && !t.rival.resuelto) return { titulo: 'AutoFix Express', objetivo: 'Gana cierres críticos para recuperar el barrio.', progreso: t.rival.victorias, meta: 3, detalle: 'Amenaza rival: ' + t.rival.amenaza };
+    if (t.stewart.fase === 'alerta') return { titulo: 'Stewart: confianza en riesgo', objetivo: 'Prepara al equipo antes de la ruptura.', progreso: 0, meta: 2, detalle: 'La crisis se activa en el caso 18.' };
+    if (t.stewart.fase === 'ruptura' && !t.stewart.resuelto) return { titulo: 'Stewart: recuperar el taller', objetivo: 'Completa cierres críticos para recalibrar las mejoras.', progreso: t.stewart.recuperaciones, meta: 3, detalle: t.stewart.clientesPerdidos + ' cliente(s) perdido(s)' };
+    if (!tramaEstado.exArcoResuelto) return { titulo: 'Valeria: el expediente', objetivo: 'Rebate reclamos con pruebas documentadas.', progreso: Math.max(0, Math.round(tramaEstado.exReclamosRefutados || 0)), meta: 3, detalle: Math.max(0, Math.round(tramaEstado.exPruebas || 0)) + ' prueba(s) disponible(s)' };
+    return null;
+}
+
+function procesarArcosTrilogiaPorCaso(casosTotales) {
+    var t = asegurarTrilogiaNarrativa();
+    var total = Math.max(0, Math.round(casosTotales || 0));
+    if (total >= 8 && !t.rival.activo && !t.rival.resuelto) {
+        t.rival.activo = true;
+        t.rival.amenaza = 2;
+        ajustarPulsoAutoFixEnMapa(8, 5);
+        if (typeof upsertContactoTelefono === 'function') upsertContactoTelefono({ id: 'autofix', nombre: 'AutoFix Express', avatar: '⚡', tipo: 'personal' });
+        if (typeof pushMensajeTelefono === 'function') pushMensajeTelefono('autofix', 'autofix', 'Abrimos con agenda rápida y precios de lanzamiento. Nos vemos en la calle.', { clave: 'autofix-apertura-chat', autorNombre: 'AutoFix Express' });
+        notificarTrilogia('AutoFix Express abre', 'El avatar de AutoFix Express lanza precios agresivos. Gana 3 cierres críticos para recuperar la conversación del barrio.', 'arco-rival-inicio');
+    }
+    var contratado = String(stewartStatus || '') === 'contratado' || String(stewartStatus || '') === 'aliado';
+    if (total >= 16 && contratado && t.stewart.fase === 'latente') {
+        t.stewart.fase = 'alerta';
+        if (typeof pushMensajeTelefono === 'function') pushMensajeTelefono('mec_Stewart', 'mec_Stewart', 'Jefe, quiero hablar de mi futuro y de los clientes que manejo. No me gusta sentir que todo esto depende de promesas.', { clave: 'stewart-alerta-chat', autorNombre: 'Stewart' });
+        notificarTrilogia('Stewart conoce demasiado', 'Stewart ya conoce clientes, rutinas y mejoras. Dos casos más decidirán si el taller conserva esa confianza.', 'arco-stewart-alerta');
+    }
+    if (total >= 18 && (t.stewart.fase === 'alerta' || t.stewart.fase === 'alerta_contenida')) {
+        t.stewart.fase = 'ruptura';
+        var protegida = t.stewart.proteccion === 'contrato' || t.stewart.proteccion === 'auditoria';
+        t.stewart.mejorasComprometidas = protegida ? 1 : 2;
+        var clientesRobados = robarClientesEnEsperaPorStewart(t, protegida ? 1 : 2);
+        stewartStatus = 'traidor';
+        reputacion = Math.max(0, Math.round(reputacion || 0) - 5);
+        (mecanicos || []).forEach(function(m) { if (m) m.enojo = Math.min(8, Math.round(m.enojo || 0) + 1); });
+        notificarTrilogia('Ruptura: Stewart se fue', 'Stewart se llevó ' + clientesRobados.length + ' cliente(s) de tu cola y conoce los puntos débiles de tus mejoras. Recupera 3 cierres críticos para recalibrar el taller.', 'arco-stewart-ruptura');
+    }
+    return t;
+}
+
+function registrarResultadoArcosTrilogia(rep) {
+    if (!rep || rep.esTrabajoDueno) return;
+    var total = Math.max(0, Math.round((tramaEstado && tramaEstado.casosCriticosResueltos || 0) + (tramaEstado && tramaEstado.casosParciales || 0)));
+    var t = procesarArcosTrilogiaPorCaso(total);
+    if (t.rival.activo && !t.rival.resuelto) {
+        if (rep.nivelResultado === 'critico') { t.rival.victorias += 1; t.rival.amenaza = Math.max(0, t.rival.amenaza - 1); ajustarPulsoAutoFixEnMapa(-3, -2); }
+        else if (rep.nivelResultado === 'fallo') { t.rival.amenaza += 2; reputacion = Math.max(0, Math.round(reputacion || 0) - 1); ajustarPulsoAutoFixEnMapa(4, 3); }
+        if (t.rival.victorias >= 3) {
+            t.rival.resuelto = true; t.rival.activo = false; reputacion = Math.min(100, Math.round(reputacion || 0) + 4); ajustarPulsoAutoFixEnMapa(-9, -8);
+            notificarTrilogia('AutoFix retrocede', 'Tres cierres críticos dejaron al rival sin discurso. El barrio vuelve a recomendarte: reputación +4.', 'arco-rival-resuelto');
+        }
+    }
+    registrarPruebaExDesdeCaso(rep);
+    if (t.stewart.fase === 'ruptura' && !t.stewart.resuelto && rep.nivelResultado === 'critico') {
+        t.stewart.recuperaciones += 1;
+        if (t.stewart.recuperaciones >= 3) {
+            t.stewart.resuelto = true; t.stewart.mejorasComprometidas = 0; reputacion = Math.min(100, Math.round(reputacion || 0) + 5);
+            notificarTrilogia('El taller se recompone', 'Recuperaste tres cierres críticos. Las mejoras quedan recalibradas y el barrio entiende que Stewart no era el taller: reputación +5.', 'arco-stewart-resuelto');
+        }
+    }
 }
 
 function verificarNarrativaPorCasoCompletado() {
@@ -193,6 +312,7 @@ function verificarNarrativaPorCasoCompletado() {
     var hitoGlobal = Math.floor(casosTotales / cadenciaGlobal) * cadenciaGlobal;
 
     evaluarMoraBancoPorFlujo();
+    procesarArcosTrilogiaPorCaso(casosTotales);
     procesarCadenciaCajaBPorCasos(casosTotales, false);
     procesarPresionInspectorCajaB(casosTotales);
     if (typeof dispararEventoBancoPorCasos === 'function') {
@@ -386,7 +506,9 @@ function obtenerHistoriaPrincipalSnapshot() {
         trama: trama,
         objetivo: objetivo,
         riesgo: riesgo,
-        misionNarrativa: typeof obtenerMisionNarrativaActual === 'function' ? obtenerMisionNarrativaActual() : null,
+        misionNarrativa: typeof obtenerMisionTrilogiaActual === 'function'
+            ? obtenerMisionTrilogiaActual()
+            : (typeof obtenerMisionNarrativaActual === 'function' ? obtenerMisionNarrativaActual() : null),
         casos: casos,
         meta: meta,
         etiqueta: arcoObj ? 'Arco activo' : 'Panorama actual'
@@ -417,7 +539,17 @@ function mostrarHistoriaPrincipalModal() {
     if (meta) {
         meta.innerText = snapshot.meta.join(' | ');
     }
-    texto.innerHTML = bloques
+    var mision = snapshot.misionNarrativa;
+    var expediente = tramaEstado && Array.isArray(tramaEstado.exPruebasDetalle)
+        ? tramaEstado.exPruebasDetalle
+        : [];
+    var panelMision = mision
+        ? '<section class="historia-mision-panel"><strong>MISIÓN · ' + escaparHtmlHistoriaPrincipal(mision.titulo) + '</strong><p>' + escaparHtmlHistoriaPrincipal(mision.objetivo) + ' (' + mision.progreso + '/' + mision.meta + ')</p><small>' + escaparHtmlHistoriaPrincipal(mision.detalle || '') + '</small></section>'
+        : '';
+    var panelExpediente = expediente.length
+        ? '<section class="historia-expediente"><strong>EXPEDIENTE VALERIA</strong><ul>' + expediente.map(function(prueba) { return '<li>' + escaparHtmlHistoriaPrincipal((prueba.origen || 'Documento') + (prueba.caso ? ' · ' + prueba.caso : '')) + '</li>'; }).join('') + '</ul></section>'
+        : '';
+    texto.innerHTML = panelMision + panelExpediente + bloques
         .map(function(parrafo) {
             return '<p>' + escaparHtmlHistoriaPrincipal(parrafo) + '</p>';
         })

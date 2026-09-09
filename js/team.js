@@ -602,9 +602,19 @@ function aplicarBalanceEconomicoReparacion(rep) {
     rep.servicioBaseAplicado = servicioBase;
     rep.cobroTotalCalculado = cobroTotal;
 
-    if (Math.round(rep.ganancia || 0) === cobroTotal) return false;
-
-    rep.ganancia = cobroTotal;
+    // Durante la ruptura de Stewart, las mejoras conocidas por él rinden peor
+    // hasta que el jugador recupere tres cierres críticos.
+    var stewartArco = tramaEstado && tramaEstado.trilogia && tramaEstado.trilogia.stewart;
+    var mejorasComprometidas = Math.max(0, Math.round(stewartArco && stewartArco.mejorasComprometidas || 0));
+    var gananciaFinal = cobroTotal;
+    if (mejorasComprometidas > 0) {
+        var factorStewart = Math.max(0.84, 1 - (mejorasComprometidas * 0.06));
+        gananciaFinal = Math.max(0, Math.round(cobroTotal * factorStewart));
+        rep.penalidadStewartAplicada = true;
+        rep.ajusteStewart = Math.round((1 - factorStewart) * 100);
+    }
+    if (Math.round(rep.ganancia || 0) === gananciaFinal) return false;
+    rep.ganancia = gananciaFinal;
     rep.ajusteEconomicoAplicado = true;
     return true;
 }
@@ -1303,6 +1313,18 @@ function normalizarStatsMecanico(m) {
     m.velocidad = Number.isFinite(Number(m.velocidad)) ? clamp01(m.velocidad) : clamp01(m.habilidad * 0.9 + 0.05);
     m.eficiencia = Number.isFinite(Number(m.eficiencia)) ? clamp01(m.eficiencia) : clamp01(m.habilidad * 0.9 + 0.05);
     m.humor = Number.isFinite(Number(m.humor)) ? Math.max(1, Math.min(10, Number(m.humor))) : 7;
+    // Las partidas anteriores no tenian energia: se infiere una fatiga razonable
+    // a partir del trabajo ya realizado, sin penalizar a un mecanico nuevo.
+    const energiaInicial = 100 - (Math.max(0, Number(m.trabajosHoy) || 0) * 16);
+    m.energia = Number.isFinite(Number(m.energia))
+        ? Math.max(0, Math.min(100, Math.round(Number(m.energia))))
+        : Math.max(45, Math.min(100, Math.round(energiaInicial)));
+    const planesDeudaValidos = ['flexible', 'estandar', 'rapido'];
+    m.planDeudaTaller = planesDeudaValidos.indexOf(m.planDeudaTaller) >= 0 ? m.planDeudaTaller : 'estandar';
+    m.deudaConTaller = Math.max(0, Math.round(Number(m.deudaConTaller) || 0));
+    m.salarioDevengado = Math.max(0, Math.round(Number(m.salarioDevengado) || 0));
+    m.salarioPagado = Math.max(0, Math.round(Number(m.salarioPagado) || 0));
+    m.deudaAbonada = Math.max(0, Math.round(Number(m.deudaAbonada) || 0));
     m.xp = Number.isFinite(Number(m.xp)) ? Math.max(0, Number(m.xp)) : 0;
     m.nivel = Number.isFinite(Number(m.nivel)) ? Math.max(1, Math.min(5, Math.round(Number(m.nivel)))) : 1;
     m.puntosHabilidad = Number.isFinite(Number(m.puntosHabilidad)) ? Math.max(0, Math.round(Number(m.puntosHabilidad))) : 0;
@@ -1312,6 +1334,82 @@ function normalizarStatsMecanico(m) {
     if (typeof m.bloqueoAyudaTurnos !== 'number') m.bloqueoAyudaTurnos = 0;
     if (!('preguntaPendiente' in m))              m.preguntaPendiente  = null;
     if (typeof m.ausenciaAnunciada !== 'boolean') m.ausenciaAnunciada  = false;
+}
+
+function aplicarFatigaMecanico(m, costo) {
+    if (!m) return;
+    normalizarStatsMecanico(m);
+    const fatiga = Math.max(0, Math.round(Number(costo) || 0));
+    m.energia = Math.max(0, m.energia - fatiga);
+}
+
+const PLANES_DEUDA_MECANICO = {
+    flexible: { etiqueta: 'Flexible', tasa: 0.10, penalidadHumor: 0 },
+    estandar: { etiqueta: 'Estándar', tasa: 0.20, penalidadHumor: 0 },
+    rapido: { etiqueta: 'Rápido', tasa: 0.35, penalidadHumor: 0.35 }
+};
+
+function obtenerPlanDeudaMecanico(m) {
+    normalizarStatsMecanico(m);
+    return PLANES_DEUDA_MECANICO[m.planDeudaTaller] || PLANES_DEUDA_MECANICO.estandar;
+}
+
+function calcularLiquidacionMecanicoPorCaso(m, rep) {
+    if (!m || !rep || rep.esTrabajoDueno || rep.nivelResultado === 'fallo' || !rep.exito) return null;
+    normalizarStatsMecanico(m);
+    const salarios = (window.TallerData && window.TallerData.salarios) || {};
+    const bonos = salarios.bonos || {};
+    const nivel = Math.max(1, Math.min(5, Math.round(Number(m.nivel) || 1)));
+    const base = Math.max(300, Math.round(Number(m.salarioBase) || Number((salarios.salarioBasePorNivel || {})[nivel]) || 800));
+    let bruto = base;
+    if (rep.nivelResultado === 'parcial') bruto = Math.round(bruto * 0.70);
+    if (Number(rep.dificultad || 0) >= 0.80) bruto += Math.round(base * (Number(bonos.casoComplejo) || 0.20));
+    if (m.especialidad && rep.especialidadIdeal && String(m.especialidad) === String(rep.especialidadIdeal)) bruto += Math.round(base * (Number(bonos.especialidad) || 0.15));
+    bruto += Math.max(0, Math.round(Number(m.bonosPorDesempeno) || 0));
+    // Una comisión nunca puede comerse la rentabilidad completa del caso.
+    const topeCaso = Math.max(180, Math.round(Math.max(0, Number(rep.ganancia) || 0) * 0.42));
+    bruto = Math.max(0, Math.min(Math.round(bruto), topeCaso));
+    const plan = obtenerPlanDeudaMecanico(m);
+    const deudaAntes = Math.max(0, Math.round(Number(m.deudaConTaller) || 0));
+    const cuota = Math.min(deudaAntes, Math.max(0, Math.round(bruto * plan.tasa)));
+    return { bruto, cuota, neto: Math.max(0, bruto - cuota), deudaAntes, plan };
+}
+
+function liquidarMecanicoPorCaso(m, rep) {
+    if (!m || !rep || rep.liquidacionMecanicoProcesada) return null;
+    const liquidacion = calcularLiquidacionMecanicoPorCaso(m, rep);
+    if (!liquidacion) return null;
+    rep.liquidacionMecanicoProcesada = true;
+    rep.comisionMecanicoBruta = liquidacion.bruto;
+    rep.comisionMecanicoNeta = liquidacion.neto;
+    rep.abonoDeudaMecanico = liquidacion.cuota;
+    saldo = Math.max(0, saldo - liquidacion.neto);
+    if (window.TallerApp && window.TallerApp.helpers && typeof window.TallerApp.helpers.registrarGastoDia === 'function') {
+        window.TallerApp.helpers.registrarGastoDia(liquidacion.neto, 'salarios');
+    } else if (typeof resumenDia !== 'undefined' && resumenDia) {
+        resumenDia.perdidas = Math.max(0, Number(resumenDia.perdidas) || 0) + liquidacion.neto;
+    }
+    m.salarioDevengado += liquidacion.bruto;
+    m.salarioPagado += liquidacion.neto;
+    if (liquidacion.cuota > 0) {
+        m.deudaConTaller = Math.max(0, liquidacion.deudaAntes - liquidacion.cuota);
+        m.deudaAbonada += liquidacion.cuota;
+        m.ultimoAbonoDeuda = { monto: liquidacion.cuota, caso: rep.idCaso || '', plan: m.planDeudaTaller, dia: Number(dia) || 0 };
+        if (liquidacion.plan.penalidadHumor > 0) m.humor = Math.max(1, Number(m.humor || 7) - liquidacion.plan.penalidadHumor);
+        if (typeof pushMensajeTelefono === 'function') {
+            pushMensajeTelefono('mec_' + m.nombre, m.nombre, `Abono automático de RD$${liquidacion.cuota} por ${rep.idCaso || 'el caso cerrado'}. Restan RD$${m.deudaConTaller} · Plan ${liquidacion.plan.etiqueta}.`, {
+                clave: 'abono-nomina-' + m.nombre + '-' + (rep.idCaso || '')
+            });
+        }
+    }
+    return liquidacion;
+}
+
+function estimarCasosParaSaldarDeudaMecanico(m) {
+    if (!m || !(Number(m.deudaConTaller) > 0)) return 0;
+    const salarioBase = Math.max(300, Math.round(Number(m.salarioBase) || 800));
+    const cuotaMedia = Math.max(1, Math.round(salarioBase * obtenerPlanDeudaMecanico(m).tasa));
+    return Math.ceil(Math.max(0, Number(m.deudaConTaller) || 0) / cuotaMedia);
 }
 
 // XP necesario para subir del nivel actual al siguiente (escala cuadrática).
@@ -2210,6 +2308,7 @@ function diagnosticarConMecanico(idx, idCasoEsperado) {
     const resultadoDiagnostico = resolverDiagnosticoMecanicoOculto(casoAsignado, m);
 
     m.trabajosHoy += 1;
+    aplicarFatigaMecanico(m, 12);
     m.ocupado = true;
     m.enfriamientoTurnos = tiempoDiagnostico;
     aplicarCelos(m.nombre);
@@ -2601,6 +2700,7 @@ function asignarMecanico(idx, idCasoEsperado) {
     aplicarCelos(m.nombre);
     revisarPeleaRivales(m);
     m.trabajosHoy += 1;
+    aplicarFatigaMecanico(m, 18);
     if (rasgosMecanico.penalLealtadDuenoPorTrabajo) {
         m.lealtad = Math.max(0, Math.round((m.lealtad || 0) - rasgosMecanico.penalLealtadDuenoPorTrabajo));
         if (typeof mostrarFeedbackGameplay === 'function') {
@@ -3111,10 +3211,56 @@ function aplicarImpulsoHumorEquipo(rebajaEnojo, bonusHumor) {
     return { mecanicosCalmados, mecanicosAnimados };
 }
 
+function estadoEnfriamientoCuidado() {
+    if (!window.enfriamientosCuidado || typeof window.enfriamientosCuidado !== 'object') window.enfriamientosCuidado = {};
+    return window.enfriamientosCuidado;
+}
+
+function refrescarBotonesCuidado() {
+    if (typeof document === 'undefined') return;
+    const estados = estadoEnfriamientoCuidado();
+    document.querySelectorAll('[data-cuidado-accion]').forEach(function(boton) {
+        const accion = boton.getAttribute('data-cuidado-accion');
+        const restantes = Math.max(0, Math.round(Number(estados[accion]) || 0));
+        if (!boton.dataset.cuidadoTexto) boton.dataset.cuidadoTexto = boton.textContent.trim();
+        boton.disabled = restantes > 0;
+        boton.classList.toggle('btn-cuidado-enfriamiento', restantes > 0);
+        boton.textContent = restantes > 0 ? `${boton.dataset.cuidadoTexto} · ${restantes} turno${restantes === 1 ? '' : 's'}` : boton.dataset.cuidadoTexto;
+    });
+}
+
+function puedeUsarCuidado(accion) {
+    const restantes = Math.max(0, Math.round(Number(estadoEnfriamientoCuidado()[accion]) || 0));
+    if (restantes <= 0) return true;
+    if (typeof mostrarFeedbackGameplay === 'function') mostrarFeedbackGameplay(`Esta acción estará lista en ${restantes} turno${restantes === 1 ? '' : 's'}.`, 'info');
+    return false;
+}
+
+function iniciarEnfriamientoCuidado(accion, turnos) {
+    estadoEnfriamientoCuidado()[accion] = Math.max(1, Math.round(Number(turnos) || 1));
+    refrescarBotonesCuidado();
+    // Algunas vistas se reconstruyen justo despues de la accion.
+    // Reaplicamos el estado al siguiente ciclo para que el boton nuevo no lo pierda.
+    if (typeof window !== 'undefined' && typeof window.setTimeout === 'function') {
+        window.setTimeout(refrescarBotonesCuidado, 0);
+    }
+}
+
+function avanzarEnfriamientosCuidado() {
+    const estados = estadoEnfriamientoCuidado();
+    Object.keys(estados).forEach(function(accion) {
+        estados[accion] = Math.max(0, Math.round(Number(estados[accion]) || 0) - 1);
+        if (estados[accion] === 0) delete estados[accion];
+    });
+    refrescarBotonesCuidado();
+}
+
 function comprarCafe() {
     const usaEstadosFisicos = typeof usaEstadosFisicosJugador === 'function' ? usaEstadosFisicosJugador() : true;
+    if (!puedeUsarCuidado('cafe')) return;
     if (saldo < 150) {
         log('No tienes dinero', 'error');
+        if (typeof mostrarFeedbackGameplay === 'function') mostrarFeedbackGameplay('Necesitas RD$150 para invitar café al equipo.', 'warn');
         return;
     }
     if (!consumirFoco('cafe')) return;
@@ -3166,6 +3312,7 @@ function comprarCafe() {
     if (typeof mostrarFeedbackGameplay === 'function') {
         mostrarFeedbackGameplay(fraseFinal, 'ok');
     }
+    iniciarEnfriamientoCuidado('cafe', 2);
     consumirTurno('pausa cafe', COSTOS_TURNO.cafe);
     if (typeof actualizarUI === 'function') actualizarUI();
     if (typeof actualizarScreenOficina === 'function') actualizarScreenOficina();
@@ -3175,8 +3322,10 @@ function comprarCafe() {
 
 function comprarPizza() {
     const usaEstadosFisicos = typeof usaEstadosFisicosJugador === 'function' ? usaEstadosFisicosJugador() : true;
+    if (!puedeUsarCuidado('pizza')) return;
     if (saldo < 320) {
         log('No tienes dinero para la pizza del equipo.', 'error');
+        if (typeof mostrarFeedbackGameplay === 'function') mostrarFeedbackGameplay('Necesitas RD$320 para pedir pizza al equipo.', 'warn');
         return;
     }
     if (!consumirFoco('comida')) return;
@@ -3199,6 +3348,7 @@ function comprarPizza() {
     if (typeof mostrarFeedbackGameplay === 'function') {
         mostrarFeedbackGameplay(frase, 'ok');
     }
+    iniciarEnfriamientoCuidado('pizza', 2);
     consumirTurno('pizza para el equipo', COSTOS_TURNO.comida);
     if (typeof actualizarUI === 'function') actualizarUI();
     if (typeof actualizarScreenOficina === 'function') actualizarScreenOficina();
@@ -3230,8 +3380,10 @@ function explicarResultadoParcialReparacion(rep) {
 
 function comerDuenoDesdeOficina() {
     const costo = 180;
+    if (!puedeUsarCuidado('comer')) return;
     if (saldo < costo) {
         log('Necesitas RD$180 para comer.', 'error');
+        if (typeof mostrarFeedbackGameplay === 'function') mostrarFeedbackGameplay('Necesitas RD$180 para comer.', 'warn');
         return;
     }
     saldo -= costo;
@@ -3241,6 +3393,8 @@ function comerDuenoDesdeOficina() {
         window.TallerApp.helpers.registrarGastoDia(costo, 'comida');
     }
     log('Comiste y recuperaste energia. Hambre -35, estres -8.', 'exito');
+    iniciarEnfriamientoCuidado('comer', 2);
+    if (typeof mostrarFeedbackGameplay === 'function') mostrarFeedbackGameplay('Comida lista: hambre -35 y estrés -8. Disponible de nuevo tras 2 turnos.', 'ok');
     if (typeof actualizarUI === 'function') actualizarUI();
     if (typeof actualizarScreenOficina === 'function') actualizarScreenOficina();
     if (typeof actualizarScreenExterior === 'function') actualizarScreenExterior();
@@ -3248,9 +3402,12 @@ function comerDuenoDesdeOficina() {
 }
 
 function descansarDuenoDesdeOficina() {
+    if (!puedeUsarCuidado('descansar')) return;
     sueno = Math.max(0, (Number(sueno) || 0) - 35);
     estres = Math.max(0, (Number(estres) || 0) - 15);
     log('Tomaste un descanso. Sueno -35, estres -15.', 'exito');
+    iniciarEnfriamientoCuidado('descansar', 2);
+    if (typeof mostrarFeedbackGameplay === 'function') mostrarFeedbackGameplay('Descanso aplicado: sueño -35 y estrés -15. Disponible de nuevo tras 2 turnos.', 'ok');
     if (typeof actualizarUI === 'function') actualizarUI();
     if (typeof actualizarScreenOficina === 'function') actualizarScreenOficina();
     if (typeof autoGuardarPartidaSilenciosa === 'function') autoGuardarPartidaSilenciosa('descanso-dueno');
@@ -3258,8 +3415,10 @@ function descansarDuenoDesdeOficina() {
 
 function comprarLicuado() {
     const usaEstadosFisicos = typeof usaEstadosFisicosJugador === 'function' ? usaEstadosFisicosJugador() : true;
+    if (!puedeUsarCuidado('licuado')) return;
     if (saldo < 180) {
         log('No tienes dinero para los licuados del equipo.', 'error');
+        if (typeof mostrarFeedbackGameplay === 'function') mostrarFeedbackGameplay('Necesitas RD$180 para pedir licuados al equipo.', 'warn');
         return;
     }
     if (!consumirFoco('comida')) return;
@@ -3282,6 +3441,7 @@ function comprarLicuado() {
     if (typeof mostrarFeedbackGameplay === 'function') {
         mostrarFeedbackGameplay(frase, 'ok');
     }
+    iniciarEnfriamientoCuidado('licuado', 2);
     consumirTurno('licuado para el equipo', COSTOS_TURNO.comida);
     if (typeof actualizarUI === 'function') actualizarUI();
     if (typeof actualizarScreenOficina === 'function') actualizarScreenOficina();
@@ -4064,6 +4224,12 @@ function procesarCobroReparacionPorWhatsApp(idCaso) {
         rachaExitos = 0;
     }
 
+    // La nómina se liquida una sola vez, al cobrar el caso. Si existe deuda,
+    // la cuota sale de la comisión del mecánico y no genera dinero artificial.
+    const liquidacionMecanico = (mec && rep.nivelResultado !== 'fallo')
+        ? liquidarMecanicoPorCaso(mec, rep)
+        : null;
+
     if (typeof registrarProgresoNivel === 'function') {
         registrarProgresoNivel(Math.max(0, Math.round(rep.ganancia || 0)), rep.nivelResultado || 'parcial');
         if (rep.esTrabajoDueno) {
@@ -4110,6 +4276,7 @@ function procesarCobroReparacionPorWhatsApp(idCaso) {
             ? 'exitoso'
             : (rep.nivelResultado === 'parcial' ? 'parcial' : 'fallido');
         finalizarCaso(resultadoContable, rep.diagnosticoNivel || rep.nivelResultado || '', rep.idCaso || '');
+        if (typeof registrarResultadoArcosTrilogia === 'function') registrarResultadoArcosTrilogia(rep);
         if (resumenCasos && resumenCasos.totalCasosJugados === 1 &&
             (typeof reservarRecompensa !== 'function' || reservarRecompensa('primer-caso'))) {
             var bonoPrimerCaso = 750;
@@ -4134,7 +4301,10 @@ function procesarCobroReparacionPorWhatsApp(idCaso) {
         : rep.nivelResultado === 'parcial'
             ? `Cobro parcial confirmado por RD$${rep.ganancia || 0}. ${explicarResultadoParcialReparacion(rep)} Reputación: ${riesgoDx ? '-1 por riesgo de diagnóstico previo.' : 'sin cambio.'}`
             : `Cobro confirmado. Retiro cerrado por RD$${rep.ganancia || 0}. Reputación +2.`;
-    actualizarCasoAtendido(rep, rep.nivelResultado === 'fallo' ? 'pendiente_revision' : 'cobrado_retirado', detalle);
+    const detalleNomina = liquidacionMecanico
+        ? ` Nómina: comisión RD$${liquidacionMecanico.bruto}; pagado RD$${liquidacionMecanico.neto}${liquidacionMecanico.cuota > 0 ? `; abono de deuda RD$${liquidacionMecanico.cuota}` : ''}.`
+        : '';
+    actualizarCasoAtendido(rep, rep.nivelResultado === 'fallo' ? 'pendiente_revision' : 'cobrado_retirado', detalle + detalleNomina);
     reparacionesActivas.splice(idxRep, 1);
 
     // Defensive cleanup in case this case was duplicated in queue/pending arrays.
@@ -4173,7 +4343,10 @@ function procesarCobroReparacionPorWhatsApp(idCaso) {
         if (rep.nivelResultado === 'fallo') {
             mostrarFeedbackGameplay(`Caso ${rep.idCaso || 'CASO-0000'} cerrado. Impacto -RD$${Math.round(rep.perdida || 0)} | XP mecanico +${xpMecTxt}${xpDelTxt > 0 ? ` | XP delivery +${xpDelTxt}` : ''}${comboTxt}.`, 'warn');
         } else {
-            mostrarFeedbackGameplay(`Caso ${rep.idCaso || 'CASO-0000'} cobrado: +RD$${Math.round(rep.ganancia || 0)} | XP mecanico +${xpMecTxt}${xpDelTxt > 0 ? ` | XP delivery +${xpDelTxt}` : ''}${comboTxt}.${mensajeRetorno}`, 'ok');
+            const nominaTxt = liquidacionMecanico
+                ? ` | Comisión RD$${liquidacionMecanico.bruto} · Neto RD$${liquidacionMecanico.neto}${liquidacionMecanico.cuota > 0 ? ` · Abono deuda RD$${liquidacionMecanico.cuota}` : ''}`
+                : '';
+            mostrarFeedbackGameplay(`Caso ${rep.idCaso || 'CASO-0000'} cobrado: +RD$${Math.round(rep.ganancia || 0)}${nominaTxt} | XP mecanico +${xpMecTxt}${xpDelTxt > 0 ? ` | XP delivery +${xpDelTxt}` : ''}${comboTxt}.${mensajeRetorno}`, 'ok');
         }
     }
 

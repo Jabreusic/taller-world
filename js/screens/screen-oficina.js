@@ -55,8 +55,8 @@ window.SCREEN_HTML.oficina = `
                 </div>
                 <div id="of-estado-resumen" class="of-readout" style="margin-top:4px;"></div>
                 <div class="of-quick-row" style="margin-top:8px;">
-                    <button class="btn" onclick="comerDuenoDesdeOficina()">Comer | RD$180</button>
-                    <button class="btn" onclick="descansarDuenoDesdeOficina()">Descansar</button>
+                    <button class="btn" data-cuidado-accion="comer" onclick="comerDuenoDesdeOficina()">Comer | RD$180</button>
+                    <button class="btn" data-cuidado-accion="descansar" onclick="descansarDuenoDesdeOficina()">Descansar</button>
                 </div>
             </div>
 

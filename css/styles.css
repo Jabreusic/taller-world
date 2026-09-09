@@ -5320,6 +5320,16 @@
     padding: 5px 8px;
 }
 
+.btn.btn-cuidado-enfriamiento,
+.btn.btn-cuidado-enfriamiento:disabled {
+    cursor: not-allowed;
+    opacity: .58;
+    color: #a8dff5 !important;
+    border-color: rgba(114, 216, 255, .55) !important;
+    background: linear-gradient(135deg, #23364b, #263447) !important;
+    box-shadow: inset 0 0 0 1px rgba(114, 216, 255, .15);
+}
+
 .of-readout {
     font-size: 0.76rem;
     color: #d8cfb9;
@@ -5995,6 +6005,37 @@
     color: #9dbba5;
     margin-top: 2px;
 }
+
+.mapa-arco-progress {
+    height: 5px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(5, 15, 18, 0.8);
+    border: 1px solid rgba(103, 163, 132, 0.38);
+}
+
+.mapa-arco-progress span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #64c8a0, #efc56b);
+    transition: width 220ms ease;
+}
+
+.historia-mision-panel,
+.historia-expediente {
+    margin: 10px 0;
+    padding: 10px 12px;
+    border: 1px solid rgba(103, 163, 132, .48);
+    border-radius: 8px;
+    background: rgba(19, 46, 40, .54);
+    color: #d8cfb9;
+}
+
+.historia-mision-panel strong,
+.historia-expediente strong { color: #efc56b; font-size: .78rem; }
+.historia-mision-panel p { margin: 5px 0; }
+.historia-expediente ul { margin: 6px 0 0; padding-left: 18px; font-size: .8rem; }
 
 @media (max-width: 980px) {
     #screen-mapa.active {

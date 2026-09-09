@@ -40,7 +40,7 @@ window.SCREEN_HTML.oficina = `
           <div class="of-bio-row"><span class="of-bio-label">Nivel</span><div class="of-bio-bar"><div id="of-b-nivel" class="of-bio-fill"></div></div><span id="of-v-nivel" class="of-bio-value">-</span></div>
           <div class="of-bio-row"><span class="of-bio-label">Reput.</span><div class="of-bio-bar"><div id="of-b-reput" class="of-bio-fill"></div></div><span id="of-v-reput" class="of-bio-value">-</span></div>
           <div class="of-bio-row"><span class="of-bio-label">Moral</span><div class="of-bio-bar"><div id="of-b-moral" class="of-bio-fill"></div></div><span id="of-v-moral" class="of-bio-value">-</span></div>
-          <div id="of-estado-resumen" class="of-readout"></div><div class="of-quick-row"><button class="btn" data-sfx="confirm" onclick="comerDuenoDesdeOficina()">Comer · RD$180</button><button class="btn" data-sfx="confirm" onclick="descansarDuenoDesdeOficina()">Descansar</button></div>
+          <div id="of-estado-resumen" class="of-readout"></div><div class="of-quick-row"><button class="btn" data-sfx="confirm" data-cuidado-accion="comer" onclick="comerDuenoDesdeOficina()">Comer · RD$180</button><button class="btn" data-sfx="confirm" data-cuidado-accion="descansar" onclick="descansarDuenoDesdeOficina()">Descansar</button></div>
         </div></div>
         <div class="of-col"><div class="of-card"><div class="of-card-head">Último caso</div><div id="of-ultimo-caso" class="of-case-profit">Aún no hay un caso cerrado.</div></div><div class="of-card"><div class="of-card-head">Alertas operativas</div><div id="of-alertas-of" class="of-readout">Sin alertas.</div></div></div>
       </div>

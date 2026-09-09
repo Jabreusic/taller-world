@@ -436,35 +436,35 @@ window.TallerData.historiasCierre = {
 window.TallerData.arcoNarrativo = [
     {
         id: 'arco1',
-        titulo: 'Arco 1: Supervivencia',
+        titulo: 'Arco 1: Valeria — El Expediente',
         casosMin: 0,
         nivelMin: 1,
-        textoInicio: 'Tu ex vacio la cuenta del taller. Debes RD$100,000. El equipo desconfia. Malvavisco tiene hambre. Cada peso que entra es oxigeno. Cada caso que cierras es tiempo ganado.',
+        textoInicio: 'Valeria abre frentes con cargos, rumores y abogados. No basta pagar: reúne pruebas, rebate reclamos y demuestra que el taller no depende de su relato.',
         textoCierre: 'El taller huele a gasolina y a comienzo dificil. Sigue trabajando. Malvavisco ya encontro su rincon.',
-        descripcion: 'El taller esta al borde. La deuda es real, el equipo desconfia y Valeria ya maniobra. Cada peso que entra es oxigeno puro.'
+        descripcion: 'Conflicto legal y personal: prueba cada gasto, responde los reclamos con evidencia y rompe la narrativa que Valeria usa contra el taller.'
     },
     {
         id: 'arco2',
-        titulo: 'Arco 2: La Presion Legal',
-        casosMin: 4,
-        nivelMin: 1,
-        textoInicio: 'Valeria mando abogados. Con reputacion baja, el taller paga multas. Con reputacion alta, la amenaza se debilita. La reputacion del taller es tu escudo legal: cuida cada decision.',
-        textoCierre: 'La presion legal es real. Pero los registros del taller cuentan otra historia. Una mejor. Solo falta defenderla con pruebas y voces.',
-        descripcion: 'Valeria escala. Abogados, inspectores y rumores de embargo. La reputacion no es orgullo: es tu escudo en sala.'
+        titulo: 'Arco 2: AutoFix Express',
+        casosMin: 8,
+        nivelMin: 2,
+        textoInicio: 'AutoFix Express abre a tres cuadras. Su avatar domina redes y precios de apertura; tu respuesta es superar casos difíciles, cuidar al equipo y recuperar la confianza del barrio.',
+        textoCierre: 'El rival puede comprar anuncios, no historial. Tres cierres críticos inclinan la calle a tu favor.',
+        descripcion: 'Competencia profesional: cada caso crítico frena al rival; los fallos le entregan clientes y conversación.'
     },
     {
         id: 'arco3',
-        titulo: 'Arco 3: Sombras en el Barrio',
-        casosMin: 9,
-        nivelMin: 2,
-        textoInicio: 'Algo se mueve entre bastidores. Un vehiculo sin placa con un conductor que no da nombres. AutoFix Express crece a tres cuadras con precios que no entiendes como sostienes. Tus mecanicos hacen preguntas incomodas sobre su futuro aqui.',
-        textoCierre: 'AutoFix Express tiene local, equipo y marketing. Pero no tiene tu historial en el barrio. Esa brecha es tu unico margen y tienes que ampliarla.',
-        descripcion: 'Un cliente sin historia, un taller rival que crece rapido y un equipo que empieza a dudar. Todo a la vez, sin margen de error.'
+        titulo: 'Arco 3: La Ruptura de Stewart',
+        casosMin: 16,
+        nivelMin: 3,
+        textoInicio: 'Si Stewart fue contratado, ya conoce clientes, rutinas y mejoras. Su salida no será un evento aleatorio: será una ruptura que tendrás que reparar con trabajo impecable.',
+        textoCierre: 'Stewart se lleva contactos y debilita operaciones. Recupera tres casos críticos para demostrar que el taller no dependía de una sola persona.',
+        descripcion: 'Crisis de equipo: Stewart se va con clientes y conocimiento; tus mejoras quedan comprometidas hasta reconstruir confianza y calidad.'
     },
     {
         id: 'arco4',
         titulo: 'Arco 4: El Juicio se Acerca',
-        casosMin: 15,
+        casosMin: 22,
         nivelMin: 3,
         textoInicio: 'Las piezas del rompecabezas encajan: el cliente misterioso tiene conexiones, Valeria tiene un plan y el barrio elige su bando. Cada decision cuenta doble ahora.',
         textoCierre: 'No hay margen de error. Cada mecanico que trabaja tranquilo es un peso menos sobre tus hombros. Cada cliente que vuelve es un testigo mas.',
@@ -473,7 +473,7 @@ window.TallerData.arcoNarrativo = [
     {
         id: 'arco5',
         titulo: 'Arco 5: El Veredicto',
-        casosMin: 20,
+        casosMin: 28,
         nivelMin: 1,
         textoInicio: 'No hay margen de error. Cada reparacion completada es un testigo. Cada mecanico leal es un voto. Todo lo que construiste entra hoy a una sala y habla por ti.',
         textoCierre: 'Se acabo. El barrio recuerda lo que hiciste cuando nadie te miraba. Esas son las decisiones que pesaron.',
@@ -483,7 +483,7 @@ window.TallerData.arcoNarrativo = [
     {
         id: 'arco6',
         titulo: 'Arco 6: Despues del Ruido',
-        casosMin: 28,
+        casosMin: 36,
         nivelMin: 4,
         textoInicio: 'El juicio paso. El barrio sigue. Ahora el taller no pelea por sobrevivir: pelea por definir que clase de negocio quiere ser. La presion cambio de forma, no de intensidad.',
         textoCierre: 'El barrio te vio construir algo en las peores condiciones. Eso no se olvida. Lo que hagas ahora con eso es la historia que queda.',
@@ -533,19 +533,11 @@ window.TallerData.hitosNarrativos = [
     {
         id: 'rival_autofixexpress',
         casosMin: 8,
-        texto: 'AutoFix Express abrio con equipo moderno y precios de apertura agresivos. Si tu reputacion supera 50, el barrio se queda contigo. Si no, migran.',
+        texto: 'AutoFix Express abrio con equipo moderno y precios de apertura agresivos. El pulso competitivo ya esta activo en el mapa del barrio.',
         resolver: function() {
-            var _rep = (typeof reputacion !== 'undefined' ? reputacion : 50);
-            if (_rep < 50) {
-                reputacion = Math.max(0, _rep - 3);
-                if (typeof resumenDia !== 'undefined' && Array.isArray(resumenDia.ramificaciones))
-                    resumenDia.ramificaciones.push('AutoFix Express capturo clientes del barrio. Tu reputacion no fue suficiente escudo.');
-                log('[Hito] AutoFix Express gana clientes. -3 reputacion.', 'error');
-            } else {
-                if (typeof resumenDia !== 'undefined' && Array.isArray(resumenDia.ramificaciones))
-                    resumenDia.ramificaciones.push('AutoFix Express abrio, pero el barrio no se movio. Tu reputacion aguanto el golpe.');
-                log('[Hito] AutoFix Express no pudo con tu reputacion. El barrio se quedo.', 'exito');
-            }
+            if (typeof resumenDia !== 'undefined' && Array.isArray(resumenDia.ramificaciones))
+                resumenDia.ramificaciones.push('AutoFix Express abre el pulso competitivo. Consulta el mapa y gana cierres críticos para responder.');
+            log('[Hito] AutoFix Express entra al mapa competitivo. La resolución depende de tus casos.', 'info');
         }
     },
     {

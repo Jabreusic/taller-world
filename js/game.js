@@ -608,45 +608,11 @@ function mostrarResultadoTrabajo(trabajo, exito, motivoFallo) {
     return msg;
 }
 
-// Cadencia por casos: cada 4 casos cerrados se intenta cobranza parcial
-// de deudas internas de mecanicos (prestamos/favores economicos).
+// Las deudas internas ya no se cobran al azar: se liquidan con la comisión
+// del mecánico al cobrar cada caso. Conservamos esta función como compatibilidad
+// con guardados y disparadores narrativos antiguos.
 function procesarDevolucionDeudasMecanicosPorCasos(hitoCasoForzado) {
-    var casosTotales = Math.max(0, Math.round((tramaEstado && tramaEstado.casosCriticosResueltos || 0) + (tramaEstado && tramaEstado.casosParciales || 0)));
-    var cadenciaCasos = 4;
-    var hitoCasoActual = (typeof hitoCasoForzado === 'number' && hitoCasoForzado > 0)
-        ? Math.max(0, Math.round(hitoCasoForzado))
-        : Math.floor(casosTotales / cadenciaCasos) * cadenciaCasos;
-    if (hitoCasoActual < cadenciaCasos) return '';
-
-    if (typeof devolucionMecanicosUltimoCaso !== 'number') devolucionMecanicosUltimoCaso = 0;
-    if (hitoCasoActual <= devolucionMecanicosUltimoCaso) return '';
-    devolucionMecanicosUltimoCaso = hitoCasoActual;
-
-    var partes = [];
-    (mecanicos || []).forEach(function(m) {
-        if (!m || (m.deudaConTaller || 0) <= 0) return;
-        var chancePago = Math.max(0.08, Math.min(0.88, 0.22 + ((m.lealtad || 0) / 100) * 0.7));
-        if (Math.random() < chancePago) {
-            var pago = Math.min(m.deudaConTaller, 260 + Math.round(Math.random() * 360));
-            m.deudaConTaller = Math.max(0, (m.deudaConTaller || 0) - pago);
-            saldo += pago;
-            decisionesHistoria.favoresCobrados = Math.max(0, Math.round((decisionesHistoria && decisionesHistoria.favoresCobrados) || 0)) + 1;
-            if (typeof pushMensajeTelefono === 'function') {
-                pushMensajeTelefono('mec_' + m.nombre, 'mec_' + m.nombre, (typeof construirMensajeDevolucionMecanico === 'function')
-                    ? construirMensajeDevolucionMecanico(m, pago)
-                    : (m.nombre + ' devolvio RD$' + pago + '.'), {
-                    clave: 'devolucion-mec-' + m.nombre + '-' + hitoCasoActual + '-' + pago
-                });
-            }
-            partes.push(`${m.nombre} devolvio RD$${pago}.`);
-        } else {
-            decisionesHistoria.favoresPerdidos = Math.max(0, Math.round((decisionesHistoria && decisionesHistoria.favoresPerdidos) || 0)) + 1;
-            m.enojo = Math.min(8, (m.enojo || 0) + 1);
-            partes.push(`${m.nombre} no pudo pagar en este ciclo.`);
-        }
-    });
-
-    return partes.join(' ');
+    return '';
 }
 
 function obtenerBioMecanicoSeguro(nombre) {
@@ -1777,6 +1743,8 @@ function renderizarLoreMecanicos() {
     const bloqueoAyudaTxt = (typeof formatearBloqueoAyudaMecanico === 'function')
         ? formatearBloqueoAyudaMecanico(m.bloqueoAyudaTurnos || 0)
         : `${(m.bloqueoAyudaTurnos || 0) * 10} min`;
+    const descansando = Number(m.descansoEnergiaTotal || 0) > 0 && Number(m.enfriamientoTurnos || 0) > 0;
+    const energiaPct = Math.max(0, Math.min(100, Math.round(Number.isFinite(Number(m.energia)) ? Number(m.energia) : (100 - ((Number(m.trabajosHoy) || 0) * 16)))));
     const estadoTrabajo = trabajando
         ? (trabajando.listoParaCobro
             ? `LISTO: ${trabajando.idCaso || 'CASO-0000'} | pendiente revisar/cobrar`
@@ -1784,7 +1752,7 @@ function renderizarLoreMecanicos() {
         : ((m.bloqueoAyudaTurnos || 0) > 0
             ? `Fuera por asunto personal (${bloqueoAyudaTxt})`
             : ((m.enfriamientoTurnos || 0) > 0
-                ? `En espera (${enfriamientoTxt})`
+                ? (descansando ? `Recuperando energía (${energiaPct}% · ${enfriamientoTxt})` : `En espera (${enfriamientoTxt})`)
                 : 'Barajando (no trabajando)'));
     const humor = m.enojo >= 6 ? 'Humor: Molesto' : (m.enojo >= 4 ? 'Humor: Tenso' : 'Humor: Estable');
     const enojoPct = Math.max(0, Math.min(100, Math.round((Math.max(0, m.enojo || 0) / 8) * 100)));
@@ -1795,6 +1763,9 @@ function renderizarLoreMecanicos() {
     const salarioCaso = Math.max(0, Math.round(Number(m.salarioBase) || 0));
     const deudaActual = Math.max(0, Math.round(Number(m.deudaConTaller) || 0));
     const prestadoAcumulado = Math.max(0, Math.round(Number(m.prestamosRecibidos) || deudaActual));
+    const planDeuda = typeof obtenerPlanDeudaMecanico === 'function' ? obtenerPlanDeudaMecanico(m) : { etiqueta: 'Estándar', tasa: 0.20 };
+    const cuotaEstimada = Math.min(deudaActual, Math.max(0, Math.round(salarioCaso * planDeuda.tasa)));
+    const casosRestantesDeuda = typeof estimarCasosParaSaldarDeudaMecanico === 'function' ? estimarCasosParaSaldarDeudaMecanico(m) : 0;
     const ultimoDialogo = (window.dialogoMecanicoPanel && window.dialogoMecanicoPanel[m.nombre]) || 'Sin conversacion reciente.';
     const recordatorioTxt = m.recordatorioTrabajoDia === dia ? 'Recordatorio hoy: SI' : 'Recordatorio hoy: NO';
 
@@ -1811,9 +1782,10 @@ function renderizarLoreMecanicos() {
 
     const problemaNarrativo = m.bloqueoAyudaTurnos > 0
         ? `${m.nombre} está atendiendo un asunto personal y no puede concentrarse.`
-        : (m.enojo >= 6 ? `${m.nombre} siente que el taller le exige demasiado y está a punto de explotar.`
+        : (descansando ? `${m.nombre} está recuperando energía antes de volver a tomar casos.`
+            : (m.enojo >= 6 ? `${m.nombre} siente que el taller le exige demasiado y está a punto de explotar.`
             : (m.enojo >= 4 ? `${m.nombre} está tenso: necesita apoyo antes de aceptar otro caso.`
-                : `${m.nombre} está disponible y espera instrucciones claras.`));
+                : `${m.nombre} está disponible y espera instrucciones claras.`)));
 
     const situacionClase = (m.bloqueoAyudaTurnos || 0) > 0 || m.enojo >= 6
         ? 'critica'
@@ -1835,13 +1807,14 @@ function renderizarLoreMecanicos() {
             <section class="mecanico-panel-stats">
                 <div><div><span>Calma</span><b>${calmaPct}%</b></div><i><i style="width:${calmaPct}%; background:${colorHumor};"></i></i></div>
                 <div><div><span>Ritmo técnico</span><b>${ritmoPct}%</b></div><i><i style="width:${ritmoPct}%; background:${colorRitmo};"></i></i></div>
+                <div><div><span>Energía</span><b>${energiaPct}%</b></div><i><i style="width:${energiaPct}%; background:${descansando ? '#72d8ff' : '#8dbf6b'};"></i></i></div>
             </section>
-            <section class="mecanico-panel-traits"><span><b>${humor}</b></span><span><b>Pago por caso:</b> RD$${salarioCaso}</span><span><b>Deuda con el taller:</b> RD$${deudaActual}${prestadoAcumulado > deudaActual ? ` · Prestado acumulado RD$${prestadoAcumulado}` : ''}</span><span><b>Ventaja:</b> ${rasgo.ventaja}</span><span><b>Riesgo:</b> ${rasgo.desventaja}</span></section>
+            <section class="mecanico-panel-traits"><span><b>${humor}</b></span><span><b>Pago base por caso:</b> RD$${salarioCaso}</span><span><b>Deuda con el taller:</b> RD$${deudaActual}${prestadoAcumulado > deudaActual ? ` · Prestado acumulado RD$${prestadoAcumulado}` : ''}</span>${deudaActual > 0 ? `<span><b>Plan ${planDeuda.etiqueta}:</b> ${Math.round(planDeuda.tasa * 100)}% de comisión · cuota estimada RD$${cuotaEstimada} · ~${casosRestantesDeuda} caso(s)</span>` : ''}<span><b>Ventaja:</b> ${rasgo.ventaja}</span><span><b>Riesgo:</b> ${rasgo.desventaja}</span></section>
             <section class="mecanico-panel-dialogo"><b>Último diálogo</b><p>${ultimoDialogo}</p><small>${recordatorioTxt}</small></section>
             <div class="mecanico-panel-actions">
                 <button class="btn" onclick="hablarConMecanicoPanel()">Hablar</button>
                 <button class="btn" onclick="apoyarMecanicoDesdePanel()">Apoyar · RD$180</button>
-                <button class="btn" onclick="enviarMecanicoADescansarDesdePanel()">Descanso</button>
+                ${descansando ? `<button class="btn btn-cuidado-enfriamiento" disabled>Recuperando · ${enfriamientoTxt}</button>` : `<button class="btn" onclick="enviarMecanicoADescansarDesdePanel()">Descanso</button>`}
                 ${m.preguntaPendiente ? '<button class="btn btn-primary" onclick="atenderSolicitudMecanicoDesdePanel()">Atender solicitud</button>' : ''}
                 <button class="btn btn-danger mecanico-panel-dismiss" onclick="despedirMecanico('${m.nombre}')">Despedir</button>
             </div>
@@ -1877,12 +1850,20 @@ function enviarMecanicoADescansarDesdePanel() {
     if (!m) return;
     if ((m.enfriamientoTurnos || 0) > 0 || (m.bloqueoAyudaTurnos || 0) > 0) return mostrarFeedbackGameplay(`${m.nombre} ya está fuera del taller.`, 'info');
     if ((reparacionesActivas || []).some(function(r) { return r && r.mecanicoNombre === m.nombre; })) return mostrarFeedbackGameplay(`${m.nombre} está trabajando y no puede descansar ahora.`, 'warn');
-    m.enfriamientoTurnos = Math.max(2, Math.round(m.enfriamientoTurnos || 0));
+    const energiaActual = Number.isFinite(Number(m.energia))
+        ? Math.max(0, Math.min(100, Math.round(Number(m.energia))))
+        : Math.max(45, 100 - (Math.max(0, Number(m.trabajosHoy) || 0) * 16));
+    const turnosDescanso = 2;
+    m.descansoEnergiaInicio = energiaActual;
+    m.descansoEnergiaObjetivo = Math.min(100, energiaActual + 40);
+    m.descansoEnergiaTotal = turnosDescanso;
+    m.energia = energiaActual;
+    m.enfriamientoTurnos = turnosDescanso;
     m.ocupado = true;
     m.enojo = Math.max(0, Math.round(m.enojo || 0) - 1);
     if (typeof consumirTurno === 'function') consumirTurno('descanso de mecanico', COSTOS_TURNO.espera || 1);
-    log(`${m.nombre} tomó un descanso programado.`, 'info');
-    mostrarFeedbackGameplay(`${m.nombre} descansará y volverá en ${formatearTiempoTrabajo(m.enfriamientoTurnos)}.`, 'ok');
+    log(`${m.nombre} tomó un descanso programado y recuperará energía.`, 'info');
+    mostrarFeedbackGameplay(`${m.nombre} descansará y recuperará energía hasta ${m.descansoEnergiaObjetivo}%.`, 'ok');
     renderizarLoreMecanicos();
     actualizarUI();
 }
@@ -2285,7 +2266,7 @@ function renderizarEquipoOficina() {
                 </details>
                 <div class="equipo-of-acciones">
                     <button class="btn" onclick="hablarConMecanicoDesdeOficina(${idx})">Hablar</button>
-                    ${(m.deudaConTaller > 0) ? `<button class="btn" onclick="cobrarDeudaMecanicoOficina(${idx})">Cobrar deuda</button>` : ''}
+                    ${(m.deudaConTaller > 0) ? `<button class="btn" onclick="cobrarDeudaMecanicoOficina(${idx})">Cambiar plan de deuda</button>` : ''}
                     <button class="btn btn-danger" onclick="despedirMecanico('${m.nombre}'); renderizarEquipoOficina();">Despedir</button>
                 </div>
             </div>
@@ -2361,21 +2342,12 @@ function cobrarDeudaMecanicoOficina(idx) {
     if (typeof idx !== 'number' || idx < 0 || idx >= mecanicos.length) return;
     const m = mecanicos[idx];
     if (!m.deudaConTaller || m.deudaConTaller <= 0) return;
-    const cobrado = Math.min(m.deudaConTaller, 300 + Math.round(Math.random() * 350));
-    const exito = Math.random() < Math.min(0.95, 0.3 + ((m.lealtad || 0) / 100) * 0.7);
-    if (exito) {
-        m.deudaConTaller = Math.max(0, m.deudaConTaller - cobrado);
-        saldo += cobrado;
-        if (window.TallerApp && window.TallerApp.helpers && typeof window.TallerApp.helpers.registrarIngresoDia === 'function') {
-            window.TallerApp.helpers.registrarIngresoDia(cobrado, 'cobranzas');
-        }
-        log(`${m.nombre} pago RD$${cobrado} de su deuda. Resta: RD$${m.deudaConTaller}.`, 'exito');
-        if (typeof mostrarFeedbackGameplay === 'function') mostrarFeedbackGameplay(`${m.nombre} pago RD$${cobrado}.`, 'ok');
-    } else {
-        m.enojo = Math.min(8, (m.enojo || 0) + 1);
-        log(`${m.nombre} no pudo pagar en este intento. Enojo sube.`, 'warn');
-        if (typeof mostrarFeedbackGameplay === 'function') mostrarFeedbackGameplay(`${m.nombre} no pudo pagar.`, 'warn');
-    }
+    const orden = ['flexible', 'estandar', 'rapido'];
+    const actual = orden.indexOf(m.planDeudaTaller);
+    m.planDeudaTaller = orden[(actual + 1) % orden.length];
+    const plan = typeof obtenerPlanDeudaMecanico === 'function' ? obtenerPlanDeudaMecanico(m) : { etiqueta: 'Estándar', tasa: 0.20 };
+    log(`${m.nombre} cambió al plan ${plan.etiqueta}: ${Math.round(plan.tasa * 100)}% de su comisión por caso irá a la deuda.`, 'info');
+    if (typeof mostrarFeedbackGameplay === 'function') mostrarFeedbackGameplay(`Plan ${plan.etiqueta} activo para ${m.nombre}: cuota automática del ${Math.round(plan.tasa * 100)}%.`, 'ok');
     renderizarEquipoOficina();
 }
 
