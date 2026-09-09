@@ -113,7 +113,8 @@
   }
   #game #screen-taller.active .taller-recursos-toolbar { background:transparent !important; border:0 !important; }
   #game #screen-taller.active .taller-recursos-toolbar #pending-dx-card:not(.is-collapsed) {
-    max-height:205px !important;
+    max-height:230px !important;
+    min-height:230px !important;
   }
   #game #screen-taller.active .resource-toolbar-toggle {
     display:flex !important;
@@ -239,7 +240,7 @@
 
   /* Teléfono: lista y conversación ocupan vistas consecutivas, no dos columnas comprimidas. */
   #game #screen-telefono.active { padding:8px 6px calc(var(--app-nav-height, 62px) + env(safe-area-inset-bottom, 0px) + 18px) !important; }
-  #game #screen-telefono.active .tel-frame { display:flex !important; flex-direction:column !important; height:auto !important; min-height:0 !important; gap:7px !important; }
+  #game #screen-telefono.active .tel-frame { display:flex !important; flex-direction:column !important; height:auto !important; min-height:0 !important; gap:7px !important; overflow:visible !important; }
   #game #screen-telefono.active .tel-sidebar, #game #screen-telefono.active .tel-chat-area { width:100% !important; min-height:0 !important; }
   #game #screen-telefono.active .tel-sidebar { max-height:310px !important; overflow:hidden !important; border-radius:9px !important; }
   #game #screen-telefono.active .tel-contact-list { max-height:190px !important; overflow-y:auto !important; }
@@ -321,8 +322,15 @@
   #game #screen-telefono.active { height:auto !important; min-height:0 !important; }
   #game #screen-telefono.active .tel-sidebar { max-height:none !important; overflow:visible !important; }
   #game #screen-telefono.active .tel-contact-list { max-height:none !important; overflow:visible !important; }
-  #game #screen-telefono.active .tel-chat-area { min-height:0 !important; }
+  #game #screen-telefono.active .tel-chat-area { min-height:0 !important; overflow:visible !important; }
   #game #screen-telefono.active .tel-messages { max-height:none !important; overflow:visible !important; }
+  /* El encabezado mantiene Atrás visible mientras se recorre una conversación larga. */
+  #game #screen-telefono.tel-chat-open .tel-chat-header {
+    position:sticky !important;
+    top:calc(var(--hud-top-height, 64px) + env(safe-area-inset-top, 0px)) !important;
+    z-index:30 !important;
+    box-shadow:0 5px 12px rgba(0,0,0,.3) !important;
+  }
 
   /* Resumen cerrado deja de ser una barra que invade el ancho de la app.
      Abierto conserva un panel de lectura, separado de la navegación. */
@@ -489,10 +497,22 @@
 
 @media (max-width: 700px) {
   #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-btn { height:auto !important; min-height:105px !important; max-height:105px !important; overflow:hidden !important; flex-basis:109px !important; width:109px !important; min-width:109px !important; padding:3px !important; gap:1px !important; }
+  /* El candado del mecánico es una insignia sobre el avatar, no contenido que agranda la tarjeta. */
+  #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-btn[aria-disabled="true"]::before,
+  #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-btn[aria-disabled="true"]::after { content:none !important; display:none !important; }
   #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-card-head { gap:4px !important; }
-  #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-avatar { width:20px !important; height:20px !important; }
-  #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-nombre { font-size:.52rem !important; }
-  #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-especialidad { font-size:.38rem !important; }
+  #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-card-head-info { align-self:center !important; text-align:center !important; padding-top:4px !important; }
+  #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-nombre { margin-top:2px !important; }
+  /* Avatar móvil ampliado, incluidos anillo y anclaje del estado. */
+  #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-avatar,
+  #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-avatar-placeholder { width:33px !important; height:33px !important; }
+  #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-avatar-wrap { width:33px !important; height:33px !important; flex-basis:33px !important; }
+  #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-avatar-wrap.has-progress,
+  #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-progress-ring { width:38px !important; height:38px !important; flex-basis:38px !important; }
+  #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-progress-ring > .mecanico-avatar,
+  #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-progress-ring > .mecanico-avatar-placeholder { width:33px !important; height:33px !important; }
+  #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-nombre { font-size:.68rem !important; }
+  #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-especialidad { font-size:.70rem !important; transform:translate(-15%, -2px) !important; }
   #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-meter { min-height:8px !important; gap:2px !important; }
   #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-meter-label { font-size:.52rem !important; }
   #game #screen-taller.active .taller-recursos-toolbar #grid-mecanicos .mecanico-meter-value { font-size:.46rem !important; }

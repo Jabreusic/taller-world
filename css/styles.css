@@ -3648,6 +3648,29 @@
             .bottom-dock {
                 grid-template-columns: 1fr;
             }
+
+            /* Tarjetas compactas de mecánicos en móvil: avatar +30% */
+            .mecanicos-bar .mecanico-avatar,
+            .mecanicos-bar .mecanico-avatar-placeholder {
+                width: 48px;
+                height: 48px;
+            }
+
+            .mecanicos-bar .mecanico-avatar-wrap {
+                width: 48px;
+                height: 48px;
+                flex-basis: 48px;
+            }
+
+            .mecanicos-bar .mecanico-avatar-wrap.has-progress {
+                width: 35px;
+                height: 35px;
+                flex-basis: 35px;
+            }
+
+            .mecanicos-bar .mecanico-btn {
+                min-height: 82px;
+            }
         }
 
         @media (max-width: 700px) {
@@ -4196,13 +4219,13 @@
         .mecanico-card-head {
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: flex-start;
             gap: 8px;
         }
 
         .mecanico-avatar {
-            width: 48px;
-            height: 48px;
+            width: 62px;
+            height: 62px;
             object-fit: cover;
             border-radius: 8px;
             border: 1px solid #6b4e2f;
@@ -4210,8 +4233,8 @@
         }
 
         .mecanico-avatar-placeholder {
-            width: 48px;
-            height: 48px;
+            width: 62px;
+            height: 62px;
             border-radius: 8px;
             border: 1px solid #6b4e2f;
             background: rgba(40, 30, 18, 0.8);
@@ -4224,53 +4247,68 @@
             flex-shrink: 0;
         }
 
+        .mecanico-avatar-wrap {
+            position: relative;
+            display: inline-flex;
+            width: 62px;
+            height: 62px;
+            flex: 0 0 62px;
+        }
+
+        .mecanico-avatar-wrap.has-progress {
+            width: 35px;
+            height: 35px;
+            flex-basis: 35px;
+        }
+
         .mecanico-progress-ring {
             --progress: 0%;
-            width: 54px;
-            height: 54px;
+            width: 35px;
+            height: 35px;
             position: relative;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            flex: 0 0 54px;
+            flex: 0 0 35px;
             border-radius: 50%;
             background: conic-gradient(#63d391 var(--progress), rgba(104, 119, 128, 0.28) 0);
-            padding: 3px;
+            padding: 2px;
         }
 
         .mecanico-progress-ring > .mecanico-avatar,
         .mecanico-progress-ring > .mecanico-avatar-placeholder {
-            width: 48px;
-            height: 48px;
+            width: 31px;
+            height: 31px;
             border-radius: 50%;
             border-color: #182229;
         }
 
         .mecanico-progress-ring-value {
+            display: none;
             position: absolute;
             z-index: 2;
             bottom: -5px;
             right: -5px;
-            min-width: 24px;
-            padding: 2px 4px;
-            border-radius: 9px;
+            min-width: 18px;
+            padding: 1px 2px;
+            border-radius: 7px;
             background: #122018;
             color: #a8f0bd;
             border: 1px solid #63d391;
-            font: 600 0.62rem/1 var(--garage-mono);
+            font: 600 0.46rem/1 var(--garage-mono);
             text-align: center;
         }
 
         .mecanico-progress-ring-office {
-            width: 70px;
-            height: 70px;
-            flex-basis: 70px;
+            width: 35px;
+            height: 35px;
+            flex-basis: 35px;
         }
 
         .mecanico-progress-ring-office > .equipo-of-foto,
         .mecanico-progress-ring-office > .equipo-of-foto-ph {
-            width: 64px;
-            height: 64px;
+            width: 31px;
+            height: 31px;
             border-radius: 50%;
             border-color: #182229;
         }
@@ -4319,6 +4357,41 @@
             letter-spacing: 0.06em;
             text-transform: uppercase;
             white-space: nowrap;
+        }
+
+        .mecanico-status.mecanico-status-avatar {
+            position: absolute;
+            right: -3px;
+            bottom: -3px;
+            padding: 0;
+            min-width: 0;
+            border: 0;
+            border-radius: 0;
+            background: transparent;
+            font-size: 0.41rem;
+            letter-spacing: 0;
+            flex: 0 0 auto;
+            line-height: 1;
+            z-index: 2;
+        }
+
+        .mecanico-lock-avatar {
+            position: absolute;
+            top: -3px;
+            left: -3px;
+            z-index: 3;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 12px;
+            height: 12px;
+            border: 1px solid rgba(255, 212, 117, 0.8);
+            border-radius: 50%;
+            background: #1a2228;
+            color: #ffd475;
+            font-size: 0.42rem;
+            line-height: 1;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.55);
         }
 
         .mecanico-status.ok {
@@ -8162,6 +8235,60 @@
 .dueno-skill-row span { display:grid; gap:2px; }
 .dueno-skill-row small { color:#9eb4b0; }
 .dueno-skill-row button:disabled { opacity:.55; cursor:not-allowed; filter:grayscale(.7); }
+
+/* Modal de mecánicos: situación, cuidado del equipo y asignación de casos. */
+.modal-mecanicos-content { width:min(94vw,760px); max-height:88vh; overflow:auto; }
+.modal-mecanicos-subtitle { margin:0 26px 12px 0; color:#aebdcc; font-size:.82rem; }
+.mecanicos-panel-content { display:grid; gap:12px; }
+.mecanico-panel { display:grid; gap:10px; padding:12px; border:1px solid rgba(119,163,183,.35); border-radius:12px; background:linear-gradient(145deg,rgba(17,35,43,.96),rgba(15,22,43,.96)); }
+.mecanico-panel-hero { display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:10px; align-items:center; }
+.mecanico-panel-hero img { width:72px !important; height:72px !important; margin:0 !important; float:none !important; border-radius:10px !important; }
+.mecanico-panel-identity { min-width:0; display:grid; gap:3px; }
+.mecanico-panel-identity strong { color:#ffe3a1; font-family:var(--garage-display); font-size:1.15rem; letter-spacing:.07em; }
+.mecanico-panel-identity span { color:#8ee7ff; font-size:.75rem; font-weight:700; text-transform:uppercase; }
+.mecanico-panel-state { padding:4px 7px; border:1px solid; border-radius:999px; font-size:.65rem; font-weight:800; text-align:center; text-transform:uppercase; }
+.mecanico-panel-state.is-estable { color:#9de7b4; border-color:rgba(104,207,137,.48); background:rgba(74,163,106,.12); }
+.mecanico-panel-state.is-atencion { color:#f4d278; border-color:rgba(230,183,81,.5); background:rgba(194,139,63,.14); }
+.mecanico-panel-state.is-critica { color:#ffb4a5; border-color:rgba(217,87,87,.6); background:rgba(217,87,87,.14); }
+.mecanico-panel-situacion { padding:9px 10px; border-left:3px solid #4aa36a; border-radius:7px; background:rgba(74,163,106,.09); }
+.mecanico-panel-situacion.is-atencion { border-color:#c28b3f; background:rgba(194,139,63,.1); }
+.mecanico-panel-situacion.is-critica { border-color:#d95757; background:rgba(217,87,87,.12); }
+.mecanico-panel-situacion > span { display:block; color:#9bb0bc; font-size:.65rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+.mecanico-panel-situacion strong { display:block; margin-top:3px; color:#f8e6bd; font-size:.85rem; }
+.mecanico-panel-situacion p { margin:4px 0 0; color:#d8e1dd; font-size:.76rem; line-height:1.35; }
+.mecanico-panel-stats { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.mecanico-panel-stats > div > div { display:flex; justify-content:space-between; gap:8px; font-size:.73rem; color:#c7d6da; }
+.mecanico-panel-stats b { color:#f5dfad; }
+.mecanico-panel-stats > div > i { display:block; height:7px; margin-top:4px; overflow:hidden; border:1px solid #334855; border-radius:999px; background:#081117; }
+.mecanico-panel-stats > div > i > i { display:block; height:100%; border-radius:inherit; }
+.mecanico-panel-traits { display:grid; gap:4px; padding:8px 10px; border:1px solid rgba(91,128,143,.35); border-radius:8px; background:rgba(4,13,20,.26); color:#b7c8ce; font-size:.74rem; line-height:1.3; }
+.mecanico-panel-traits b { color:#f0cf87; }
+.mecanico-panel-dialogo { padding:8px 10px; border-radius:8px; background:rgba(7,16,24,.46); color:#c6d1d8; font-size:.75rem; }
+.mecanico-panel-dialogo b { color:#8ee7ff; }
+.mecanico-panel-dialogo p { margin:4px 0; line-height:1.35; font-style:italic; }
+.mecanico-panel-dialogo small { color:#8ea5ae; font-size:.65rem; }
+.mecanico-panel-actions { display:flex; flex-wrap:wrap; gap:7px; }
+.mecanico-panel-actions .btn { flex:1 1 120px; min-height:34px; padding:6px 8px; font-size:.72rem; }
+.mecanico-panel-actions .mecanico-panel-dismiss { flex-basis:92px; }
+.mecanico-panel-cases { display:grid; gap:7px; padding:12px; border:1px solid rgba(119,163,183,.3); border-radius:12px; background:rgba(8,17,27,.5); }
+.mecanico-panel-cases > header { display:flex; flex-direction:column; gap:2px; }
+.mecanico-panel-cases > header strong { color:#ffe3a1; font-size:.9rem; }
+.mecanico-panel-cases > header span { color:#91a5ad; font-size:.7rem; }
+.mecanico-panel-case, .mecanico-panel-empty { display:grid; gap:4px; padding:9px; border:1px solid rgba(74,143,207,.35); border-radius:8px; background:rgba(31,49,64,.48); }
+.mecanico-panel-case strong { color:#8ee7ff; font-size:.75rem; }
+.mecanico-panel-case span { color:#f3e1bb; font-size:.82rem; font-weight:700; }
+.mecanico-panel-case small, .mecanico-panel-empty { color:#aebec5; font-size:.7rem; line-height:1.3; }
+.mecanico-panel-case .btn { width:100%; min-height:32px; margin-top:2px; font-size:.7rem; }
+@media (max-width:700px) {
+  .modal-mecanicos-content { width:min(97vw,560px); max-height:92vh; padding:12px 10px; }
+  .mecanico-panel { padding:10px; gap:8px; }
+  .mecanico-panel-hero { gap:8px; }
+  .mecanico-panel-hero img { width:58px !important; height:58px !important; }
+  .mecanico-panel-identity strong { font-size:1rem; }
+  .mecanico-panel-state { font-size:.56rem; padding:3px 5px; }
+  .mecanico-panel-stats { gap:7px; }
+  .mecanico-panel-actions .btn { flex-basis:calc(50% - 4px); min-height:32px; font-size:.67rem; }
+}
 .oficina-progreso-duplicado { display:none !important; }
 .dueno-state-row{display:grid;grid-template-columns:52px 1fr 38px;gap:6px;align-items:center;margin:5px 0;font-size:.75rem}.dueno-state-track{height:7px;background:#17272a;border-radius:8px;overflow:hidden}.dueno-state-track i{display:block;height:100%;background:#d7a24f;border-radius:8px}.dueno-owner-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.dueno-owner-actions .btn{flex:1;min-width:120px}
 .shopkeeper-header{display:flex;align-items:center;gap:10px;padding:9px;margin:8px 0 12px;border:1px solid rgba(211,164,82,.35);border-radius:10px;background:rgba(23,39,42,.72)}.shopkeeper-header img{width:48px;height:48px;border-radius:50%;object-fit:cover}.shopkeeper-header div{display:grid;gap:3px}.shopkeeper-header small{opacity:.76}.upgrade-shop-section{display:grid;gap:8px;padding:10px;margin:8px 0;border-left:3px solid #c9944d;background:rgba(16,28,30,.72);border-radius:0 8px 8px 0}.upgrade-shop-section h4{margin:0;color:#e2b66b;font-size:.8rem;text-transform:uppercase;letter-spacing:.06em}.upgrade-shop-close{display:grid;gap:10px;margin-top:12px}

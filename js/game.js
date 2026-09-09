@@ -1792,18 +1792,21 @@ function renderizarLoreMecanicos() {
     const ritmoPct = Math.max(30, Math.min(100, Math.round((m.habilidad || 0) * 100)));
     const colorHumor = calmaPct <= 30 ? '#cf5b4a' : (calmaPct <= 55 ? '#c28b3f' : '#4aa36a');
     const colorRitmo = ritmoPct <= 45 ? '#c28b3f' : (ritmoPct <= 70 ? '#4a8fcf' : '#4aa36a');
+    const salarioCaso = Math.max(0, Math.round(Number(m.salarioBase) || 0));
+    const deudaActual = Math.max(0, Math.round(Number(m.deudaConTaller) || 0));
+    const prestadoAcumulado = Math.max(0, Math.round(Number(m.prestamosRecibidos) || deudaActual));
     const ultimoDialogo = (window.dialogoMecanicoPanel && window.dialogoMecanicoPanel[m.nombre]) || 'Sin conversacion reciente.';
     const recordatorioTxt = m.recordatorioTrabajoDia === dia ? 'Recordatorio hoy: SI' : 'Recordatorio hoy: NO';
 
     const casos = obtenerCasosAprobadosPanelMecanico();
     const listaCasos = !casos.length
-        ? '<div class="mecanico-ficha">No hay casos aprobados para asignar.</div>'
+        ? '<div class="mecanico-panel-empty">No hay casos aprobados para asignar.</div>'
         : casos.map(function(caso) {
             const casoId = JSON.stringify(String(caso.idCaso || ''));
             const accion = caso.asignable
                 ? `<button class="btn" type="button" onclick='asignarCasoAprobadoDesdePanel(${casoId})'>Asignar a ${m.nombre}</button>`
                 : '<span class="creator-help">No disponible todavía</span>';
-            return `<div class="mecanico-ficha"><strong>${caso.idCaso}</strong> | ${caso.nombre}<br><em>${caso.nota}</em><div style="margin-top:6px;">${accion}</div></div>`;
+            return `<article class="mecanico-panel-case"><strong>${caso.idCaso}</strong><span>${caso.nombre}</span><small>${caso.nota}</small><div>${accion}</div></article>`;
         }).join('');
 
     const problemaNarrativo = m.bloqueoAyudaTurnos > 0
@@ -1812,40 +1815,38 @@ function renderizarLoreMecanicos() {
             : (m.enojo >= 4 ? `${m.nombre} está tenso: necesita apoyo antes de aceptar otro caso.`
                 : `${m.nombre} está disponible y espera instrucciones claras.`));
 
+    const situacionClase = (m.bloqueoAyudaTurnos || 0) > 0 || m.enojo >= 6
+        ? 'critica'
+        : ((m.enfriamientoTurnos || 0) > 0 || m.enojo >= 4 || trabajando ? 'atencion' : 'estable');
+    const situacionEtiqueta = situacionClase === 'critica' ? 'Requiere atención' : (situacionClase === 'atencion' ? 'En seguimiento' : 'Disponible');
+
     cont.innerHTML = `
-        <div class="mecanico-ficha">
-            <div style="display:flex; gap:10px; align-items:center; margin-bottom:8px;">${foto}<div><strong>${m.nombre}</strong><br><span>${capitalizarRotulo(m.especialidad || 'general')}</span></div></div>
-            <div><strong>Estado:</strong> ${estadoTrabajo}</div>
-            <div><strong>${humor}</strong> | Ritmo ${ritmoPct}%</div>
-            <div><strong>Ventaja:</strong> ${rasgo.ventaja}</div>
-            <div><strong>Desventaja:</strong> ${rasgo.desventaja}</div>
-            <div class="mecanico-problema-narrativo"><strong>Problema actual:</strong> ${problemaNarrativo}</div>
-            <div><strong>${recordatorioTxt}</strong></div>
-            <div style="margin-top:8px; display:grid; gap:6px;">
-                <div>
-                    <div style="display:flex; justify-content:space-between; font-size:0.78rem;"><span>Calma</span><span>${calmaPct}%</span></div>
-                    <div style="height:8px; background:#1f2a2f; border-radius:99px; overflow:hidden;"><div style="width:${calmaPct}%; height:100%; background:${colorHumor};"></div></div>
-                </div>
-                <div>
-                    <div style="display:flex; justify-content:space-between; font-size:0.78rem;"><span>Ritmo tecnico</span><span>${ritmoPct}%</span></div>
-                    <div style="height:8px; background:#1f2a2f; border-radius:99px; overflow:hidden;"><div style="width:${ritmoPct}%; height:100%; background:${colorRitmo};"></div></div>
-                </div>
-            </div>
-            <div style="margin-top:8px;"><strong>Ultimo dialogo:</strong> ${ultimoDialogo}</div>
-            <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;">
-                <button class="btn" onclick="hablarConMecanicoPanel()">Hablar con el</button>
-                <button class="btn" onclick="apoyarMecanicoDesdePanel()">Dar apoyo · RD$180</button>
-                <button class="btn" onclick="enviarMecanicoADescansarDesdePanel()">Dar descanso</button>
+        <article class="mecanico-panel">
+            <header class="mecanico-panel-hero">
+                ${foto}
+                <div class="mecanico-panel-identity"><strong>${m.nombre}</strong><span>${capitalizarRotulo(m.especialidad || 'general')}</span></div>
+                <span class="mecanico-panel-state is-${situacionClase}">${situacionEtiqueta}</span>
+            </header>
+            <section class="mecanico-panel-situacion is-${situacionClase}">
+                <span>Situación actual</span>
+                <strong>${estadoTrabajo}</strong>
+                <p>${problemaNarrativo}</p>
+            </section>
+            <section class="mecanico-panel-stats">
+                <div><div><span>Calma</span><b>${calmaPct}%</b></div><i><i style="width:${calmaPct}%; background:${colorHumor};"></i></i></div>
+                <div><div><span>Ritmo técnico</span><b>${ritmoPct}%</b></div><i><i style="width:${ritmoPct}%; background:${colorRitmo};"></i></i></div>
+            </section>
+            <section class="mecanico-panel-traits"><span><b>${humor}</b></span><span><b>Pago por caso:</b> RD$${salarioCaso}</span><span><b>Deuda con el taller:</b> RD$${deudaActual}${prestadoAcumulado > deudaActual ? ` · Prestado acumulado RD$${prestadoAcumulado}` : ''}</span><span><b>Ventaja:</b> ${rasgo.ventaja}</span><span><b>Riesgo:</b> ${rasgo.desventaja}</span></section>
+            <section class="mecanico-panel-dialogo"><b>Último diálogo</b><p>${ultimoDialogo}</p><small>${recordatorioTxt}</small></section>
+            <div class="mecanico-panel-actions">
+                <button class="btn" onclick="hablarConMecanicoPanel()">Hablar</button>
+                <button class="btn" onclick="apoyarMecanicoDesdePanel()">Apoyar · RD$180</button>
+                <button class="btn" onclick="enviarMecanicoADescansarDesdePanel()">Descanso</button>
                 ${m.preguntaPendiente ? '<button class="btn btn-primary" onclick="atenderSolicitudMecanicoDesdePanel()">Atender solicitud</button>' : ''}
-                <button class="btn" onclick="verMecanicoPanel()">Ver mecanico</button>
-                <button class="btn btn-danger" onclick="despedirMecanico('${m.nombre}')">Despedir</button>
+                <button class="btn btn-danger mecanico-panel-dismiss" onclick="despedirMecanico('${m.nombre}')">Despedir</button>
             </div>
-        </div>
-        <div class="mecanico-ficha" style="margin-top:10px;">
-            <strong>Asignar caso</strong><br>
-            <span>Arrastra un caso aprobado desde el panel principal y sueltalo sobre este mecanico.</span>
-        </div>
-        ${listaCasos}
+        </article>
+        <section class="mecanico-panel-cases"><header><strong>Asignar caso</strong><span>Casos aprobados disponibles</span></header>${listaCasos}</section>
     `;
 }
 
@@ -1890,11 +1891,24 @@ function atenderSolicitudMecanicoDesdePanel() {
     const idx = window.mecanicoPanelSeleccionadoIdx;
     const m = (typeof idx === 'number' && mecanicos) ? mecanicos[idx] : null;
     if (!m || !m.preguntaPendiente) return mostrarFeedbackGameplay('Este mecánico no tiene una solicitud pendiente.', 'info');
+    const contactoId = 'mec_' + m.nombre;
+    const solicitud = m.preguntaPendiente || {};
+    const detalleSolicitud = solicitud.etiquetaCorta || solicitud.tipo || 'asunto pendiente';
+    if (typeof pushMensajeTelefono === 'function') {
+        pushMensajeTelefono(
+            contactoId,
+            m.nombre,
+            `📩 Solicitud pendiente: ${detalleSolicitud}. Revisa las opciones para responderle.`,
+            { clave: 'solicitud-panel-' + m.nombre + '-' + detalleSolicitud }
+        );
+    }
     cerrarModal();
-    if (typeof abrirTelefonoMecanico === 'function') abrirTelefonoMecanico(m.nombre);
-    else if (typeof pushMensajeTelefono === 'function') {
-        pushMensajeTelefono('mec_' + m.nombre, 'personal', 'Tienes una solicitud pendiente. Revísala para recuperar el humor del equipo.', { clave: 'solicitud-panel-' + m.nombre });
-        navegarPantalla('telefono');
+    if (typeof navegarPantalla === 'function') navegarPantalla('telefono');
+    if (typeof abrirChatTelefono === 'function') {
+        abrirChatTelefono(contactoId);
+        mostrarFeedbackGameplay(`Chat directo con ${m.nombre} abierto.`, 'info');
+    } else {
+        mostrarFeedbackGameplay(`Abre el chat de ${m.nombre} para responder su solicitud.`, 'warn');
     }
 }
 
@@ -2478,7 +2492,8 @@ function resolverSolicitudMecanico(aprobar) {
         if (m) {
             m.lealtad += 2;
             m.enojo = Math.max(0, m.enojo - 1);
-            m.deudaConTaller += monto;
+            if (typeof registrarPrestamoMecanico === 'function') registrarPrestamoMecanico(m, monto, 'evento');
+            else m.deudaConTaller = Math.max(0, Number(m.deudaConTaller) || 0) + monto;
             m.habilidad = Math.min(1.2, m.habilidad + 0.03);
         }
         resumenDia.prestamosDados += monto;

@@ -1960,6 +1960,29 @@ function actualizarUI() {
       0,
       Math.min(100, Math.round((enojoValor / 8) * 100)),
     );
+    // Un solo indicador de ánimo: combina bienestar (humor) y tensión (enojo).
+    const estadoAnimoFill = Math.round((humorFill + (100 - enojoFill)) / 2);
+    let estadoAnimoIcono = "&#x1F604;";
+    let estadoAnimoTexto = "Excelente";
+    let estadoAnimoColor = "#8ee7a7";
+    if (estadoAnimoFill < 25) {
+      estadoAnimoIcono = "&#x1F621;";
+      estadoAnimoTexto = "Furioso";
+      estadoAnimoColor = "#ff5f73";
+    } else if (estadoAnimoFill < 45) {
+      estadoAnimoIcono = "&#x1F61F;";
+      estadoAnimoTexto = "Molesto";
+      estadoAnimoColor = "#ff936c";
+    } else if (estadoAnimoFill < 65) {
+      estadoAnimoIcono = "&#x1F610;";
+      estadoAnimoTexto = "Tenso";
+      estadoAnimoColor = "#f5ce72";
+    } else if (estadoAnimoFill < 80) {
+      estadoAnimoIcono = "&#x1F642;";
+      estadoAnimoTexto = "Bien";
+      estadoAnimoColor = "#a8df8b";
+    }
+    const estadoAnimoDetalle = `Ánimo: ${estadoAnimoTexto} · Humor ${humorEfectivo.toFixed(1)}/10 · Enojo ${enojoValor}/8`;
     const estadoNegativo = enojoValor >= 4 || humorEfectivo < 6;
     if (estadoNegativo) btn.classList.add("mecanico-estado-negativo");
     const especialidadTxt = capitalizarRotulo(m.especialidad || "general");
@@ -2026,6 +2049,7 @@ function actualizarUI() {
       enfriamientoTurnos > 0 ||
       bloqueoAyudaTurnos > 0 ||
       !!m.renunciaInminente;
+    const candadoMecanico = recursoBloqueado && !tensionAlta;
 
     // In touch/mobile mode, draggable interferes with horizontal swipe.
     btn.draggable = !interaccionMovil && !recursoBloqueado;
@@ -2033,7 +2057,7 @@ function actualizarUI() {
     // deshabilitar el botón hacía que el fallo fuera completamente silencioso.
     // En móvil debe poder tocarse incluso un mecánico ocupado/bloqueado para
     // recibir el motivo exacto; disabled silencia por completo el feedback.
-    const bloqueoInteractivo = recursoBloqueado && !tensionAlta;
+    const bloqueoInteractivo = candadoMecanico;
     btn.disabled = false;
     btn.setAttribute("aria-disabled", bloqueoInteractivo ? "true" : "false");
     if (interaccionMovil) btn.style.touchAction = "pan-x";
@@ -2053,7 +2077,11 @@ function actualizarUI() {
       ? `<span class="mecanico-progress-ring" style="--progress:${progresoTrabajoMecanico}%;" title="Progreso del trabajo: ${progresoTrabajoMecanico}%"><span class="mecanico-progress-ring-value">${progresoTrabajoMecanico}%</span>${fotoCard}</span>`
       : fotoCard;
     btn.innerHTML = `<div class="mecanico-card-head">
-            ${avatarConProgreso}
+            <span class="mecanico-avatar-wrap ${trabajoActivoMecanico ? 'has-progress' : ''}">
+                ${avatarConProgreso}
+                <span class="mecanico-status mecanico-status-avatar ${estadoClase}" title="${estadoLinea}" aria-label="${estadoLinea}">${estadoIcono}</span>
+                ${candadoMecanico ? '<span class="mecanico-lock-avatar" title="No disponible" aria-label="No disponible">&#x1F512;</span>' : ''}
+            </span>
             <div class="mecanico-card-head-info">
                 <strong class="mecanico-nombre">${m.nombre}</strong>
                 <div class="mecanico-especialidad ${
@@ -2061,10 +2089,9 @@ function actualizarUI() {
                   m.especialidad === 'delivery' ? 'especialidad-delivery' :
                   m.especialidad === 'reparacion' ? 'especialidad-reparacion' : ''
                 }">
-                  <span style="margin-right:4px;">&#128295;</span>Especialidad: ${especialidadTxt}
+                  ${especialidadTxt}
                 </div>
             </div>
-            <span class="mecanico-status ${estadoClase}" title="${estadoLinea}" aria-label="${estadoLinea}">${estadoIcono}</span>
         </div>
         <div class="mecanico-meter">
             <span class="mecanico-meter-label" aria-hidden="true">&#x1F527;</span>
@@ -2081,15 +2108,10 @@ function actualizarUI() {
             <div class="mecanico-meter-track"><div class="mecanico-meter-fill skill" style="width:${eficienciaFill}%;background:#81c784;"></div></div>
             <span class="mecanico-meter-value">${eficienciaValor}%</span>
         </div>
-        <div class="mecanico-meter">
-            <span class="mecanico-meter-label" aria-hidden="true">&#x1F60A;</span>
-            <div class="mecanico-meter-track"><div class="mecanico-meter-fill skill" style="width:${humorFill}%;background:${humorEfectivo >= 6 ? "#aed581" : "#ff8a65"};"></div></div>
-            <span class="mecanico-meter-value">${humorEfectivo.toFixed(1)}</span>
-        </div>
-        <div class="mecanico-meter">
-            <span class="mecanico-meter-label" aria-hidden="true">&#x1F621;</span>
-            <div class="mecanico-meter-track"><div class="mecanico-meter-fill anger" style="width:${enojoFill}%;"></div></div>
-            <span class="mecanico-meter-value">${enojoValor}</span>
+        <div class="mecanico-meter mecanico-meter-animo" title="${estadoAnimoDetalle}">
+            <span class="mecanico-meter-label" aria-hidden="true">${estadoAnimoIcono}</span>
+            <div class="mecanico-meter-track"><div class="mecanico-meter-fill" style="width:${estadoAnimoFill}%;background:${estadoAnimoColor};"></div></div>
+            <span class="mecanico-meter-value">${estadoAnimoTexto}</span>
         </div>`;
     const penalidadEspecialTxt = rasgoMecanico && rasgoMecanico.desventaja ? rasgoMecanico.desventaja : "Sin penalidad especial.";
     btn.insertAdjacentHTML("beforeend", '<div class="mecanico-habilidad-especial" title="Habilidad: ' + limpiarHtmlBasico(habilidadEspecialTxt) + ' | Penalidad: ' + limpiarHtmlBasico(penalidadEspecialTxt) + '"><span><strong>Habilidad:</strong> ' + limpiarHtmlBasico(habilidadEspecialTxt) + '</span><span><strong>Penalidad:</strong> ' + limpiarHtmlBasico(penalidadEspecialTxt) + '</span></div>');
@@ -10207,10 +10229,14 @@ function actualizarPanelSocialTelefono(contacto) {
   var mecanico = typeof obtenerMecanicoPorContacto === "function" ? obtenerMecanicoPorContacto(contacto.id) : null;
   var relacion = 58, estado = "Disponible", detalle = "Conversación abierta";
   if (mecanico) {
-    relacion = Math.max(0, Math.min(100, 58 + (Number(mecanico.lealtad) || 0) * 5 - (Number(mecanico.enojo) || 0) * 7));
-    if (mecanico.preguntaPendiente) detalle = "Tiene una solicitud pendiente";
+    relacion = Math.max(0, Math.min(100, 45 + (Number(mecanico.lealtad) || 0) * 0.55 - (Number(mecanico.enojo) || 0) * 7));
+    var deudaMecanico = Math.max(0, Math.round(Number(mecanico.deudaConTaller) || 0));
+    if (mecanico.preguntaPendiente) {
+      estado = "Solicitud pendiente";
+      detalle = "Decide en las respuestas";
+    } else if (deudaMecanico > 0) detalle = "Deuda con taller: RD$" + deudaMecanico;
     if ((Number(mecanico.bloqueoAyudaTurnos) || 0) > 0) estado = "No disponible";
-    else if (mecanico.ocupado) estado = "En trabajo";
+    else if ((Array.isArray(reparacionesActivas) ? reparacionesActivas : []).some(function(rep) { return rep && rep.mecanicoNombre === mecanico.nombre && !rep.listoParaCobro; })) estado = "En trabajo";
   } else if (contacto.tipo === "cliente") { relacion = 65; detalle = "Seguimiento del caso"; }
   else detalle = contacto.tipo || "Contacto";
   panel.innerHTML = '<span class="tel-social-label">Relación</span><div class="tel-social-bar"><i style="width:' + relacion + '%"></i></div><strong>' + relacion + '%</strong><span class="tel-social-state">' + escaparTextoTelefono(estado) + ' · ' + escaparTextoTelefono(detalle) + '</span>';
@@ -10220,7 +10246,31 @@ function actualizarPanelSocialTelefono(contacto) {
 function actualizarPuenteLoopTelefono(contacto) {
   var puente = document.getElementById("tel-loop-context");
   if (!puente) return;
-  if (!contacto || !esContactoCasoCliente(contacto.id)) {
+  if (!contacto) {
+    puente.classList.add("hidden");
+    puente.innerHTML = "";
+    return;
+  }
+
+  var mecanico = typeof obtenerMecanicoPorContacto === "function" ? obtenerMecanicoPorContacto(contacto.id) : null;
+  if (mecanico) {
+    var deudaMecanico = Math.max(0, Math.round(Number(mecanico.deudaConTaller) || 0));
+    var salarioMecanico = Math.max(0, Math.round(Number(mecanico.salarioBase) || 0));
+    var estadoMecanico = mecanico.preguntaPendiente
+      ? "Solicitud pendiente: responde en este chat"
+      : (deudaMecanico > 0
+        ? "Deuda pendiente: RD$" + deudaMecanico + " | Pago por caso: RD$" + salarioMecanico
+        : "Sin deuda interna | Pago por caso: RD$" + salarioMecanico);
+    var indiceMecanico = (Array.isArray(mecanicos) ? mecanicos : []).indexOf(mecanico);
+    puente.innerHTML =
+      '<span class="tel-loop-label">Situacion del equipo</span>' +
+      '<strong>' + escaparTextoTelefono(estadoMecanico) + '</strong>' +
+      '<button class="btn tel-loop-btn" type="button" onclick="abrirPanelMecanicoDesdeChat(' + indiceMecanico + ')">Ver perfil</button>';
+    puente.classList.remove("hidden");
+    return;
+  }
+
+  if (!esContactoCasoCliente(contacto.id)) {
     puente.classList.add("hidden");
     puente.innerHTML = "";
     return;
@@ -10259,6 +10309,17 @@ function volverAlTallerDesdeTelefono(puesto) {
       seleccionarPuestoTaller(puesto || "cola");
     }, 30);
   }
+}
+
+function abrirPanelMecanicoDesdeChat(idx) {
+  var indice = Math.max(0, Math.round(Number(idx) || 0));
+  if (!Array.isArray(mecanicos) || !mecanicos[indice]) return;
+  if (typeof abrirPanelMecanico === "function") {
+    abrirPanelMecanico(indice);
+    return;
+  }
+  window.mecanicoPanelSeleccionadoIdx = indice;
+  if (typeof abrirModal === "function") abrirModal("mecanicos");
 }
 
 function contactoCoincideFiltroTelefono(contacto) {
@@ -10343,7 +10404,12 @@ function volverListaTelefono() {
   telefonoVista = "lista";
   telefonoContactoActivo = null;
   actualizarHeaderChatTelefono(null);
+  renderizarContactosTelefono();
   actualizarVistaTelefono();
+  if (window.matchMedia && window.matchMedia("(max-width: 700px)").matches) {
+    var game = document.getElementById("game");
+    if (game) game.scrollTo({ top: 0, behavior: "smooth" });
+  }
 }
 
 function actualizarModoVisualPantalla() {
@@ -14653,11 +14719,11 @@ function renderizarContactosTelefono() {
 }
 
 function abrirChatTelefono(contactoId) {
-  telefonoContactoActivo = contactoId;
   var contacto = telefonoContactos.find(function (c) {
     return c.id === contactoId;
   });
   if (!contacto) return;
+  telefonoContactoActivo = contactoId;
   telefonoVista = "chat";
 
   // Marcar mensajes como leidos
@@ -14672,6 +14738,21 @@ function abrirChatTelefono(contactoId) {
   renderizarOpcionesRespuestaTelefono(contactoId);
   renderizarContactosTelefono();
   actualizarVistaTelefono();
+  enfocarCabeceraChatTelefonoMovil();
+}
+
+function enfocarCabeceraChatTelefonoMovil() {
+  if (!window.matchMedia || !window.matchMedia("(max-width: 700px)").matches) return;
+  window.requestAnimationFrame(function () {
+    var game = document.getElementById("game");
+    var cabecera = document.getElementById("tel-chat-header");
+    var hud = document.getElementById("hud-header-fixed");
+    if (!game || !cabecera) return;
+    var desplazamiento = cabecera.getBoundingClientRect().top - game.getBoundingClientRect().top - (hud ? hud.offsetHeight + 6 : 0);
+    if (Math.abs(desplazamiento) > 4) {
+      game.scrollTo({ top: Math.max(0, game.scrollTop + desplazamiento), behavior: "auto" });
+    }
+  });
 }
 
 function renderizarMensajesTelefono(contactoId) {
@@ -14907,6 +14988,21 @@ function construirOpcionesMecanicoWhatsApp(mec) {
   });
 
   return opciones.slice(0, 3);
+}
+
+function registrarPrestamoMecanico(mecanico, monto, origen) {
+  if (!mecanico) return { monto: 0, deudaAnterior: 0, deudaActual: 0 };
+  var valor = Math.max(0, Math.round(Number(monto) || 0));
+  var deudaAnterior = Math.max(0, Math.round(Number(mecanico.deudaConTaller) || 0));
+  mecanico.deudaConTaller = deudaAnterior + valor;
+  mecanico.prestamosRecibidos = Math.max(0, Math.round(Number(mecanico.prestamosRecibidos) || 0)) + valor;
+  mecanico.ultimoPrestamoTaller = {
+    monto: valor,
+    origen: String(origen || "equipo"),
+    dia: typeof dia === "number" ? dia : 0,
+    deudaPosterior: mecanico.deudaConTaller,
+  };
+  return { monto: valor, deudaAnterior: deudaAnterior, deudaActual: mecanico.deudaConTaller };
 }
 
 function resolverAccionWhatsAppMecanico(accion, contactoId) {
@@ -15182,7 +15278,7 @@ function resolverAccionWhatsAppMecanico(accion, contactoId) {
     ) {
       window.TallerApp.helpers.registrarGastoDia(montoPrestamo, "equipo");
     }
-    mec.deudaConTaller = (mec.deudaConTaller || 0) + montoPrestamo;
+    var registroPrestamo = registrarPrestamoMecanico(mec, montoPrestamo, "whatsapp");
     mec.lealtad = Math.min(100, (mec.lealtad || 0) + 2);
     mec.enojo = Math.max(0, (mec.enojo || 0) - 1);
     mec.bloqueoAyudaTurnos = 0;
@@ -15198,8 +15294,8 @@ function resolverAccionWhatsAppMecanico(accion, contactoId) {
         (tramaEstado.historiasMecanicosAtendidas || 0) + 1;
     if (typeof actualizarUI === "function") actualizarUI();
     return escogerPlantillaTelefono([
-      "Gracias jefe, de verdad. Eso me saca del aprieto. Aqui estoy y entrego calidad.",
-      "Jefe, te lo devuelvo pronto. Eso me da tranquilidad para trabajar limpio hoy.",
+      "Gracias jefe, de verdad. Eso me saca del aprieto. Mi deuda con el taller queda en RD$" + registroPrestamo.deudaActual + ".",
+      "Jefe, te lo devuelvo pronto. Eso me da tranquilidad para trabajar limpio hoy. Quedo debiendo RD$" + registroPrestamo.deudaActual + ".",
     ]);
   }
 
